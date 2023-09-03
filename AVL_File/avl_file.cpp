@@ -145,12 +145,44 @@ private:
 
 
     void remove(T value);
-
+    T maxValue();
 private:
     void remove(long pos, T value, fstream& dataset, fstream& indices);
+    T maxValue(long pos);
+
+    // para estos metodos, el puntero ya debe tener la posicion correcta para leer o escribir en el archivo
     void leer_registro(Registro& record); //crear funcion para leer registro
     void leer_dato(Registro record, T& dato); //funcion para leer el dato, una vez ya se tiene el registro
+    void escribir_registro(Registro& record);
+    Registro dar_valor(long pos); //retorna registro en la posicion pos
 };
+
+template <typename T>
+T AVLFile<T>::maxValue(){
+    return maxValue(this->pos_root);
+}
+
+template <typename T>
+T AVLFile<T>::maxValue(long pos)
+{
+    if (pos == -2)
+        throw("The tree is empty");
+
+
+    // obtenemos valor de atributo (que se quiere eliminar) de nodo actual
+    dataset.seekp(pos, ios::beg); //se situa puntero donde nodo actual indica
+
+    // se lee dato y registro
+    Registro record; T dato;
+    leer_registro(record);
+    leer_dato(record, dato);
+
+    if (record.right == -1)
+        return dato; //retorna dato actual
+    else
+        return maxValue(record.right);
+}
+
 
 template <typename T>
 void AVLFile<T>::remove(T value){
@@ -175,8 +207,7 @@ void AVLFile<T>::remove(long pos, T value, fstream& dataset, fstream& indices){
 
     //se recorre nodo
     if (value<dato)remove(record.left, value); // se verifica que hijo recorrer
-    else if (value>dato)
-        remove(record.right, value);
+    else if (value>dato) remove(record.right, value);
     else
     {
         dataset.seekp(pos, ios::beg); //se situa puntero donde nodo actual indica
@@ -184,25 +215,25 @@ void AVLFile<T>::remove(long pos, T value, fstream& dataset, fstream& indices){
         if (record.left == -1 && record.right == -1) //si el registro es hoja
         {
             record.removed = true; //se actualiza flag
-            dataset.write((char*)&record,sizeof(Registro)); //se escribe registro
+            escribir_registro(record); //descolgamos al nodo
         }
         else if (record.left == -1)
         {
-            dataset.write((char*)&record,sizeof(Registro)); //se escribe registro
+            record = dar_valor(record.rigth); // hijo derecho pasa a suplantar al registro
+            escribir_registro(record);
             //node = node->right;
-            delete temp;
+            
         }
-        else if (node->right == nullptr)
+        else if (record.right == -1)
         {
-            NodeBT<T> *temp = node;
-            node = node->left;
-            delete temp;
+            record = dar_valor(record.left);  // hijo izquierdo pasa a suplantar al registro
+            escribir_registro(record);
         }
         else
         {
-            T temp = maxValue(node->left);
-            node->data = temp;
-            remove(node->left, temp);
+            T temp = maxValue(record.left);
+            // = temp; dar valor de temp a atributo de record
+            remove(record.left, temp);
         }
     }
 
