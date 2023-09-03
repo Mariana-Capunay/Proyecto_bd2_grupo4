@@ -22,7 +22,7 @@ void crear_archivo(string nombre){
 //template <typename T>
 struct Registro{
     int criterio;       // Provisionalmente int para pruebas
-    long pointer;
+    long pointer;       // Aplicar types?
     long left;
     long right;
     bool removed;
@@ -41,13 +41,13 @@ public:
     }
     vector<Registro> find(int key){
         ifstream file(this->filename, ios::binary | ios::in | ios::out);
-        if(!file.is_open()) throw out_of_range("No se pudo abrir el archivo");
+        if(!file.is_open()) throw runtime_error("No se pudo abrir el archivo");
         return find(pos_root, key, file);
     }
-    void add(Registro record){
+    void add(Registro record, long pos){
         fstream pointerFile(this->index, ios::in | ios::out | ios::binary);
         long curr_pos = pos_root;
-        add(curr_pos, record, pointerFile);
+        add(curr_pos, record, pointerFile);             // Repetir por cada archivo modificado
     }
     vector<Registro> inorder(){ //registros de manera ordenada
         ifstream file(filename, ios::app|ios::in|ios::binary);
@@ -67,7 +67,7 @@ private:
     vector<Registro> find(long pos_node, int key, ifstream& file) {
         //TODO: crear funciones previous y next que reciban una posición y devuelvan el anterior nodo (izquierdo más a la derecha, y siguiente (derecho más a la izquierda)
         if (pos_node == -1) {
-            throw out_of_range("No se encontró");
+            throw runtime_error("No se encontró");
         }
         vector<Registro> coincidenceList = {};
         Registro record = getRecord(pos_node, file);
@@ -166,7 +166,7 @@ template <typename T>
 T AVLFile<T>::maxValue(long pos)
 {
     if (pos == -2)
-        throw("The tree is empty");
+        throw runtime_error("The tree is empty");
 
 
     // obtenemos valor de atributo (que se quiere eliminar) de nodo actual
@@ -246,11 +246,11 @@ void AVLFile<T>::remove(long pos, T value, fstream& dataset, fstream& indices){
 void writeFile(string sourceName){      // Modelo de insercion por archivo (rango)
     AVLFile<int> file(sourceName);
     Registro record;
-    int pos = 0;
+    long pos = 0;
     int source_regs = 4;
     for (int i = 0; i < source_regs; i++) {
-        //record.setData();
-        file.add(record);
+        //record.setData();                     //Todo: Especializar buffer con dataset definido
+        file.add(record, pos);
         pos++;
     }
 }
