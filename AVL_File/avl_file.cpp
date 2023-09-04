@@ -2,6 +2,12 @@
 #include <fstream>
 #include <vector>
 
+inline void seekAll(std::fstream& file, long pos) {
+    file.seekg(pos);
+    file.seekp(pos);
+}
+
+
 using namespace std;
 
 bool archivo_existe(string nombre){
@@ -57,6 +63,8 @@ public:
         file.close();
         return result;
     }
+
+
 private:
     Registro getRecord(int pos, ifstream& file){
         Registro record;
@@ -144,11 +152,14 @@ private:
     }
 
 
+
+
     void remove(T value);
     T maxValue();
 private:
     void remove(long pos, T value, fstream& dataset, fstream& indices);
     T maxValue(long pos);
+
 
     // para estos metodos, el puntero ya debe tener la posicion correcta para leer o escribir en el archivo
     void leer_registro(Registro& record); //crear funcion para leer registro
@@ -156,6 +167,123 @@ private:
     void escribir_registro(Registro& record);
     Registro dar_valor(long pos); //retorna registro en la posicion pos
 };
+
+template <typename T>
+T AVLFile<T>::balanceFactor(long pos){
+    if (pos == -1) return 0;
+    else{
+        Registro record;
+        dataset.seekg(pos, ios::beg);
+        dataset.read((char*)&record, sizeof(Registro));
+        return height(record.left) - height(record.right);
+    }
+}
+
+template <typename T>
+void AVLFile<T>::updateHeight(long pos){
+    if (pos == -1) return;
+    else{
+        Registro record;
+        dataset.seekg(pos, ios::beg);
+        dataset.read((char*)&record, sizeof(Registro));
+        record.height = 1 + max(height(record.left), height(record.right));
+        dataset.seekp(pos, ios::beg);
+        dataset.write((char*)&record, sizeof(Registro));
+    }
+}
+
+template <typename T>
+void AVLFile<T>::balance(long pos){
+    if (pos == -1) return;
+    else{
+        Registro record;
+        dataset.seekg(pos, ios::beg);
+        dataset.read((char*)&record, sizeof(Registro));
+        if (balanceFactor(pos) == 2){
+            if (balanceFactor(record.left) == 1){
+                rightRotate(pos);
+            }
+            else{
+                leftRotate(record.left);
+                rightRotate(pos);
+            }
+        }
+        else if (balanceFactor(pos) == -2){
+            if (balanceFactor(record.right) == -1){
+                leftRotate(pos);
+            }
+            else{
+                rightRotate(record.right);
+                leftRotate(pos);
+            }
+        }
+    }
+}
+
+template <typename T>
+void AVLFile<T>::leftRotate(long pos){
+    Registro record;
+    dataset.seekg(pos, ios::beg);
+    dataset.read((char*)&record, sizeof(Registro));
+    Registro right;
+    dataset.seekg(record.right, ios::beg);
+    dataset.read((char*)&right, sizeof(Registro));
+    Registro rightLeft;
+    dataset.seekg(right.left, ios::beg);
+    dataset.read((char*)&rightLeft, sizeof(Registro));
+    right.left = record.pointer;
+    record.right = rightLeft.pointer;
+    updateHeight(record.pointer);
+    updateHeight(right.pointer);
+    updateHeight(rightLeft.pointer);
+    dataset.seekp(pos, ios::beg);
+    dataset.write((char*)&record, sizeof(Registro));
+    dataset.seekp(right.pointer, ios::beg);
+    dataset.write((char*)&right, sizeof(Registro));
+    dataset.seekp(rightLeft.pointer, ios::beg);
+    dataset.write((char*)&rightLeft, sizeof(Registro));
+}
+
+template <typename T>
+void AVLFile<T>::rightRotate(long pos){
+    Registro record;
+    dataset.seekg(pos, ios::beg);
+    dataset.read((char*)&record, sizeof(Registro));
+    Registro left;
+    dataset.seekg(record.left, ios::beg);
+    dataset.read((char*)&left, sizeof(Registro));
+    Registro leftRight;
+    dataset.seekg(left.right, ios::beg);
+    dataset.read((char*)&leftRight, sizeof(Registro));
+    left.right = record.pointer;
+    record.left = leftRight.pointer;
+    updateHeight(record.pointer);
+    updateHeight(left.pointer);
+    updateHeight(leftRight.pointer);
+    dataset.seekp(pos, ios::beg);
+    dataset.write((char*)&record, sizeof(Registro));
+    dataset.seekp(left.pointer, ios::beg);
+    dataset.write((char*)&left, sizeof(Registro));
+    dataset.seekp(leftRight.pointer, ios::beg);
+    dataset.write((char*)&leftRight, sizeof(Registro));
+}
+
+template <typename T>
+long AVLFile<T>::height(long pos){
+    if (pos == -1) return 0;
+    else{
+        Registro record;
+        dataset.seekg(pos, ios::beg);
+        dataset.read((char*)&record, sizeof(Registro));
+        return record.height;
+    }
+}
+
+template <typename T>
+void AVLFile<T>::leer_registro(Registro& record){
+    dataset.read((char*)&record, sizeof(Registro));
+}
+
 
 template <typename T>
 T AVLFile<T>::maxValue(){
