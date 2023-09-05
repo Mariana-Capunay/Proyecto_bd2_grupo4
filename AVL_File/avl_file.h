@@ -10,6 +10,7 @@ class AVLFile
     //archivos
     string filename; //data con todos los registros
     string heap_file; //archivo en el que se guardan los nodos 
+    fstream file; //para manejar heap_file sin abrir y cerrar tantas veces el archivo
 
     public:
     AVLFile();
@@ -22,7 +23,31 @@ class AVLFile
     ~AVLFile();
 
     private: //funciones recursivas
-    
+    bool remove(long pos, T key){ //recibe posicion y key a eliminar, tambien fstream file tiene heap_file abierto (tenemos info de los nodos)
+        if (pos==-1) return false; //no se puede eliminar
+        
+        //se puede eliminar
+        file.seekg(pos, ios::beg); //se posiciona para leer el nodo
+        NodeAVL<T> nodo;
+        file.read((char*)&nodo, nodo.size()); //se lee info del nodo
+
+        //se compara key con el value de los nodos hijos 
+        if (key<nodo.value){
+            this->remove(nodo.left, key);
+        } else if (key>nodo.value){
+            this->remove(nodo.right, key);
+        } else{ //se llegó al valor del nodo  //se debe eliminar nodo y sus next
+        
+            if (nodo.left==-1 && nodo.right==-1){ //caso en el que es hoja
+
+            } else if (nodo.left==-1){ //caso en el que tiene hijo derecho
+
+            } else { //caso en el que tiene hijo izquierdo
+
+            }
+        }
+    }
+
 };
 
 template <typename T>
@@ -53,7 +78,9 @@ bool insert(T key){
 
 template <typename T>
 bool remove(T key){
-
+    file.open(heap_file,ios::binary|ios::in|ios::out);
+    return this->remove(root, key);
+    file.close();
 }
 
 template <typename T>

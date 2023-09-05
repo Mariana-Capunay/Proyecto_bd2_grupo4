@@ -17,7 +17,33 @@ struct NodeAVL
 
     int height; //altura del nodo (para el avl)
 
-    int next; //nodo siguiente (para gestionar repetidos)
+    long next; //nodo siguiente (para gestionar repetidos)
+
+    NodeAVL();
+    NodeAVL(long puntero, T key);
+    int size();
+    ~NodeAVL();
 };
 
+template <typename T>
+NodeAVL<T>::NodeAVL(){
+    left = right = next = -1;
+    height = 0; pointer_value = -1;
+}
+
+template <typename T> 
+NodeAVL<T>::NodeAVL(long puntero, T key){
+    left = right = next = -1;
+    height = 0; 
+    value = key;
+    pointer_value = puntero;
+}
+
+template <typename T>
+NodeAVL<T>::~NodeAVL(){}
+
+template <typename T>
+int NodeAVL<T>::size(){
+    return sizeof(int) + 4*sizeof(long) + sizeof(T);
+}
 #endif
