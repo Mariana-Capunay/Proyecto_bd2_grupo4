@@ -1,7 +1,0 @@
-REMOVE:
-    - si no existe el valor que se quiere eliminar, la funcion termina
-    - si el valor a eliminar está en un nodo hoja, pasa a actualizarse su removed=true. Además, es espacio disponible para un add adecuado
-    - si el valor a eliminar tiene hijo izquierdo:
-            el nodo que se elimina actualiza su removed = true
-            su hijo izquierdo pasa a tomar su lugar y se sobreescribe en archivo
-    - analogamente, si solo tiene hijo derecho
