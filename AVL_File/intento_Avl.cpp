@@ -73,7 +73,6 @@ private:
         return record;
     }
     vector<Registro> find(long pos_node, int key, ifstream& file) {
-        //TODO: crear funciones previous y next que reciban una posición y devuelvan el anterior nodo (izquierdo más a la derecha, y siguiente (derecho más a la izquierda)
         if (pos_node == -1) {
             throw runtime_error("No se encontró");
         }

@@ -63,7 +63,52 @@ AVLFile<T>::AVLFile(string file_name, string atributo){
 
 template <typename T>
 vector <long> AVLFile<T>::search(T key){
+    file.open(heap_file,ios::binary); // Abrir el archivo en binario
+    vector <long> pointerValueList = {}; // Vector a retornar (vacio al comienzo)
+    bool found = false; // Flag para determinar si se encontró o no el key
+    NodeAVL<T> nodo; // Nodo auxiliar para lectura de nodos
 
+    // Inicializar pos en el primer nodo (root)
+    long pos = this->root;
+
+    // Mientras la posicion del nodo exista (!= -1)
+    while (pos != -1) {
+        // Leer el nodo desde la posicion actual (pos)
+        file.seekg(pos, ios::beg);
+        file.read((char*)&nodo, nodo.size());
+
+        if (nodo.value == key) {
+            found = true; // Actualizo found y salgo
+            break;
+        } else if (nodo.value > key) {
+            pos = nodo.left; //Actualizar pos a hijo izquierdo
+        } else {
+            pos = nodo.right; //Actualizar pos a hijo derecho
+        }
+    }
+
+    // Validación de key encontrado
+    if (found) {
+        pointerValueList.pushback(nodo.pointer_value); // Guarda el pos del nodo en el vector
+        pos = nodo.next; // Coloca next en pos para ver si tiene repetidos
+
+        // Mientras exista nodo next (repetidos)
+        while (pos != -1) {
+            // Leer el nodo
+            file.seekg(pos, ios::beg);
+            file.read((char*)&nodo, nodo.size());
+
+            pointerValueList.pushback(nodo.pointer_value); // Guarda el pos del nodo en el vector a retornar
+
+            pos = nodo.next; // Actualizo pos para ver el siguiente next
+        }
+    } else {
+        throw runtime_error("No se encontró");
+    }
+
+    file.close();
+
+    return pointerValueList;
 }
 
 template <typename T>
