@@ -5,42 +5,5 @@
 
 ¡Estos cracks están detrás de todo el caos (código) aquí!
 
-# Proyecto_bd2_grupo4
-<em> Su título aquí </em>
-
-## 👩‍💻 Nuestro Genial Equipo
-
-¡Estos cracks están detrás de todo el caos (código) aquí!
-
-<div align="center">
-  <a href="https://github.com/Mariana-Capunay" style="text-decoration: none; color: #000; margin: 10px;">
-    <img src="https://github.com/Mariana-Capunay.png" width="120" height="120" alt="Mariana-Capunay" style="border-radius: 50%;">
-    <div style="background-color: #ff6f61; border-radius: 30px; padding: 10px; text-align: center;">
-      <b>Mariana Capuñay</b>
-    </div>
-  </a>
-  <a href="https://github.com/manyorycuevamendoza" style="text-decoration: none; color: #000; margin: 10px;">
-    <img src="https://github.com/manyorycuevamendoza.png" width="120" height="120" alt="manyorycuevamendoza" style="border-radius: 50%;">
-    <div style="background-color: #ff6f61; border-radius: 30px; padding: 10px; text-align: center;">
-      <b>Manyory Cueva</b>
-    </div>
-  </a>
-  <a href="https://github.com/JaimeRamosT" style="text-decoration: none; color: #000; margin: 10px;">
-    <img src="https://github.com/JaimeRamosT.png" width="120" height="120" alt="JaimeRamosT" style="border-radius: 50%;">
-    <div style="background-color: #ff6f61; border-radius: 30px; padding: 10px; text-align: center;">
-      <b>Jaime Ramos</b>
-    </div>
-  </a>
-  <a href="https://github.com/Willian-Berrocal" style="text-decoration: none; color: #000; margin: 10px;">
-    <img src="https://github.com/Willian-Berrocal.png" width="120" height="120" alt="Willian-Berrocal" style="border-radius: 50%;">
-    <div style="background-color: #ff6f61; border-radius: 30px; padding: 10px; text-align: center;">
-      <b>William Berrocal</b>
-    </div>
-  </a>
-  <a href="https://github.com/Pulsatio" style="text-decoration: none; color: #000; margin: 10px;">
-    <img src="https://github.com/Pulsatio.png" width="120" height="120" alt="Pulsatio" style="border-radius: 50%;">
-    <div style="background-color: #ff6f61; border-radius: 30px; padding: 10px; text-align: center;">
-      <b>Gustavo Orosco</b>
-    </div>
-  </a>
-</div>
+| [<img src="https://avatars.githubusercontent.com/u/91635108?v=4" width=115><br><sub>Mariana Capuñay</sub>](https://github.com/Mariana-Capunay) |  [<img src="https://avatars.githubusercontent.com/u/91238621?v=4" width=115><br><sub>Manyory Cueva</sub>](https://github.com/manyorycuevamendoza) | [<img src="https://avatars.githubusercontent.com/u/83987561?v=4" width=115><br><sub>Jaime Ramos</sub>](https://github.com/JaimeRamosT) | [<img src="https://avatars.githubusercontent.com/u/44882884?v=4" width=115><br><sub>Willian Berrocal</sub>](https://github.com/Willian-Berrocal) | [<img src="https://avatars.githubusercontent.com/u/55224553?v=4" width=115><br><sub>Gustavo Orosco</sub>](https://github.com/Pulsatio) |
+| :---: | :---: | :---:  | :---:  | :---: |
