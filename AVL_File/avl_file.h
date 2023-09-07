@@ -27,7 +27,7 @@ class AVLFile{
     }
 
     int remove(T key);  //elimina key del avl, cambia removed = true en filename, cambia el valor del nodo en heap_file (evaluar casos en que es hoja o no)
-
+    void delete_equals(long pos);
     ~AVLFile();
 
     private: //funciones recursivas
@@ -47,6 +47,7 @@ class AVLFile{
             pos_delete = this->remove(nodo.left, key);
             if (pos_delete==node.left){ //si se elimina en posicion del hijo izquierdo
                 nodo.left = -1; //se descuelga del arbol
+
                 file.seekp(pos,ios::beg); //se posiciona para escribir
                 file.write((char*)& nodo, nodo.size()); //escribe
             } else{
@@ -75,14 +76,13 @@ class AVLFile{
                 return nodo.left; //retorna "nodo.left" para que no se elimine esta referencia al nodo
 
             } else{ // nodo existe y tiene dos hijos
-                //se debe reemplazar por su sucesor (retornar valor del sucesor)
+                //se debe reemplazar por su sucesor (retornar valor del sucesor - actualizar altura)
             } 
-
-            //actualizar altura del nodo
-            //balancear
-            //retornar
-            return
         }
+        
+        //balancear
+        //retornar
+        return
     }
 
     bool insert(long& pos_node, NodeAVL<T>& node){
@@ -205,6 +205,30 @@ bool remove(T key){
     file.close();
     if (result!=-1) return true;
     return false;
+}
+
+template <typename T>
+void AVLFile<T>::delete_equals(long pos){
+    file(this->heap_file, ios::in|ios::out); //para leer y escribir
+    
+    bool iterar = true;
+
+    while (iterar){ 
+        file.seekg(pos); //vamos a posicion del registro
+        NodeAVL<T> nodo;
+        file.read((char*)&nodo, nodo.size()); //leemos nodo        
+
+        if (nodo.next==-1){ //si no tiene siguiente
+            iterar = false;
+        } else{ //tiene siguiente
+            file.seekp(pos); //nos posicionamos para escribir
+            pos = nodo.next; //guardamos posicion 
+            nodo.next = -1;
+            file.write((char*)nodo, nodo.size()); //escribimos "nodo" con next=-1
+        } //iteramos hasta llegar a nodo con next=-1
+    }
+
+    file.close();
 }
 
 template <typename T>
