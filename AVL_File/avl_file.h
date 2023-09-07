@@ -65,7 +65,9 @@ class AVLFile{
             }
 
         } else{ //se llegó al valor del nodo  //se debe eliminar nodo y sus next
-        
+            
+            delete_equals(nodo.pointer_value); //se elimina next's del nodo
+
             if (nodo.left==-1 && nodo.right==-1){ //caso en el que es hoja
                 return pos; //se elimina nodo en la posicion actual y ya no se necesita referencia a ese valor
 
