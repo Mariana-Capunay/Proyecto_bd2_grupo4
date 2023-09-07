@@ -2,9 +2,11 @@
 #define AVLFILE_H
 #include "node.h"
 #include <vector>
+#include <fstream>
+
 template <typename T>
-class AVLFile
-{
+
+class AVLFile{
     long root;
 
     //archivos
@@ -17,7 +19,13 @@ class AVLFile
     AVLFile(string file_name, string atributo);
     vector<long> search(T key); //devuelve posiciones de key en filename
     vector<long> rangeSearch(T begin_key, T end_key); //devuelve posiciones de key en filename
-    bool insert(T key);  //inserta key en el AVL y guarda nodo en heap_file
+
+    bool insert(T key) {  //inserta key en el AVL y guarda nodo en heap_file
+        int pos = nro_registros() - 1;
+        NodeAVL<T> nodo = NodeAVL<T>(pos, key);
+        return insert(root, nodo);
+    }
+
     int remove(T key);  //elimina key del avl, cambia removed = true en filename, cambia el valor del nodo en heap_file (evaluar casos en que es hoja o no)
 
     ~AVLFile();
@@ -73,10 +81,54 @@ class AVLFile
             //actualizar altura del nodo
             //balancear
             //retornar
-            return 
+            return
         }
     }
 
+    bool insert(long& pos_node, NodeAVL<T>& node){
+        if(pos_node == -1){
+            file.seekg(0, ios::end);
+            pos_node = file.tellg();
+            file.seekp(pos_node, ios::beg);
+            file.write((char*)&node, node.size());
+            return true;
+
+        } else{
+            file.seekg(pos_node, ios::beg);
+            NodeAVL<T> parent;
+            file.read((char*)&parent, parent.size());
+            if (node.value < parent.value){
+                node.height++;
+                insert(parent.left, node);
+                file.seekp(pos_node, ios::beg);
+                parent.left = pos_node;
+                file.write((char*)&parent, parent.size());
+
+            } else if(node.value > parent.value){
+                node.height++;
+                insert(parent.right, node);
+                file.seekp(pos_node, ios::beg);
+                parent.right = pos_node;
+                file.write((char*)&parent, parent.size());
+
+            } else{
+                insert(parent.next, node);
+                file.seekp(pos_node, ios::beg);
+                parent.next = pos_node;
+                file.write((char*)&parent, parent.size());
+            }
+            // Autobalanceo
+        }
+    }
+
+    int nro_registros(){
+        ifstream file(this->file_name, ios::binary);
+        if(!file.is_open()) throw ("No se pudo abrir el archivo");
+        file.seekg(0, ios::end);
+        long total_bytes = file.tellg();
+        file.close();
+        return total_bytes / sizeof(reg);   // Registro en data.dat
+    }
 };
 
 template <typename T>
@@ -142,11 +194,6 @@ vector <long> AVLFile<T>::search(T key){
 
 template <typename T>
 vector <long> AVLFile<T>::rangeSearch(T begin_key, T end_key){
-
-}
-
-template <typename T>
-bool insert(T key){
 
 }
 
