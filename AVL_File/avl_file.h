@@ -27,8 +27,12 @@ class AVLFile{
     }
 
     int remove(T key);  //elimina key del avl, cambia removed = true en filename, cambia el valor del nodo en heap_file (evaluar casos en que es hoja o no)
+    void balance(long pos, NodeAVL<T> &node); //verifica si una rotación es necesaria
+    void left_Rotation(long pos, NodeAVL<T> &node); //rotación a la izquierda
+    void right_Rotation(long pos, NodeAVL<T> &node); //rotación a la derecha
     void delete_equals(long pos);
     ~AVLFile();
+
 
     private: //funciones recursivas
     int remove(long& pos, T key){  //retorna posicion en la que se elimina
@@ -131,7 +135,124 @@ class AVLFile{
         file.close();
         return total_bytes / sizeof(reg);   // Registro en data.dat
     }
+
+    long balanceFactor(NodeAVL<T> &node){//balance factor
+        long FacB=0;
+        NodeAVL<T> hijoIzq;
+        NodeAVL<T> hijoDer;
+        if(node.left!=-1){ //si tiene hijo izquierdo
+            file.seekg(node.left,ios::beg);//se posiciona en el hijo izquierdo
+            file.read((char*)&hijoIzq,hijoIzq.size());//se lee el hijo izquierdo
+            FacB+=hijoIzq.height; //se suma la altura del hijo izquierdo
+        }
+        if(node.right!=-1){ //si tiene hijo derecho
+            file.seekg(node.right,ios::beg);//se posiciona en el hijo derecho
+            file.read((char*)&hijoDer,hijoDer.size());//se lee el hijo derecho
+            FacB-=hijoDer.height; //se resta la altura del hijo derecho
+        }
+        return FacB;
+    }
+
+    long altura(long node){//retorna la altura del nodo
+        if(node==-1) return -1;
+        file.seekg(node,ios::beg);//se posiciona en el nodo
+        NodeAVL<T> nodo;
+        file.read((char*)&nodo,nodo.size());//se lee el nodo
+        return nodo.height; //retorna la altura del nodo
+    
+    }
+    
+    void alturaActulizada(long pos,NodeAVL<T> &node){//actualiza la altura del nodo
+        long alturaIzq=altura(node.left); //altura del hijo izquierdo
+        long alturaDer=altura(node.right); //altura del hijo derecho
+
+        //recalculamos la latura del nodo
+        if(alturaIzq>alturaDer) node.height=alturaIzq+1;
+        else node.height=alturaDer+1;
+
+        //escribimos el nodo
+        file.seekp(pos,ios::beg);//se posiciona en el nodo
+        file.write((char*)&node,node.size());//se escribe el nodo
+    }
+
 };
+
+
+
+template <typename T>
+void AVLFile<T>::balance(long pos, NodeAVL<T> &node){//verifica si una rotación es necesaria
+    //factor de balanceo
+        long FacB=balanceFactor(node); //balanceFactor es la diferencia de alturas entre el hijo izquierdo y el derecho
+        if(FacB>1){ //si el factor de balanceo es mayor a 1, se debe rotar a la derecha
+            NodeAVL<T> hijoIzq; //nodo auxiliar para el hijo izquierdo
+            file.seekg(node.left,ios::beg);//se posiciona en el hijo izquierdo
+            file.read((char*)&hijoIzq,hijoIzq.size());//se lee el hijo izquierdo
+
+            if(balanceFactor(hijoIzq)<=-1){ //si el factor de balanceo del hijo izquierdo es menor o igual a -1, se debe hacer una rotación doble a la derecha
+                left_Rotation(pos,node);
+            }
+            right_Rotation(pos,node);
+        }
+
+        else if(FacB<=-2){ //si el factor de balanceo es menor o igual a -2, se debe rotar a la izquierda
+            NodeAVL<T> hijoDer; //nodo auxiliar para el hijo derecho
+            file.seekg(node.right,ios::beg);//se posiciona en el hijo derecho
+            file.read((char*)&hijoDer,hijoDer.size());//se lee el hijo derecho
+
+            if(balanceFactor(hijoDer)>=1){ //si el factor de balanceo del hijo derecho es mayor o igual a 1, se debe hacer una rotación doble a la izquierda
+                right_Rotation(pos,node);
+            }
+            left_Rotation(pos,node); 
+        }
+}
+
+template <typename T>
+void AVLFile<T>::left_Rotation(long pos, NodeAVL<T> &node){//rotación a la izquierda
+    NodeAVL<T> hijoDer; //nodo auxiliar para el hijo derecho
+    file.seekg(node.right,ios::beg);//se posiciona en el hijo derecho
+    file.read((char*)&hijoDer,hijoDer.size());//se lee el hijo derecho
+
+    NodeAVL<T> hijoIzq; //nodo auxiliar para el hijo izquierdo del hijo derecho
+    file.seekg(hijoDer.left,ios::beg);//se posiciona en el hijo izquierdo del hijo derecho
+    file.read((char*)&hijoIzq,hijoIzq.size());//se lee el hijo izquierdo del hijo derecho
+
+    node.right=hijoIzq.left; //el hijo derecho del nodo actual es el hijo izquierdo del hijo derecho
+    hijoDer.left=pos; //el hijo izquierdo del hijo derecho es el nodo actual
+    file.seekp(node.right,ios::beg);//se posiciona en el hijo derecho del nodo actual
+    file.write((char*)&node,node.size());//se escribe el nodo actual
+    file.seekp(hijoDer.left,ios::beg);//se posiciona en el hijo izquierdo del hijo derecho
+    file.write((char*)&hijoDer,hijoDer.size());//se escribe el hijo derecho
+
+    //actualizar altura
+    alturaActulizada(pos,node); //actualiza la altura del nodo actual
+    alturaActulizada(hijoDer.left,hijoDer); //actualiza la altura del hijo derecho
+
+    
+}
+
+template <typename T>
+void AVLFile<T>::right_Rotation(long pos, NodeAVL<T> &node){
+    NodeAVL<T> hijoIzq; //nodo auxiliar para el hijo izquierdo
+    file.seekg(node.left,ios::beg);//se posiciona en el hijo izquierdo
+    file.read((char*)&hijoIzq,hijoIzq.size());//se lee el hijo izquierdo
+    
+    NodeAVL<T> hijoDer; //nodo auxiliar para el hijo derecho del hijo izquierdo
+    file.seekg(hijoIzq.right,ios::beg);//se posiciona en el hijo derecho del hijo izquierdo
+    file.read((char*)&hijoDer,hijoDer.size());//se lee el hijo derecho del hijo izquierdo
+
+    node.left=hijoDer.right; //el hijo izquierdo del nodo actual es el hijo derecho del hijo izquierdo
+    hijoIzq.right=pos; //el hijo derecho del hijo izquierdo es el nodo actual
+    file.seekp(node.left,ios::beg);//se posiciona en el hijo izquierdo del nodo actual
+    file.write((char*)&node,node.size());//se escribe el nodo actual
+    
+    file.seekp(hijoIzq.right,ios::beg);//se posiciona en el hijo derecho del hijo izquierdo
+    file.write((char*)&hijoIzq,hijoIzq.size());//se escribe el hijo izquierdo
+
+    //actualizar altura
+    alturaActulizada(pos,node); //actualiza la altura del nodo actual
+    alturaActulizada(hijoIzq.right,hijoIzq); //actualiza la altura del hijo izquierdo
+}
+
 
 template <typename T>
 AVLFile<T>::AVLFile(){
