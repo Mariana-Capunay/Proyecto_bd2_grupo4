@@ -1,8 +1,10 @@
+#ifndef SEQUENTIAL_FILE_H
+#define SEQUENTIAL_FILE_H
+
 #include <iostream>
 #include <fstream>
 #include <vector>
 #include <stdexcept>
-
 using namespace std;
 
 template <typename T>
@@ -50,3 +52,7 @@ public:
     private: 
     
 };
+
+
+
+#endif
