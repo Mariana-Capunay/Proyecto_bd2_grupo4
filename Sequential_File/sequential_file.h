@@ -4,22 +4,44 @@
 #include <iostream>
 #include <fstream>
 #include <vector>
-#include <stdexcept>
 using namespace std;
 
-template <typename T>
-struct Record { // Estructura de un registro
-        T data;
-        long next_del;
-
-        Record() : next_del(-1) {}//el next_del se inicializa en -1
-    };
 
 template <typename T>
-struct Header {// Estructura del encabezado
-        int HEADER;
-    };
+struct Nodo{
+    private:
+        Nodo<T> *next;
+        T record;
+    public:
+        Nodo(T record){
+            this->record = record;
+            this->next = nullptr;
+        }
 
+        Nodo<T>* getNext(){
+            return this->next;
+        }
+        void setNext(Nodo<T> *next){
+            this->next = next;
+        }
+};
+
+template <typename T>
+class Header{
+    private:
+        int data_Del;
+    public:
+        Header(){
+            this->data_Del = -1;
+        }
+        int getData_Del(){
+            return this->data_Del;
+        }
+        void setData_Del(int data_Del){
+            this->data_Del = data_Del;
+        }
+
+};
 
 template <typename T>
 class SequentialFile {
@@ -34,7 +56,7 @@ public:
 
     SequentialFile(string file_name, string heap_file_name, string reorg_file_name);
 
-    void insert(const T& data);
+    bool insert( T data);
 
     vector<T> search(const T& key);
 
@@ -50,6 +72,15 @@ public:
 
 
     private: 
+    void nro_registros(){
+        int nro_registros=0;
+        file.open(file_name, ios::in | ios::out | ios::binary);
+        if (!file.is_open()) {throw ("Error al abrir el archivo");}
+        file.seekg(0, ios::end);//nos posicionamos al final del archivo
+        nro_registros = file.tellg()/sizeof(T); //cantidad de registros
+        file.close();
+        return nro_registros;
+    }
 
 
 };
@@ -64,27 +95,46 @@ SequentialFile<T>::SequentialFile(string file_name, string heap_file_name, strin
     this->reorg_file_name = reorg_file_name;
 }
 
-    /*
-Inserciones enlazadas:
-Localizar la posición en donde será insertado el nuevo registro.
-Si el espacio está libre, insertar.
-Sino, insertar el registro en un espacio auxiliar (heap file)
-En este caso, los punteros deberían ser actualizados.
-Se requiere reorganizar el archivo original cada cierto tiempo mezclando ordenadamente con el espacio auxiliar. 
-
-    */
 
 template <typename T>
-void SequentialFile<T>::insert(const T& data) {
-    file.open(file_name,ios::in|ios::out|ios::binary);
-    if(!file.is_open()){
-        throw runtime_error("No se pudo abrir el archivo");
-    }
+bool SequentialFile<T>::insert(T data) {
+        int pos=nro_registros()-1;
 
-    
+        //abrimos el archivo file_name, donde se guardan los registros
+        file.open(file_name, ios::in | ios::out | ios::binary);
+        if (!file.is_open()) {throw ("Error al abrir el archivo");}
+
+        //abrimos el archivo heap_file_name, donde se guardan las insercciones fuera de la cantidqd de registros
+        fstream heap_file(heap_file_name, ios::in | ios::out | ios::binary);
+        if (!heap_file.is_open()) {throw ("Error al abrir el archivo");}
+
+        //leemos el registro al cual queremos insertar
+            Nodo<T> newrecord;
+            newrecord = new Nodo<T>(data);
+            Nodo<T> *aux = new Nodo<T>(data);
+
+        //verificamos si hay espacio en el archivo file_name
+        if (pos < 0) {
+            //si no hay espacio, insertamos en el archivo heap_file_name
+            heap_file.seekg(0, ios::end);
+            heap_file.write((char *)&newrecord, sizeof(T));
+            heap_file.close();
+            return true;
+        } else {
+            //si hay espacio, insertamos en el archivo file_name
+            file.seekg(pos * sizeof(T), ios::beg);
+            file.write((char *)&newrecord, sizeof(T));
+            file.close();
+            return true;
+        }
+
+
+
+
+        
+
 
 }
-
 
 
 #endif

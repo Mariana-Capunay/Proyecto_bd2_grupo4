@@ -21,7 +21,7 @@ class AVLFile{
     vector<long> rangeSearch(T begin_key, T end_key); //devuelve posiciones de key en filename
 
     bool insert(T key) {  //inserta key en el AVL y guarda nodo en heap_file
-        int pos = nro_registros() - 1;
+        int pos = nro_registros() - 1; 
         NodeAVL<T> nodo = NodeAVL<T>(pos, key);
         return insert(root, nodo);
     }
