@@ -9,23 +9,13 @@
 
 using namespace std;
 
-void crear_archivo(string nombre){
-    ifstream archivo(nombre.c_str());
-    if (archivo.good()){ //si existe
-        return; //ya no es necesario crear
-    }
-    ofstream file(nombre, ios::binary);
-//cout<<"creando archivo "<<nombre<<endl;
-    file.close();
-}
-
 
 string conversor(string file_route, string& atr_1, string& atr_2, string& atr_3, string& atr_4, string& atr_5){ //retorna nombre del archivo creado
     ifstream file(file_route);
-    string bin_file = "test.bin";
-    ofstream bin(bin_file);
+    string bin_file = "test.bin"; 
+    ofstream metadata(bin_file, ios::binary);
 
-    if (!file.is_open() || !bin.is_open()) {
+    if (!file.is_open() || !metadata.is_open()) {
         throw runtime_error("No se pudo abrir el archivo.");
     }
     string linea;
@@ -109,17 +99,17 @@ string conversor(string file_route, string& atr_1, string& atr_2, string& atr_3,
                     break;
             }
             record.removed = false;
-            bin.write((char*)&record, sizeof(Record));
         }
         //cout << "Record: "<< record.atrib4 << "\t" << "sz: " << sizeof(record.atrib4);
         //cout << endl;
+        metadata.write((char*)&record, sizeof(Record));
         record.print();
         //cout<<record.key<<" - "<<record.atrib1<<" - "<<record.atrib2<<endl;
 
     }
 
     file.close();
-    bin.close();
+    metadata.close();
     return bin_file;
 };
 
