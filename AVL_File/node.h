@@ -4,8 +4,7 @@
 using namespace std;
 
 template <typename T>
-struct NodeAVL
-{
+struct NodeAVL  {
     T value; //valor que guarda
 
     //punteros a hijos (apuntan a heap_file)

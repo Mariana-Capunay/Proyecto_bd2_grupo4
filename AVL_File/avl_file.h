@@ -85,7 +85,7 @@ class AVLFile{
                 //se debe reemplazar por su sucesor (retornar valor del sucesor - actualizar altura)
             } 
         }
-        
+
         //balancear
         //retornar
         return
@@ -107,23 +107,26 @@ class AVLFile{
                 node.height++;
                 insert(parent.left, node);
                 file.seekp(pos_node, ios::beg);
-                parent.left = pos_node;
+                //parent.left = pos_node;
                 file.write((char*)&parent, parent.size());
 
             } else if(node.value > parent.value){
                 node.height++;
                 insert(parent.right, node);
                 file.seekp(pos_node, ios::beg);
-                parent.right = pos_node;
+                //parent.right = pos_node;
                 file.write((char*)&parent, parent.size());
 
             } else{
                 insert(parent.next, node);
                 file.seekp(pos_node, ios::beg);
-                parent.next = pos_node;
+                //parent.next = pos_node;
                 file.write((char*)&parent, parent.size());
             }
-            // Autobalanceo
+            file.seekg(0, ios::beg);
+            NodeAVL<T> first;
+            file.read((char*)&first, first.size());
+            balance(root, first);
         }
     }
 
