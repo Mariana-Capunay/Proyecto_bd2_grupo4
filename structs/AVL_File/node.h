@@ -21,6 +21,7 @@ struct NodeAVL  {
     NodeAVL();
     NodeAVL(long puntero, T key);
     int size();
+    void setValue(long puntero, T key);
     ~NodeAVL();
 };
 
@@ -40,6 +41,12 @@ NodeAVL<T>::NodeAVL(long puntero, T key){
 
 template <typename T>
 NodeAVL<T>::~NodeAVL(){}
+
+template <typename T>
+void NodeAVL<T>::setValue(long puntero, T key){
+    pointer_value = puntero;
+    value = key;
+}
 
 template <typename T>
 int NodeAVL<T>::size(){

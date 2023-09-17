@@ -3,7 +3,7 @@
 #include "node.h"
 #include <vector>
 #include <fstream>
-
+#include "../../dataset_bin/record.h" //importando record
 template <typename T>
 
 class AVLFile{
@@ -11,12 +11,13 @@ class AVLFile{
 
     //archivos
     string filename; //data con todos los registros
-    string heap_file; //archivo en el que se guardan los nodos 
+    string heap_file; //archivo en el que se guardan los nodos  (value, left, hight, pointer_value, next, height)
     fstream file; //para manejar heap_file sin abrir y cerrar tantas veces el archivo
 
     public:
     AVLFile();
-    AVLFile(string file_name, string atributo);
+    AVLFile(string file_name, string atributo, int atributo_col);
+    void buildFromFile(int atributo_col);
     vector<long> search(T key); //devuelve posiciones de key en filename
     vector<long> rangeSearch(T begin_key, T end_key); //devuelve posiciones de key en filename
 
@@ -26,11 +27,16 @@ class AVLFile{
         return insert(root, nodo);
     }
 
-    int remove(T key);  //elimina key del avl, cambia removed = true en filename, cambia el valor del nodo en heap_file (evaluar casos en que es hoja o no)
+    bool insert(NodeAVL<T> nodo){
+        return insert(root,nodo);
+    }
+
+    bool remove(T key);  //elimina key del avl, cambia removed = true en filename, cambia el valor del nodo en heap_file (evaluar casos en que es hoja o no)
     void balance(long pos, NodeAVL<T> &node); //verifica si una rotación es necesaria
     void left_Rotation(long pos, NodeAVL<T> &node); //rotación a la izquierda
     void right_Rotation(long pos, NodeAVL<T> &node); //rotación a la derecha
     void delete_equals(long pos);
+    //bool remove(T key);
     ~AVLFile();
 
 
@@ -49,7 +55,7 @@ class AVLFile{
         //se compara key con el value de los nodos hijos 
         if (key<nodo.value){
             pos_delete = this->remove(nodo.left, key);
-            if (pos_delete==node.left){ //si se elimina en posicion del hijo izquierdo
+            if (pos_delete==nodo.left){ //si se elimina en posicion del hijo izquierdo
                 nodo.left = -1; //se descuelga del arbol
 
                 file.seekp(pos,ios::beg); //se posiciona para escribir
@@ -60,7 +66,7 @@ class AVLFile{
 
         } else if (key>nodo.value){
             pos_delete = this->remove(nodo.right, key);
-            if (pos_delete==node.right){ //si se elimina en posicion del hijo derecho
+            if (pos_delete==nodo.right){ //si se elimina en posicion del hijo derecho
                 nodo.right = -1; //se descuelga del arbol
                 file.seekp(pos,ios::beg); //se posiciona para escribir
                 file.write((char*)& nodo, nodo.size()); //escribe
@@ -88,7 +94,7 @@ class AVLFile{
 
         //balancear
         //retornar
-        return
+        return 0;
     }
 
     bool insert(long& pos_node, NodeAVL<T>& node){
@@ -136,7 +142,7 @@ class AVLFile{
         file.seekg(0, ios::end);
         long total_bytes = file.tellg();
         file.close();
-        return total_bytes / sizeof(reg);   // Registro en data.dat
+        return total_bytes / sizeof(Record);   // Registro en data.dat
     }
 
     long balanceFactor(NodeAVL<T> &node){//balance factor
@@ -263,9 +269,11 @@ AVLFile<T>::AVLFile(){
 }
 
 template <typename T>
-AVLFile<T>::AVLFile(string file_name, string atributo){
+AVLFile<T>::AVLFile(string file_name, string atributo, int atributo_col){
     this->filename = file_name;
     this->heap_file = "avl."+atributo+".bin";
+
+    buildFromFile(atributo_col); // se genera AVL en base a una columna especifica
 }
 
 template <typename T>
@@ -296,7 +304,7 @@ vector <long> AVLFile<T>::search(T key){
 
     // Validación de key encontrado
     if (found) {
-        pointerValueList.pushback(nodo.pointer_value); // Guarda el pos del nodo en el vector
+        pointerValueList.push_back(nodo.pointer_value); // Guarda el pos del nodo en el vector
         pos = nodo.next; // Coloca next en pos para ver si tiene repetidos
 
         // Mientras exista nodo next (repetidos)
@@ -305,7 +313,7 @@ vector <long> AVLFile<T>::search(T key){
             file.seekg(pos, ios::beg);
             file.read((char*)&nodo, nodo.size());
 
-            pointerValueList.pushback(nodo.pointer_value); // Guarda el pos del nodo en el vector a retornar
+            pointerValueList.push_back(nodo.pointer_value); // Guarda el pos del nodo en el vector a retornar
 
             pos = nodo.next; // Actualizo pos para ver el siguiente next
         }
@@ -320,12 +328,14 @@ vector <long> AVLFile<T>::search(T key){
 
 template <typename T>
 vector <long> AVLFile<T>::rangeSearch(T begin_key, T end_key){
+    vector <long> result;
 
+    return result;
 }
 
 template <typename T>
-bool remove(T key){
-    file.open(heap_file,ios::binary|ios::in|ios::out);
+bool AVLFile<T>::remove(T key){
+    file(heap_file,ios::binary|ios::in|ios::out);
     
     int result = this->remove(root, key);
     file.close();
@@ -335,7 +345,7 @@ bool remove(T key){
 
 template <typename T>
 void AVLFile<T>::delete_equals(long pos){
-    file(this->heap_file, ios::in|ios::out); //para leer y escribir
+    file(this->heap_file, ios::binary|ios::out|ios::in); //para leer y escribir
     
     bool iterar = true;
 
@@ -355,6 +365,27 @@ void AVLFile<T>::delete_equals(long pos){
     }
 
     file.close();
+}
+
+template <typename T>
+void AVLFile<T>::buildFromFile(int atributo_col){
+    ifstream data(this->filename, ios::binary);
+    if (!data.is_open()) throw runtime_error("No existe archivo",filename);
+    
+    long bytes = 0;
+    //cargamos los datos uno a uno  //cargamos cada registro del file_name como un nodo
+    while (data.tellg()<bytes){
+        Record record;
+        data.read((char*)&record, sizeof(Record)); // leemos record actual
+
+        NodeAVL<T> nodo;
+        if (atributo_col == 2) nodo.setValue(bytes, record.atrib2); // creamos el nodo
+        else nodo.setValue(bytes, record.atrib4);
+        this->insert(nodo);
+        bytes+= sizeof(Record); // se aumenta contador de bytes
+    }
+
+    data.close();
 }
 
 template <typename T>
