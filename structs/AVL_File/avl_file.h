@@ -335,7 +335,7 @@ vector <long> AVLFile<T>::rangeSearch(T begin_key, T end_key){
 
 template <typename T>
 bool AVLFile<T>::remove(T key){
-    file(heap_file,ios::binary|ios::in|ios::out);
+    file.open(this->heap_file,ios::binary|ios::in|ios::out);
     
     int result = this->remove(root, key);
     file.close();
@@ -345,7 +345,7 @@ bool AVLFile<T>::remove(T key){
 
 template <typename T>
 void AVLFile<T>::delete_equals(long pos){
-    file(this->heap_file, ios::binary|ios::out|ios::in); //para leer y escribir
+    file.open(this->heap_file, ios::binary|ios::out|ios::in); //para leer y escribir
     
     bool iterar = true;
 

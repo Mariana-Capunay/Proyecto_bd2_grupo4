@@ -20,6 +20,9 @@ struct Record : public error_code {
         cout<<atrib3<<", ";
         cout<<atrib4<<"\n";
     }
+    int size(){
+        return sizeof(int)*2 + 40 + 25 + 4 + sizeof(bool);
+    }
 };
 
 /*
