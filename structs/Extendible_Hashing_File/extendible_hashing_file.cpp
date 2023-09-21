@@ -2,8 +2,10 @@
 #include <vector>
 #include <fstream>
 #include <iostream>
-using namespace std;
+#include <utility>
+#include "dataset_bin/binary_conversor.h"
 
+using namespace std;
 struct BinaryNode{
     int left = -1;
     int right = -1;
@@ -18,6 +20,7 @@ struct Bucket{
     }
 };
 
+
 class HashingIndex{
     private:
     string datafile;
@@ -25,13 +28,26 @@ class HashingIndex{
     int max_size_bucket = 5; // MAX SIZE IN BUCKET
     
     string indexfile= "hashing_index.dat";
-    string overflow_indexfile = "overflow_index.dat";
+    string overflow_indexfile = "hashing_overflow_index.dat";
     string directoryfile = "hashing_directory.dat";
     
     int last_position = 0;
     int last_bucket = 0;
     int last_position_overflow_register = 0;
+    int n_data_overflow = 0;
     BinaryNode root;
+
+    void create_data_overflow(int key,int address){
+        ofstream file;
+        file.open(overflow_indexfile,ios::binary);
+        file.seekp(last_position_overflow_register);
+        file.write((char*)&key, 4);
+        file.seekp(last_position_overflow_register+4);
+        file.write((char*)&address, 4);
+        file.close();
+        n_data_overflow++;
+    }
+
     void create_node(int position, BinaryNode node){
         ofstream file;
         file.open(directoryfile,ios::binary);
@@ -55,6 +71,18 @@ class HashingIndex{
         file.close();
         if(last_bucket == position)
             last_bucket += sizeof(bucket);
+    }
+    
+    pair<int,int> read_data_overflow(int position){
+        ifstream file;
+        file.open(directoryfile,ios::binary);
+        int key,address;
+        file.seekg(position);
+        file.read((char*)&key, 4);
+        file.seekg(position+4);
+        file.read((char*)&address, 4);
+        file.close();
+        return {key,address};
     }
     BinaryNode read_node(int position){
         ifstream file;
@@ -124,6 +152,13 @@ class HashingIndex{
     }
 
     int f_hash(int key){
+        unsigned hashing = 0,prime = 53, pot = 1;
+        while(key){
+            int d = key % 10;
+            hashing =  d*pot;
+            pot = pot * prime;
+            key /= 10;
+        }
         return key;
     }
     void insert(int key,int address,BinaryNode current_node,int position, int depth){
@@ -147,22 +182,9 @@ class HashingIndex{
                 insert(key,address,current_node, position, depth);
             }
             else{
-                cout << "MIREN OVERFLOW";
+                create_data_overflow(key,address);
             }
         }
-    }
-    public:
-    HashingIndex(string datafile, int max_size_bucket = 5, int max_depth = 20){
-        root.left = last_position;
-        create_node(last_position,{-1,-1,last_bucket});
-        create_bucket(last_bucket,Bucket(max_size_bucket));
-        root.right = last_position;
-        create_node(last_position,{-1,-1,last_bucket});
-        create_bucket(last_bucket,Bucket(max_size_bucket));
-        root.posBucket = -1;
-    }
-    void insert(int key,int address){
-        insert(key,address,root,0,0);
     }
     int find(int key){
         BinaryNode current_node = root;
@@ -177,8 +199,49 @@ class HashingIndex{
             if(bucket.keys[i] == key)
                 return bucket.addresses[i];
         }
-        // aumentar 
+        if(depth == max_size_bucket && bucket.keys[max_size_bucket-1] != -1){
+            int cur_position = 0;
+            for(int i = 0; i < n_data_overflow; i++){
+                pair<int,int> data_overflow = read_data_overflow(cur_position);
+                if(data_overflow.first == key)
+                    return data_overflow.second;
+                cur_position += 8;
+            }
+        }
         return -1;
+    }
+    public:
+    HashingIndex(string datafile, int max_size_bucket = 5, int max_depth = 20){
+        root.left = last_position;
+        create_node(last_position,{-1,-1,last_bucket});
+        create_bucket(last_bucket,Bucket(max_size_bucket));
+        root.right = last_position;
+        create_node(last_position,{-1,-1,last_bucket});
+        create_bucket(last_bucket,Bucket(max_size_bucket));
+        root.posBucket = -1;
+    }
+    void insert(int key,int address){
+        insert(key,address,root,0,0);
+    }
+    Record* search(int key){
+        int address = find(key);
+        if(address == -1) return nullptr;
+        Record* record = new Record;
+        *record = read_record(datafile,address);
+        if(record->removed) return nullptr;
+        return record;
+    }
+    void erase(int key){
+        int address = find(key);
+        if(address == -1) return;
+        Record record = read_record(datafile,address);
+        if(record.removed) return;
+        record.removed = true;
+        ofstream file;
+        file.open(datafile,ios_base::binary);
+        file.seekp(address);
+        file.write((char*)&record, record.size());
+        file.close();
     }
 };
 
