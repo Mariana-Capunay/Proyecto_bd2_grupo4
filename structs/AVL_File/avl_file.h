@@ -99,40 +99,45 @@ class AVLFile{
 
     bool insert(long& pos_node, NodeAVL<T>& node){
         if(pos_node == -1){
+            // Inserción
             file.seekg(0, ios::end);
-            pos_node = file.tellg();
+            pos_node = file.tellg();                        // Obtener la posición de inserción
             file.seekp(pos_node, ios::beg);
             file.write((char*)&node, node.size());
-            return true;
 
-        } else{
-            file.seekg(pos_node, ios::beg);
-            NodeAVL<T> parent;
-            file.read((char*)&parent, parent.size());
-            if (node.value < parent.value){
-                node.height++;
-                insert(parent.left, node);
-                file.seekp(pos_node, ios::beg);
-                //parent.left = pos_node;
-                file.write((char*)&parent, parent.size());
-
-            } else if(node.value > parent.value){
-                node.height++;
-                insert(parent.right, node);
-                file.seekp(pos_node, ios::beg);
-                //parent.right = pos_node;
-                file.write((char*)&parent, parent.size());
-
-            } else{
-                insert(parent.next, node);
-                file.seekp(pos_node, ios::beg);
-                //parent.next = pos_node;
-                file.write((char*)&parent, parent.size());
-            }
+            // Llamada al autobalanceo
             file.seekg(0, ios::beg);
             NodeAVL<T> first;
             file.read((char*)&first, first.size());
             balance(root, first);
+            return true;
+
+        } else{
+            // Lee el nodo en el que se encuentra actualmente a través de parent
+            file.seekg(pos_node, ios::beg);
+            NodeAVL<T> parent;
+            file.read((char*)&parent, parent.size());
+
+            // Compara el valor del nodo actual con el ingresado
+            if (node.value < parent.value){
+                node.height++;                          // Incrementa la altura del nodo a ingresar
+                insert(parent.left, node);              // Llama a la función insert para el hijo izquierdo de parent
+
+            } else if(node.value > parent.value){
+                node.height++;                          // Incrementa la altura del nodo a ingresar
+                insert(parent.right, node);             // Llama a la función insert para el hijo izquierdo de parent
+
+            } else{
+                // Cuando ya existe un nodo con dicho valor
+                if(parent.next == -1){
+
+                } else {
+                    insert(parent.next, node);          // Llama a la función insert para el nodo next
+                }
+            }
+            // Actualización del nodo padre
+            file.seekp(pos_node, ios::beg);
+            file.write((char*)&parent, parent.size());
         }
     }
 
@@ -375,7 +380,8 @@ void AVLFile<T>::delete_equals(long pos){
 template <typename T>
 void AVLFile<T>::buildFromFile(int atributo_col){
     ifstream data(this->filename, ios::binary);
-    if (!data.is_open()) throw runtime_error("No existe archivo",filename);
+    string msg = "No existe archivo" + filename;
+    if (!data.is_open()) throw runtime_error(msg);
     
     long bytes = 0;
     //cargamos los datos uno a uno  //cargamos cada registro del file_name como un nodo
