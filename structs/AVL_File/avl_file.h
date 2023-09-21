@@ -328,9 +328,14 @@ vector <long> AVLFile<T>::search(T key){
 
 template <typename T>
 vector <long> AVLFile<T>::rangeSearch(T begin_key, T end_key){
-    vector <long> result;
+    vector <long> pointerValueList = {}; // Vector a retornar (vacio al comienzo)
 
-    return result;
+    for (T i = begin_key; i <= end_key ; i++) {
+        vector <long> vAux = search(i); // Llamada a función search, se guarda en vAux
+        pointerValueList.insert(pointerValueList.end(), vAux.begin(), vAux.end()); // Concatenar
+    }
+
+    return pointerValueList;
 }
 
 template <typename T>
