@@ -18,7 +18,7 @@ struct Node{
         this->pointer_value = -1;
     }
 
-    NodeAVL(long puntero, T key) {
+    Node(long puntero, T key) {
         this->next = -1;
         this->value = key;
         this->pointer_value = puntero;
@@ -34,6 +34,7 @@ struct Node{
     }
 };
 
+/*
 template <typename T>
 class Header{
     private:
@@ -48,12 +49,16 @@ class Header{
         void setData_Del(int data_Del){
             this->data_Del = data_Del;
         }
-
 };
+*/
 
 template <typename T>
 class SequentialFile {
 private:
+    // Punteros
+    long root; //posicion en archivo file del primer elemento, -1 si no hay
+    long del; //posicion en archivos heap o reorg del primer eliminado, 0 si no hay
+
     string file_name; //data set en binario
     string heap_file_name; // para guardar insercciones
     string reorg_file_name;//archivo con llave ordenadas
