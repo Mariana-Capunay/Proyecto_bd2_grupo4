@@ -8,22 +8,30 @@ using namespace std;
 
 
 template <typename T>
-struct Nodo{
-    private:
-        Nodo<T> *next;
-        T record;
-    public:
-        Nodo(T record){
-            this->record = record;
-            this->next = nullptr;
-        }
+struct Node{
+    T value; //valor que guarda
+    long pointer_value; //puntero de valor actual (en archivo filename)
+    long next; //nodo siguiente (para gestionar repetidos)
 
-        Nodo<T>* getNext(){
-            return this->next;
-        }
-        void setNext(Nodo<T> *next){
-            this->next = next;
-        }
+    Node() {
+        this->next = -1;
+        this->pointer_value = -1;
+    }
+
+    NodeAVL(long puntero, T key) {
+        this->next = -1;
+        this->value = key;
+        this->pointer_value = puntero;
+    }
+
+    void setValue(long puntero, T key) {
+        this->pointer_value = puntero;
+        this->value = key;
+    }
+
+    int size() {
+        return 2*sizeof(long) + sizeof(T);
+    }
 };
 
 template <typename T>
