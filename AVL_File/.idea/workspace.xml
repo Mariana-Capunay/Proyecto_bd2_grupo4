@@ -10,7 +10,7 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="4062679b-38f4-4fb7-9ee8-0e5ef8c40ab2" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../structs/Sequential_File/sequential_file.h" beforeDir="false" afterPath="$PROJECT_DIR$/../structs/Sequential_File/sequential_file.h" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -69,6 +69,7 @@
       <workItem from="1694548494408" duration="829000" />
       <workItem from="1695308179689" duration="3000" />
       <workItem from="1695308212661" duration="4000" />
+      <workItem from="1695407645443" duration="3000" />
     </task>
     <servers />
   </component>

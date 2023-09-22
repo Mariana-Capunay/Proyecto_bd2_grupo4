@@ -9,9 +9,9 @@ using namespace std;
 
 template <typename T>
 struct Node{
-    T value; //valor que guarda
-    long pointer_value; //puntero de valor actual (en archivo filename)
-    long next; //nodo siguiente (para gestionar repetidos)
+    T value; //valor de la key guardada
+    long pointer_value; //posicion de este nodo
+    long next; //posicion del nodo siguiente (si no hay, -1)
 
     Node() {
         this->next = -1;
@@ -34,40 +34,48 @@ struct Node{
     }
 };
 
-/*
-template <typename T>
-class Header{
-    private:
-        int data_Del;
-    public:
-        Header(){
-            this->data_Del = -1;
-        }
-        int getData_Del(){
-            return this->data_Del;
-        }
-        void setData_Del(int data_Del){
-            this->data_Del = data_Del;
-        }
-};
-*/
 
-template <typename T>
 class SequentialFile {
 private:
     // Punteros
     long root; //posicion en archivo file del primer elemento, -1 si no hay
     long del; //posicion en archivos heap o reorg del primer eliminado, 0 si no hay
+    int kHeapLimit;
 
     string file_name; //data set en binario
-    string heap_file_name; // para guardar insercciones
     string reorg_file_name;//archivo con llave ordenadas
-    fstream file;
+    string heap_file_name; // para guardar insercciones
+
+    long nro_registros() {
+        fstream file(this->file_name, ios::in | ios::out | ios::binary);
+        if (!file.is_open()) {throw ("Error al abrir el archivo");}
+        file.seekg(0, ios::end); //nos posicionamos al final del archivo
+        Record r;
+        long nRegs = file.tellg() / r.size(); //cantidad de registros
+        file.close();
+
+        return nRegs;
+    }
 
 public:
-    SequentialFile();
+    SequentialFile () {
+        this->root = -1;
+        this->del = 0;
+    }
 
-    SequentialFile(string file_name, string heap_file_name, string reorg_file_name);
+    SequentialFile (string file_name, string reorg_file_name, string heap_file_name) {
+        this->file_name = file_name;
+        this->reorg_file_name = reorg_file_name;
+        this->heap_file_name = heap_file_name;
+        this->root = -1;
+        this->del = 0;
+
+        long nRegs = this->nro_registros();
+        if (nRegs > 0) {
+            this->kHeapLimit = trunc(log2(nRegs));
+        }
+
+    }
 
     bool insert( T data);
 
@@ -84,30 +92,7 @@ public:
     vector<T> load();
 
 
-    private: 
-    void nro_registros(){
-        int nro_registros=0;
-        file.open(file_name, ios::in | ios::out | ios::binary);
-        if (!file.is_open()) {throw ("Error al abrir el archivo");}
-        file.seekg(0, ios::end);//nos posicionamos al final del archivo
-        nro_registros = file.tellg()/sizeof(T); //cantidad de registros
-        file.close();
-        return nro_registros;
-    }
-
-
 };
-
-template <typename T>
-SequentialFile<T>::SequentialFile() {}// Constructor por defecto
-
-template <typename T>
-SequentialFile<T>::SequentialFile(string file_name, string heap_file_name, string reorg_file_name) {// Constructor por asignacion
-    this->file_name = file_name;
-    this->heap_file_name = heap_file_name;
-    this->reorg_file_name = reorg_file_name;
-}
-
 
 template <typename T>
 bool SequentialFile<T>::insert(T data) {
