@@ -244,8 +244,8 @@ class HashingIndex{
         file.close();
     }
 };
-
+/*
 int main(){
 
     return 0;
-}
+}*/
