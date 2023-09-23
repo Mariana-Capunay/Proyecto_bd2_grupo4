@@ -117,25 +117,29 @@ class AVLFile{
             if (pos_delete==nodo.left){ //si se elimina en posicion del hijo izquierdo
                 nodo.left = -1; //se descuelga del arbol
 
-                file.seekp(pos,ios::beg); //se posiciona para escribir
-                file.write((char*)& nodo, nodo.size()); //escribe
+                //file.seekp(pos,ios::beg); //se posiciona para escribir
+                //file.write((char*)& nodo, nodo.size()); //escribe
             } else{
                 nodo.left = pos_delete;
             }
+        
+            file.seekp(pos,ios::beg); //se posiciona para escribir
+            file.write((char*)& nodo, nodo.size()); //escribe
 
         } else if (key>nodo.value){
             pos_delete = this->remove(nodo.right, key);
             if (pos_delete==nodo.right){ //si se elimina en posicion del hijo derecho
                 nodo.right = -1; //se descuelga del arbol
-                file.seekp(pos,ios::beg); //se posiciona para escribir
-                file.write((char*)& nodo, nodo.size()); //escribe
             } else{ //retorna nueva posicion a la que se debe apuntar
                 nodo.right = pos_delete;
             }
 
+            file.seekp(pos,ios::beg); //se posiciona para escribir
+            file.write((char*)& nodo, nodo.size()); //escribe
+
         } else{ //se llegó al valor del nodo  //se debe eliminar nodo y sus next
             
-            delete_equals(nodo.pointer_value); //se elimina next's del nodo
+            //delete_equals(nodo.pointer_value); //se elimina next's del nodo
 
             if (nodo.left==-1 && nodo.right==-1){ //caso en el que es hoja
                 return pos; //se elimina nodo en la posicion actual y ya no se necesita referencia a ese valor
@@ -147,6 +151,7 @@ class AVLFile{
                 return nodo.left; //retorna "nodo.left" para que no se elimine esta referencia al nodo
 
             } else{ // nodo existe y tiene dos hijos
+                
                 //se debe reemplazar por su sucesor (retornar valor del sucesor - actualizar altura)
             } 
         }
@@ -438,7 +443,7 @@ bool AVLFile<T>::remove(T key){
 
 template <typename T>
 void AVLFile<T>::delete_equals(long pos){
-    file.open(this->heap_file, ios::binary|ios::out|ios::in); //para leer y escribir
+    //file.open(this->heap_file, ios::binary|ios::out|ios::in); //para leer y escribir
     
     bool iterar = true;
 
@@ -453,11 +458,11 @@ void AVLFile<T>::delete_equals(long pos){
             file.seekp(pos); //nos posicionamos para escribir
             pos = nodo.next; //guardamos posicion 
             nodo.next = -1;
-            file.write((char*)nodo, nodo.size()); //escribimos "nodo" con next=-1
+            file.write((char*)&nodo, nodo.size()); //escribimos "nodo" con next=-1
         } //iteramos hasta llegar a nodo con next=-1
     }
 
-    file.close();
+    //file.close();
 }
 
 template <typename T>
