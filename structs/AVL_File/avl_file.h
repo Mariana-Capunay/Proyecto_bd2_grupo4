@@ -33,16 +33,22 @@ class AVLFile{
 
     bool insert(T key) {  //inserta key en el AVL y guarda nodo en heap_file
         int pos = nro_registros() - 1; 
-        NodeAVL<T> nodo = NodeAVL<T>(pos, key);
-        return insert(root, nodo);
+        cout<<"posicion: "<<pos;
+        file.open(heap_file, ios::binary|ios::in|ios::out);
+        if (!file.is_open()) throw runtime_error("no se pudo abrir archivo en funcion insert(T key)");
+        NodeAVL<T> nodo(pos,key);// = NodeAVL<T>(pos, key);
+        bool result = insert(root, nodo);
+        file.close();
+        return result;
     }
 
     void printData(){ // method for debug
         file.open(heap_file, ios::binary|ios::in);
         file.seekg(0,ios::beg);
+        int cont = 0;
         NodeAVL<T> nodo;
-        while (!file.eof()){
-            file.read((char*)&nodo,sizeof(NodeAVL<T>));
+        while (!file.eof()){//nodo.read(file)){
+            file.read((char*)&nodo,nodo.size());
             nodo.getValue();
         }
         file.close();
@@ -122,22 +128,24 @@ class AVLFile{
         if(pos_node == -1){
             // Inserción
             file.seekg(0, ios::end);
-            pos_node = file.tellg();                        // Obtener la posición de inserción
+            pos_node = file.tellg()+1;                    // Obtener la posición de inserción
+            cout<<"insertando en pos: "<<pos_node;
             file.seekp(pos_node, ios::beg);
             file.write((char*)&node, node.size());
 
+            /*
             // Llamada al autobalanceo
             file.seekg(0, ios::beg);
             NodeAVL<T> first;
             file.read((char*)&first, first.size());
             balance(root, first);
+*/
             return true;
-
         } else{
             // Lee el nodo en el que se encuentra actualmente a través de parent
             file.seekg(pos_node, ios::beg);
             NodeAVL<T> parent;
-            file.read((char*)&parent, parent.size());
+            file.read((char*)&parent,sizeof(NodeAVL<T>)); //parent.size());
 
             // Compara el valor del nodo actual con el ingresado
             if (node.value < parent.value){
@@ -301,7 +309,6 @@ AVLFile<T>::AVLFile(string file_name, string atributo){//, int atributo_col){
     
     crear_archivo(this->filename);
     crear_archivo(this->heap_file);
-    
     // crear archivos (si es necesario)
     //buildFromFile(atributo_col); // se genera AVL en base a una columna especifica
 }
