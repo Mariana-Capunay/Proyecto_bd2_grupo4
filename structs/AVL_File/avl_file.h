@@ -179,12 +179,12 @@ class AVLFile{
 
             // Compara el valor del nodo actual con el ingresado
             if (node.value < parent.value){
-                node.height++;                          // Incrementa la altura del nodo a ingresar
+                //node.height++;                          // Incrementa la altura del nodo a ingresar
                 insert(parent.left, node);              // Llama a la función insert para el hijo izquierdo de parent
                 
 
             } else if(node.value > parent.value){
-                node.height++;                          // Incrementa la altura del nodo a ingresar
+                //node.height++;                          // Incrementa la altura del nodo a ingresar
                 insert(parent.right, node);             // Llama a la función insert para el hijo izquierdo de parent
                 cout<<"new parent.right: "<<parent.right<<endl;
 
@@ -200,6 +200,9 @@ class AVLFile{
             cout << "Actualizando padre" <<"(posicion "<<pos_node<<")"<< endl;
             file.seekp(pos_node, ios::beg);
             file.seekg(pos_node, ios::beg);
+            if((parent.right == -1 && parent.left != -1) || (parent.right != -1 && parent.left == -1)) {
+                parent.height++;
+            }
             file.write((char*)&parent, parent.size());
         }
     }
