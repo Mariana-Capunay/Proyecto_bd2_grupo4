@@ -34,8 +34,18 @@ class AVLFile{
     bool insert(T key) {  //inserta key en el AVL y guarda nodo en heap_file
         int pos = nro_registros() - 1; 
         NodeAVL<T> nodo = NodeAVL<T>(pos, key);
-        cout<<"af";
         return insert(root, nodo);
+    }
+
+    void printData(){ // method for debug
+        file.open(heap_file, ios::binary|ios::in);
+        file.seekg(0,ios::beg);
+        NodeAVL<T> nodo;
+        while (!file.eof()){
+            file.read((char*)&nodo,sizeof(NodeAVL<T>));
+            nodo.getValue();
+        }
+        file.close();
     }
 
     bool insert(NodeAVL<T> nodo){

@@ -22,6 +22,7 @@ struct NodeAVL  {
     NodeAVL(long puntero, T key);
     int size();
     void setValue(long puntero, T key);
+    void getValue();
     ~NodeAVL();
 };
 
@@ -51,5 +52,14 @@ void NodeAVL<T>::setValue(long puntero, T key){
 template <typename T>
 int NodeAVL<T>::size(){
     return sizeof(int) + 4*sizeof(long) + sizeof(T);
+}
+
+template <typename T>
+void NodeAVL<T>::getValue(){
+    cout<<"Value:  "<<this->value<<" | ";
+    cout<<"Left:  "<<this->left<<" | ";
+    cout<<"Right:  "<<this->right<<" | ";
+    cout<<"Height:  "<<this->height<<" | ";
+    cout<<"Next:  "<<this->next<<"\n";
 }
 #endif
