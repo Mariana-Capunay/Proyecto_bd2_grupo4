@@ -35,7 +35,7 @@ NodeAVL<T>::NodeAVL(){
 template <typename T> 
 NodeAVL<T>::NodeAVL(long puntero, T key){
     left = right = next = -1;
-    height = 0; 
+    height = 0;
     value = key;
     pointer_value = puntero;
 }
