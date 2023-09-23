@@ -50,7 +50,7 @@ class AVLFile{
         int pos = nro_registros(); 
 
         cout<<"posicion: "<<pos<<endl;
-        file.open(heap_file, ios::binary|ios::in|ios::out|ios::app);
+        file.open(heap_file, ios::binary|ios::in|ios::out);
         if (!file.is_open()) throw runtime_error("no se pudo abrir archivo en funcion insert(T key)");
 
         NodeAVL<T> nodo(pos,key);// = NodeAVL<T>(pos, key);
@@ -161,13 +161,13 @@ class AVLFile{
             //prueba de longitud de archivo
             file.seekg(0,ios::end);
             cout<<"nuevo tamaño. "<<file.tellg()<<endl;
+            
             // Llamada al autobalanceo
-            /*
             file.seekg(0, ios::beg);
             NodeAVL<T> first;
             file.read((char*)&first, first.size());
             balance(root, first);
-*/
+
             return true;
         } else{
             cout << "Comparando nodos..." << endl;
@@ -181,10 +181,12 @@ class AVLFile{
             if (node.value < parent.value){
                 node.height++;                          // Incrementa la altura del nodo a ingresar
                 insert(parent.left, node);              // Llama a la función insert para el hijo izquierdo de parent
+                
 
             } else if(node.value > parent.value){
                 node.height++;                          // Incrementa la altura del nodo a ingresar
                 insert(parent.right, node);             // Llama a la función insert para el hijo izquierdo de parent
+                cout<<"new parent.right: "<<parent.right<<endl;
 
             } else{
                 // Cuando ya existe un nodo con dicho valor
@@ -195,8 +197,9 @@ class AVLFile{
                 }
             }
             // Actualización del nodo padre
-            cout << "Actualizando padre" << endl;
+            cout << "Actualizando padre" <<"(posicion "<<pos_node<<")"<< endl;
             file.seekp(pos_node, ios::beg);
+            file.seekg(pos_node, ios::beg);
             file.write((char*)&parent, parent.size());
         }
     }
