@@ -5,7 +5,7 @@ using namespace std;
 int main(){
 
     AVLFile<int>* avl = new AVLFile<int>("filename.bin", "atributo");
-    vector<int> a = {6,7,8,9,1,2,3,4};
+    vector<int> a = {6,8,7,9,1,2,3,4};
     for (auto x:a) avl->insert(x);
 
     //prueba remove
@@ -13,8 +13,8 @@ int main(){
 
 
     // prueba de search
-   vector<long> r = avl->search(5);
-   for (auto x:r) cout<<x<<" ";
+   
+   //for (auto x:r) cout<<x<<" ";
 
     /*
     avl->insert(20);
@@ -25,6 +25,7 @@ int main(){
     avl->insert(176);
     */
     avl->printData();
+    vector<long> r = avl->search(4);
     avl->deleteFiles();
     return 0;
 }

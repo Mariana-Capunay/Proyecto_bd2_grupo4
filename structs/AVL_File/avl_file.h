@@ -119,23 +119,28 @@ class AVLFile{
 
                 //file.seekp(pos,ios::beg); //se posiciona para escribir
                 //file.write((char*)& nodo, nodo.size()); //escribe
-            } else{
+            } else if (pos_delete==-2){
+                //no se debe modifica nodo
+            }else{
                 nodo.left = pos_delete;
             }
         
             file.seekp(pos,ios::beg); //se posiciona para escribir
             file.write((char*)& nodo, nodo.size()); //escribe
-
+            return -2; //retorna posicion del padre actual
         } else if (key>nodo.value){
             pos_delete = this->remove(nodo.right, key);
             if (pos_delete==nodo.right){ //si se elimina en posicion del hijo derecho
                 nodo.right = -1; //se descuelga del arbol
+            } else if (pos_delete==-2){
+                // no se debe modificar nodo
             } else{ //retorna nueva posicion a la que se debe apuntar
                 nodo.right = pos_delete;
             }
 
             file.seekp(pos,ios::beg); //se posiciona para escribir
             file.write((char*)& nodo, nodo.size()); //escribe
+            return -2; //retorna posicion del padre actual
 
         } else{ //se llegó al valor del nodo  //se debe eliminar nodo y sus next
             
@@ -390,8 +395,10 @@ vector <long> AVLFile<T>::search(T key){
             break;
         } else if (nodo.value > key) {
             pos = nodo.left; //Actualizar pos a hijo izquierdo
-        } else {
+        } else if (nodo.value < key){
             pos = nodo.right; //Actualizar pos a hijo derecho
+        }  else{
+            cout<<"no debería llegar aqui"<<endl;
         }
     }
 
