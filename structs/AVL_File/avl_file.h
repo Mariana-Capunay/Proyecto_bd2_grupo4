@@ -4,8 +4,18 @@
 #include <vector>
 #include <fstream>
 #include "../../dataset_bin/record.h" //importando record
-template <typename T>
 
+
+void crear_archivo(string nombre) {
+    ifstream archivo(nombre.c_str());
+    if (archivo.good()) { //si existe
+        archivo.close(); //cerrarlo
+        return; //ya no es necesario crear
+    }
+    ofstream file(nombre, ios::binary);
+    file.close();
+}
+template <typename T>
 class AVLFile{
     long root;
 
@@ -16,7 +26,7 @@ class AVLFile{
 
     public:
     AVLFile();
-    AVLFile(string file_name, string atributo, int atributo_col);
+    AVLFile(string file_name, string atributo);//, int atributo_col);
     void buildFromFile(int atributo_col);
     vector<long> search(T key); //devuelve posiciones de key en filename
     vector<long> rangeSearch(T begin_key, T end_key); //devuelve posiciones de key en filename
@@ -24,6 +34,7 @@ class AVLFile{
     bool insert(T key) {  //inserta key en el AVL y guarda nodo en heap_file
         int pos = nro_registros() - 1; 
         NodeAVL<T> nodo = NodeAVL<T>(pos, key);
+        cout<<"af";
         return insert(root, nodo);
     }
 
@@ -142,8 +153,8 @@ class AVLFile{
     }
 
     int nro_registros(){
-        ifstream file(this->file_name, ios::binary);
-        if(!file.is_open()) throw ("No se pudo abrir el archivo");
+        file.open(this->filename, ios::binary|ios::in); //abre modo lectura
+        if(!file.is_open()) throw runtime_error("No se pudo abrir el archivo");
         file.seekg(0, ios::end);
         long total_bytes = file.tellg();
         file.close();
@@ -274,11 +285,15 @@ AVLFile<T>::AVLFile(){
 }
 
 template <typename T>
-AVLFile<T>::AVLFile(string file_name, string atributo, int atributo_col){
+AVLFile<T>::AVLFile(string file_name, string atributo){//, int atributo_col){
     this->filename = file_name;
-    this->heap_file = "avl."+atributo+".bin";
-
-    buildFromFile(atributo_col); // se genera AVL en base a una columna especifica
+    this->heap_file = "avl_"+atributo+".bin";
+    
+    crear_archivo(this->filename);
+    crear_archivo(this->heap_file);
+    
+    // crear archivos (si es necesario)
+    //buildFromFile(atributo_col); // se genera AVL en base a una columna especifica
 }
 
 template <typename T>
