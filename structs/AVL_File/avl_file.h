@@ -183,12 +183,12 @@ class AVLFile{
             cout<<"nuevo tamaño. "<<file.tellg()<<endl;
             
             // Llamada al autobalanceo
-            /*
+
             file.seekg(0, ios::beg);
             NodeAVL<T> first;
             file.read((char*)&first, first.size());
             balance(root, first);
-            */
+
             return true;
         } else{
             cout << "Comparando nodos..." << endl;
@@ -219,11 +219,26 @@ class AVLFile{
             }
             // Actualización del nodo padre
             cout << "Actualizando padre" <<"(posicion "<<pos_node<<")"<< endl;
-            file.seekp(pos_node, ios::beg);
-            file.seekg(pos_node, ios::beg);
-            if((parent.right == -1 && parent.left != -1) || (parent.right != -1 && parent.left == -1)) {
+            NodeAVL<T> l;
+            NodeAVL<T> r;
+            long acc = 0;
+            if(parent.left != -1){
+                file.seekg(parent.left);
+                file.read((char*)& l, l.size());
+                acc = l.height;
+            }
+            if(parent.right != -1){
+                file.seekg(parent.right);
+                file.read((char*)& r, r.size());
+                if(r.height > acc){
+                    acc = r.height;
+                }
+            }
+            if(acc+1 > parent.height) {
                 parent.height++;
             }
+            file.seekp(pos_node, ios::beg);
+            file.seekg(pos_node, ios::beg);
             file.write((char*)&parent, parent.size());
         }
     }
