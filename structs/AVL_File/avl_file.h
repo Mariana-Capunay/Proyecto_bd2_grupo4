@@ -435,6 +435,7 @@ vector <long> AVLFile<T>::search(T key){
     } else {
         //throw runtime_error("No se encontró");
         //cout<<"No se encontró "<<key<<endl;
+        file.close();
         return pointerValueList;
     }
 
