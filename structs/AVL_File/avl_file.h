@@ -371,7 +371,7 @@ AVLFile<T>::AVLFile(string file_name, string atributo){//, int atributo_col){
 
 template <typename T>
 vector <long> AVLFile<T>::search(T key){
-    file.open(heap_file,ios::binary); // Abrir el archivo en binario
+    file.open(heap_file,ios::binary|ios::in); // Abrir el archivo en binario
     vector <long> pointerValueList = {}; // Vector a retornar (vacio al comienzo)
     bool found = false; // Flag para determinar si se encontró o no el key
     NodeAVL<T> nodo; // Nodo auxiliar para lectura de nodos
@@ -411,7 +411,8 @@ vector <long> AVLFile<T>::search(T key){
             pos = nodo.next; // Actualizo pos para ver el siguiente next
         }
     } else {
-        throw runtime_error("No se encontró");
+        //throw runtime_error("No se encontró");
+        cout<<"No se encontró "<<key<<endl;
     }
 
     file.close();
