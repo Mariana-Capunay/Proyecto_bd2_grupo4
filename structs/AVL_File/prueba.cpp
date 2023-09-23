@@ -9,7 +9,7 @@ int main(){
     for (auto x:a) avl->insert(x);
 
     //prueba remove
-   avl->remove(4);
+   avl->remove(3);
 
 
     // prueba de search
