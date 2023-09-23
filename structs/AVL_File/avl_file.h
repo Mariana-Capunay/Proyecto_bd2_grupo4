@@ -2,10 +2,26 @@
 #define AVLFILE_H
 #include "node.h"
 #include <vector>
+#include <windows.h>
 #include <fstream>
 #include "../../dataset_bin/record.h" //importando record
-template <typename T>
 
+
+bool archivo_existe(string nombre){
+    ifstream archivo(nombre.c_str());
+    return archivo.good();
+}
+
+void crear_archivo(string nombre) {
+    ifstream archivo(nombre.c_str());
+    if (archivo.good()) { //si existe
+        archivo.close(); //cerrarlo
+        return; //ya no es necesario crear
+    }
+    ofstream file(nombre, ios::binary);
+    file.close();
+}
+template <typename T>
 class AVLFile{
     long root;
 
@@ -14,19 +30,62 @@ class AVLFile{
     string heap_file; //archivo en el que se guardan los nodos  (value, left, hight, pointer_value, next, height)
     fstream file; //para manejar heap_file sin abrir y cerrar tantas veces el archivo
 
+    void inicializar_root(){
+        bool existe = archivo_existe(this->heap_file);
+        crear_archivo(this->heap_file);
+        if (!existe){
+            root = -1;
+        }
+        else root = 0;
+    }
+
     public:
     AVLFile();
-    AVLFile(string file_name, string atributo, int atributo_col);
+    AVLFile(string file_name, string atributo);//, int atributo_col);
     void buildFromFile(int atributo_col);
     vector<long> search(T key); //devuelve posiciones de key en filename
     vector<long> rangeSearch(T begin_key, T end_key); //devuelve posiciones de key en filename
 
     bool insert(T key) {  //inserta key en el AVL y guarda nodo en heap_file
-        int pos = nro_registros() - 1; 
-        NodeAVL<T> nodo = NodeAVL<T>(pos, key);
-        return insert(root, nodo);
+
+        int pos = nro_registros(); 
+
+        cout<<"posicion: "<<pos<<endl;
+        file.open(heap_file, ios::binary|ios::in|ios::out);
+        if (!file.is_open()) throw runtime_error("no se pudo abrir archivo en funcion insert(T key)");
+
+        NodeAVL<T> nodo(pos,key);// = NodeAVL<T>(pos, key);
+
+        bool result = insert(root, nodo);
+        cout<<"root -> "<<root<<endl;
+        file.close();
+        return result;
     }
 
+    void printData(){ // method for debug
+        cout<<"nro de registros: "<<nro_registros()<<endl;
+        
+        file.open(heap_file, ios::binary|ios::in);
+        file.seekg(0,ios::beg);
+        int cont = 0;
+        
+        while (file.peek() != EOF){//nodo.read(file)){
+            NodeAVL<T> nodo;
+            file.read((char*)&nodo,nodo.size());
+            nodo.getValue();
+        }
+        file.close();
+    }
+
+    void deleteFiles(){
+        const char* archivo_ansi = this->heap_file.c_str();
+        if (DeleteFileA(archivo_ansi)) {
+            std::cout << "El archivo se ha eliminado correctamente." << std::endl;
+        } else {
+            DWORD error = GetLastError();
+            std::cerr << "No se pudo eliminar el archivo. Código de error: " << error << std::endl;
+        }
+    }
     bool insert(NodeAVL<T> nodo){
         return insert(root,nodo);
     }
@@ -58,25 +117,34 @@ class AVLFile{
             if (pos_delete==nodo.left){ //si se elimina en posicion del hijo izquierdo
                 nodo.left = -1; //se descuelga del arbol
 
-                file.seekp(pos,ios::beg); //se posiciona para escribir
-                file.write((char*)& nodo, nodo.size()); //escribe
-            } else{
+                //file.seekp(pos,ios::beg); //se posiciona para escribir
+                //file.write((char*)& nodo, nodo.size()); //escribe
+            } else if (pos_delete==-2){
+                //no se debe modifica nodo
+            }else{
                 nodo.left = pos_delete;
             }
-
+        
+            file.seekp(pos,ios::beg); //se posiciona para escribir
+            file.write((char*)& nodo, nodo.size()); //escribe
+            return -2; //retorna posicion del padre actual
         } else if (key>nodo.value){
             pos_delete = this->remove(nodo.right, key);
             if (pos_delete==nodo.right){ //si se elimina en posicion del hijo derecho
                 nodo.right = -1; //se descuelga del arbol
-                file.seekp(pos,ios::beg); //se posiciona para escribir
-                file.write((char*)& nodo, nodo.size()); //escribe
+            } else if (pos_delete==-2){
+                // no se debe modificar nodo
             } else{ //retorna nueva posicion a la que se debe apuntar
                 nodo.right = pos_delete;
             }
 
+            file.seekp(pos,ios::beg); //se posiciona para escribir
+            file.write((char*)& nodo, nodo.size()); //escribe
+            return -2; //retorna posicion del padre actual
+
         } else{ //se llegó al valor del nodo  //se debe eliminar nodo y sus next
             
-            delete_equals(nodo.pointer_value); //se elimina next's del nodo
+            //delete_equals(nodo.pointer_value); //se elimina next's del nodo
 
             if (nodo.left==-1 && nodo.right==-1){ //caso en el que es hoja
                 return pos; //se elimina nodo en la posicion actual y ya no se necesita referencia a ese valor
@@ -88,6 +156,7 @@ class AVLFile{
                 return nodo.left; //retorna "nodo.left" para que no se elimine esta referencia al nodo
 
             } else{ // nodo existe y tiene dos hijos
+                
                 //se debe reemplazar por su sucesor (retornar valor del sucesor - actualizar altura)
             } 
         }
@@ -100,32 +169,45 @@ class AVLFile{
     bool insert(long& pos_node, NodeAVL<T>& node){
         if(pos_node == -1){
             // Inserción
+
             file.seekg(0, ios::end);
-            pos_node = file.tellg();                        // Obtener la posición de inserción
+            pos_node = file.tellg();                    // Obtener la posición de inserción
+            cout<<"insertando en pos: "<<pos_node<<endl;
             file.seekp(pos_node, ios::beg);
+            cout<<"tamaño del registro: "<<node.size()<<" | ";
+
             file.write((char*)&node, node.size());
 
+            //prueba de longitud de archivo
+            file.seekg(0,ios::end);
+            cout<<"nuevo tamaño. "<<file.tellg()<<endl;
+            
             // Llamada al autobalanceo
+
             file.seekg(0, ios::beg);
             NodeAVL<T> first;
             file.read((char*)&first, first.size());
             balance(root, first);
-            return true;
 
+            return true;
         } else{
+            cout << "Comparando nodos..." << endl;
             // Lee el nodo en el que se encuentra actualmente a través de parent
             file.seekg(pos_node, ios::beg);
             NodeAVL<T> parent;
-            file.read((char*)&parent, parent.size());
+            file.read((char*)&parent,parent.size()); //parent.size());
+
 
             // Compara el valor del nodo actual con el ingresado
             if (node.value < parent.value){
-                node.height++;                          // Incrementa la altura del nodo a ingresar
+                //node.height++;                          // Incrementa la altura del nodo a ingresar
                 insert(parent.left, node);              // Llama a la función insert para el hijo izquierdo de parent
+                
 
             } else if(node.value > parent.value){
-                node.height++;                          // Incrementa la altura del nodo a ingresar
+                //node.height++;                          // Incrementa la altura del nodo a ingresar
                 insert(parent.right, node);             // Llama a la función insert para el hijo izquierdo de parent
+                cout<<"new parent.right: "<<parent.right<<endl;
 
             } else{
                 // Cuando ya existe un nodo con dicho valor
@@ -136,18 +218,38 @@ class AVLFile{
                 }
             }
             // Actualización del nodo padre
+            cout << "Actualizando padre" <<"(posicion "<<pos_node<<")"<< endl;
+            NodeAVL<T> l;
+            NodeAVL<T> r;
+            long acc = 0;
+            if(parent.left != -1){
+                file.seekg(parent.left);
+                file.read((char*)& l, l.size());
+                acc = l.height;
+            }
+            if(parent.right != -1){
+                file.seekg(parent.right);
+                file.read((char*)& r, r.size());
+                if(r.height > acc){
+                    acc = r.height;
+                }
+            }
+            if(acc+1 > parent.height) {
+                parent.height++;
+            }
             file.seekp(pos_node, ios::beg);
+            file.seekg(pos_node, ios::beg);
             file.write((char*)&parent, parent.size());
         }
     }
 
     int nro_registros(){
-        ifstream file(this->file_name, ios::binary);
-        if(!file.is_open()) throw ("No se pudo abrir el archivo");
+        file.open(this->heap_file, ios::binary|ios::in); //abre modo lectura
+        if(!file.is_open()) throw runtime_error("No se pudo abrir el archivo");
         file.seekg(0, ios::end);
         long total_bytes = file.tellg();
         file.close();
-        return total_bytes / sizeof(Record);   // Registro en data.dat
+        return (total_bytes/sizeof(NodeAVL<T>));   // Registro en data.dat
     }
 
     long balanceFactor(NodeAVL<T> &node){//balance factor
@@ -274,16 +376,22 @@ AVLFile<T>::AVLFile(){
 }
 
 template <typename T>
-AVLFile<T>::AVLFile(string file_name, string atributo, int atributo_col){
+AVLFile<T>::AVLFile(string file_name, string atributo){//, int atributo_col){
     this->filename = file_name;
-    this->heap_file = "avl."+atributo+".bin";
+    this->heap_file = "avl_"+atributo+".bin";
 
-    buildFromFile(atributo_col); // se genera AVL en base a una columna especifica
+    root = -1;
+
+
+    crear_archivo(this->filename);
+    crear_archivo(this->heap_file);
+    // crear archivos (si es necesario)
+    //buildFromFile(atributo_col); // se genera AVL en base a una columna especifica
 }
 
 template <typename T>
 vector <long> AVLFile<T>::search(T key){
-    file.open(heap_file,ios::binary); // Abrir el archivo en binario
+    file.open(heap_file,ios::binary|ios::in); // Abrir el archivo en binario
     vector <long> pointerValueList = {}; // Vector a retornar (vacio al comienzo)
     bool found = false; // Flag para determinar si se encontró o no el key
     NodeAVL<T> nodo; // Nodo auxiliar para lectura de nodos
@@ -302,8 +410,10 @@ vector <long> AVLFile<T>::search(T key){
             break;
         } else if (nodo.value > key) {
             pos = nodo.left; //Actualizar pos a hijo izquierdo
-        } else {
+        } else if (nodo.value < key){
             pos = nodo.right; //Actualizar pos a hijo derecho
+        }  else{
+            cout<<"no debería llegar aqui"<<endl;
         }
     }
 
@@ -323,7 +433,10 @@ vector <long> AVLFile<T>::search(T key){
             pos = nodo.next; // Actualizo pos para ver el siguiente next
         }
     } else {
-        throw runtime_error("No se encontró");
+        //throw runtime_error("No se encontró");
+        //cout<<"No se encontró "<<key<<endl;
+        file.close();
+        return pointerValueList;
     }
 
     file.close();
@@ -355,7 +468,7 @@ bool AVLFile<T>::remove(T key){
 
 template <typename T>
 void AVLFile<T>::delete_equals(long pos){
-    file.open(this->heap_file, ios::binary|ios::out|ios::in); //para leer y escribir
+    //file.open(this->heap_file, ios::binary|ios::out|ios::in); //para leer y escribir
     
     bool iterar = true;
 
@@ -370,11 +483,11 @@ void AVLFile<T>::delete_equals(long pos){
             file.seekp(pos); //nos posicionamos para escribir
             pos = nodo.next; //guardamos posicion 
             nodo.next = -1;
-            file.write((char*)nodo, nodo.size()); //escribimos "nodo" con next=-1
+            file.write((char*)&nodo, nodo.size()); //escribimos "nodo" con next=-1
         } //iteramos hasta llegar a nodo con next=-1
     }
 
-    file.close();
+    //file.close();
 }
 
 template <typename T>

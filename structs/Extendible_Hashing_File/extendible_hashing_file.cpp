@@ -258,7 +258,7 @@ class HashingIndex{
         file.close();
     }
 };
-
+/*
 int main(){
     HashingIndex hashing_index("asd");
     hashing_index.insert(1,4);
@@ -267,4 +267,4 @@ int main(){
     cout << hashing_index.find(4) << endl;
     cout << hashing_index.find(4) << endl;
     return 0;
-}
+}*/
