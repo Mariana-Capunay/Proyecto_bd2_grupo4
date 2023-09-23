@@ -2,6 +2,7 @@
 #define AVLFILE_H
 #include "node.h"
 #include <vector>
+#include <windows.h>
 #include <fstream>
 #include "../../dataset_bin/record.h" //importando record
 
@@ -76,6 +77,15 @@ class AVLFile{
         file.close();
     }
 
+    void deleteFiles(){
+        const char* archivo_ansi = this->heap_file.c_str();
+        if (DeleteFileA(archivo_ansi)) {
+            std::cout << "El archivo se ha eliminado correctamente." << std::endl;
+        } else {
+            DWORD error = GetLastError();
+            std::cerr << "No se pudo eliminar el archivo. Código de error: " << error << std::endl;
+        }
+    }
     bool insert(NodeAVL<T> nodo){
         return insert(root,nodo);
     }
@@ -163,11 +173,12 @@ class AVLFile{
             cout<<"nuevo tamaño. "<<file.tellg()<<endl;
             
             // Llamada al autobalanceo
+            /*
             file.seekg(0, ios::beg);
             NodeAVL<T> first;
             file.read((char*)&first, first.size());
             balance(root, first);
-
+            */
             return true;
         } else{
             cout << "Comparando nodos..." << endl;
