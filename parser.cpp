@@ -328,6 +328,7 @@ InsertQuery parseInsertQuery(const std::string& sqlQuery) {
         query.tableName = match[1].str();
 
         if (query.tableName!=table_name){
+            flag = 11;
             std::cerr << "Tabla "<<query.tableName << " no existe" << "-> Solo cuenta con la tabla "<<table_name<<std::endl;
         } else{
             // Los grupos capturados 2 a 6 son los valores de diferentes tipos de datos
@@ -407,6 +408,7 @@ DeleteQuery parseDeleteQuery(const std::string& sqlQuery) {
             query.tableName = match[1].str();
             if (query.tableName!=table_name){
                 std::cerr << "Tabla "<<query.tableName << " no existe" << "-> Solo cuenta con la tabla "<<table_name<<std::endl;
+                flag = 11;
             }
             
             query.whereClause = match[2].str(); // El tercer grupo capturado es la cláusula WHERE
@@ -418,17 +420,16 @@ DeleteQuery parseDeleteQuery(const std::string& sqlQuery) {
                 //parsearExpresionRelacional(query.whereClause, resultado);
 
                 // evaluar que estructuras llamar para cada atributo
-                if (resultado.operador=="<"){
+                if (resultado.operador=="="){
 
-
-                } else if (resultado.operador==">"){
-
-                } else if (resultado.operador=="="){
-
+                    //busca elemento en la estructura asociada
+                    // si no lo encuentra, flag = 10. Si lo encuentra, lo elimina, flag=8
                 } else if (resultado.operador=="between"){
                     std::cout<<"Eliminación por rango no implementada"<<std::endl;
+                    flag = 9;
                 } else {
-                    std::cout<<"No deberia llegar aqui"<<std::endl;
+                    flag = 11;
+                    std::cout<<"Nombre de tabla no existe"<<std::endl;
                 }
 
             } else { // sin where
