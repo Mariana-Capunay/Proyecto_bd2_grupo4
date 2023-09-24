@@ -26,7 +26,7 @@ El propósito de este proyecto es la visualización y comparación de diversas t
 ## Dataset<a name="id2"></a>
 El proyecto hace uso de un dominio de datos conformado por:
 <p align="center">
-  <img src="images/dataset_csv.png" alt="Dataset .csv" width="380" height="250">
+  <img src="images/dataset_csv.png" alt="Dataset .csv" width="340" height="235">
 </p>
 
 1. una columna de tipo **int**
