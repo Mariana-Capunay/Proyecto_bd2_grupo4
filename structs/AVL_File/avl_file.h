@@ -297,12 +297,12 @@ void AVLFile<T>::balance(long pos, NodeAVL<T> &node){//verifica si una rotación
         long FacB=balanceFactor(node); //balanceFactor es la diferencia de alturas entre el hijo izquierdo y el derecho
         cout << "Factor de balanceo del nodo " << node.value << ": " << FacB << endl;
         if(FacB>1){ //si el factor de balanceo es mayor a 1, se debe rotar a la derecha
-            cout << "Ejecutando rotación a la derecha..." << endl;
+            cout << "Ejecutando rotacion a la derecha..." << endl;
             NodeAVL<T> hijoIzq; //nodo auxiliar para el hijo izquierdo
             file.seekg(node.left,ios::beg);//se posiciona en el hijo izquierdo
             file.read((char*)&hijoIzq,hijoIzq.size());//se lee el hijo izquierdo
             if(balanceFactor(hijoIzq)<=-1){ //si el factor de balanceo del hijo izquierdo es menor o igual a -1, se debe hacer una rotación doble a la derecha
-                cout << "\tEjecutando rotación doble..." << endl;
+                cout << "\tEjecutando rotacion doble..." << endl;
                 left_Rotation(pos,node);
             }
 
@@ -310,13 +310,13 @@ void AVLFile<T>::balance(long pos, NodeAVL<T> &node){//verifica si una rotación
         }
 
         else if(FacB<=-2){ //si el factor de balanceo es menor o igual a -2, se debe rotar a la izquierda
-            cout << "Ejecutando rotación a la izquierda..." << endl;
+            cout << "Ejecutando rotacion a la izquierda..." << endl;
             NodeAVL<T> hijoDer; //nodo auxiliar para el hijo derecho
             file.seekg(node.right,ios::beg);//se posiciona en el hijo derecho
             file.read((char*)&hijoDer,hijoDer.size());//se lee el hijo derecho
 
             if(balanceFactor(hijoDer)>=1){ //si el factor de balanceo del hijo derecho es mayor o igual a 1, se debe hacer una rotación doble a la izquierda
-                cout << "\tEjecutando rotación doble..." << endl;
+                cout << "\tEjecutando rotacion doble..." << endl;
                 right_Rotation(pos,node);
             }
             left_Rotation(pos,node); 
