@@ -98,7 +98,10 @@ bool parsearExpresionRelacional(const std::string& expresion, ExpresionRelaciona
     ss >> resultado.atributo;
     // verifica si atributo pertenece al vector de atributos
     auto it = std::find(atributos.begin(), atributos.end(), resultado.atributo);
-    if (it==atributos.end()) return false;
+    if (it==atributos.end()) {
+        cout<<"Nombre de atributo no valido"<<endl;
+        return false;
+    }
     // Extraer el operador
     ss >> resultado.operador;
     if (resultado.operador!="between" && resultado.operador!="="){
@@ -185,6 +188,11 @@ CreateTableQuery parseCreateTableQuery(const std::string& sqlQuery) {
             flag = 1; // archivo existe
 
             // añadimos valor de atributos al vector
+            std::transform(atr_1.begin(), atr_1.end(), atr_1.begin(), ::tolower); 
+            std::transform(atr_2.begin(), atr_2.end(), atr_2.begin(), ::tolower); 
+            std::transform(atr_3.begin(), atr_3.end(), atr_3.begin(), ::tolower); 
+            std::transform(atr_4.begin(), atr_4.end(), atr_4.begin(), ::tolower); 
+            std::transform(atr_5.begin(), atr_5.end(), atr_5.begin(), ::tolower); 
             atributos.push_back(atr_1);
             atributos.push_back(atr_2);
             atributos.push_back(atr_3);
@@ -335,6 +343,7 @@ InsertQuery parseInsertQuery(const std::string& sqlQuery) {
                 !isValidChar(char25Value,25) ||  
                 !isValidFloat(floatValue)) {
                 std::cerr << "Tipos de datos no válidos en la consulta INSERT INTO." << std::endl;
+                
                 return query; // Puedes manejar este error de la manera que desees
             }
 
