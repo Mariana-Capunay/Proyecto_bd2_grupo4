@@ -4,6 +4,7 @@
 #include <iostream>
 #include <vector>
 #include <string>
+#include "../parser.h"
 
 MainWindow::MainWindow(QWidget *parent): QMainWindow(parent), ui(new Ui::MainWindow){
     ui->setupUi(this);
@@ -19,10 +20,13 @@ void MainWindow::on_exec_button_clicked(){
     // Obtiene el contenido del objeto
     QString text = ui->input_sql->toPlainText();
     std::string read_inp = text.toStdString();
+    run_sql(read_inp);
+    // create table tabla from file "dataset/10k/dataset_1.csv"
+    // cmake-build-debug/dataset_1.csv
     clearTable();
     // Reemplazar condicionales por flags
     // Flag 3: Muestra el dataset completo (NtH)
-    if(read_inp == "createTable"){                                      // Flag 1: Se ejecuta create exitosamente
+    /*if(read_inp == "createTable"){                                      // Flag 1: Se ejecuta create exitosamente
         wipeOutTable();
         std::vector<std::vector<int>> test = {{1, 2, 3, 4, 5, 6}, {2, 4, 6, 8, 10, 12}, {3, 6, 9, 12, 15, 18}};
         ui->txt_output->setPlainText("Configurando tabla");
@@ -44,7 +48,7 @@ void MainWindow::on_exec_button_clicked(){
         ui->txt_output->setPlainText("Eliminando elemento en tabla");
     } else{
         ui->txt_output->setPlainText("ERROR: No se ha reconocido una funcion valida");
-    }
+    }*/
 
     //std::cout << text.toStdString();
 
