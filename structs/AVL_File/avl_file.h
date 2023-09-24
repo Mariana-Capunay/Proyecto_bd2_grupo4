@@ -9,20 +9,9 @@
 
 using namespace std;
 
-bool archivo_existe(const string& nombre){
-    ifstream archivo(nombre.c_str());
-    return archivo.good();
-}
+bool archivo_existe(const string& nombre);
 
-void crear_archivo(const string& nombre) {
-    ifstream archivo(nombre.c_str());
-    if (archivo.good()) { //si existe
-        archivo.close(); //cerrarlo
-        return; //ya no es necesario crear
-    }
-    ofstream file(nombre, ios::binary);
-    file.close();
-}
+void crear_archivo(const string& nombre);
 
 template <typename T>
 class AVLFile{
@@ -45,13 +34,13 @@ class AVLFile{
     public:
     AVLFile();
     AVLFile(string file_name, string atributo);//, int atributo_col);
-    void buildFromFile(int atributo_col);
+    void buildFromFile(string sourceName, int atributo_col);
     vector<long> search(T key); //devuelve posiciones de key en filename
     vector<long> rangeSearch(T begin_key, T end_key); //devuelve posiciones de key en filename
 
-    bool insert(T key) {  //inserta key en el AVL y guarda nodo en heap_file
+    bool insert(T key, long pos) {  //inserta key en el AVL y guarda nodo en heap_file
         cout << "Insertando elemento..." << endl;
-        int pos = nro_registros(); 
+        //int pos = nro_registros();
 
         //cout<<"posicion: "<<pos<<endl;
         file.open(heap_file, ios::binary|ios::in|ios::out);
@@ -542,25 +531,27 @@ void AVLFile<T>::delete_equals(long pos){
 }
 
 template <typename T>
-void AVLFile<T>::buildFromFile(int atributo_col){
-    ifstream data(this->filename, ios::binary);
+void AVLFile<T>::buildFromFile(string sourceName, int atributo_col){
+    ifstream source(sourceName, ios::binary);
     string msg = "No existe archivo" + filename;
-    if (!data.is_open()) throw runtime_error(msg);
-    
+    if (!source.is_open()) throw runtime_error(msg);
+
     long bytes = 0;
     //cargamos los datos uno a uno  //cargamos cada registro del file_name como un nodo
-    while (data.tellg()<bytes){
+    cout << "Archivos encontrados: " << source.tellg() << endl;
+    while (source.tellg() < bytes){
         Record record;
-        data.read((char*)&record, sizeof(Record)); // leemos record actual
+        source.read((char*)&record, sizeof(Record)); // leemos record actual
 
         NodeAVL<T> nodo;
         if (atributo_col == 2) nodo.setValue(bytes, record.atrib2); // creamos el nodo
         else nodo.setValue(bytes, record.atrib4);
-        this->insert(nodo);
+        cout << record.key << endl;
+        //this->insert(nodo);
         bytes+= sizeof(Record); // se aumenta contador de bytes
     }
 
-    data.close();
+    source.close();
 }
 
 template <typename T>

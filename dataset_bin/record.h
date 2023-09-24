@@ -12,13 +12,13 @@ struct Record : public std::error_code {
 
     //friend ofstream& operator<<(ofstream& salida, Record r);
     void print(){
-        std::cout<<key;
-        std::cout<<", ";
-        std::cout<<atrib1;
-        std::cout<<", ";
-        std::cout<<atrib2<<", ";
-        std::cout<<atrib3<<", ";
-        std::cout<<atrib4<<"\n";
+        //std::cout<<key;
+        //std::cout<<", ";
+        //std::cout<<atrib1;
+        //std::cout<<", ";
+        //std::cout<<atrib2<<", ";
+        //std::cout<<atrib3<<", ";
+        //std::cout<<atrib4<<"\n";
     }
     int size(){
         return sizeof(int)*2 + 40 + 25 + 4 + sizeof(bool);
