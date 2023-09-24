@@ -209,12 +209,33 @@ class AVLFile{
                 insert(parent.right, node);             // Llama a la función insert para el hijo izquierdo de parent
                 //cout<<"new parent.right: "<<parent.right<<endl;
 
+
             } else{
-                // Cuando ya existe un nodo con dicho valor
-                if(parent.next == -1){
-                } else {
-                    insert(parent.next, node);          // Llama a la función insert para el nodo next
+                // Cuando ya existe un nodo con dicho valor     
+                int new_pos = parent.next; 
+                while (parent.next!=-1){ //lee para insertar en next
+                    new_pos = parent.next;
+                    file.seekg(parent.next,ios::beg);
+                    file.read((char*)&parent, parent.size());
                 }
+
+                if (new_pos==-1) new_pos = pos_node;
+                
+                cout<<"insertando repetido";
+                //coloca nodo al final
+                file.seekg(0, ios::end); 
+                parent.next = file.tellg();
+                file.seekp(0, ios::end); 
+                node.next = -1;
+                file.write((char*)&node, node.size());
+
+                // guarda cambios por "next"
+                file.seekp(new_pos, ios::beg);
+                file.write((char*)&parent, parent.size());
+                file.close();
+                return true;
+                    
+                
             }
             // Actualización del nodo padre
             //cout << "Actualizando padre" <<"(posicion "<<pos_node<<")"<< endl;

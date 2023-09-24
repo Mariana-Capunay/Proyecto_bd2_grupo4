@@ -4,7 +4,7 @@
 int main(){
 
     AVLFile<int>* avl = new AVLFile<int>("filename.bin", "atributo");
-    vector<int> a = {1,2,3,4,5,6,7,8};
+    vector<int> a = {1,2,4,4,4,1,1,2,3};
     for (auto x:a) avl->insert(x);
 
     //prueba remove
@@ -26,8 +26,23 @@ int main(){
     avl->insert(176);
     */
     avl->printData();
+
+    //busqueda por rango retorna posicion en la que se insertó el elemento
+    cout<<"elemento 4: (posiciones) ";
     vector<long> r = avl->search(4);
     for (auto x:r) cout<<x<<" ";
+    cout<<endl;
     //avl->deleteFiles();
+    
+    cout<<"elemento 2: (posiciones) ";
+    r = avl->search(2);
+    for (auto x:r) cout<<x<<" ";
+    cout<<endl;
+
+    // 
+
+    cout<<"elemento 1: (posiciones) ";
+    r = avl->search(1);
+    for (auto x:r) cout<<x<<" ";
     return 0;
 }
