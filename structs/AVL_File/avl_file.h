@@ -1,5 +1,6 @@
 #ifndef AVLFILE_H
 #define AVLFILE_H
+
 #include "node.h"
 #include <vector>
 #include <fstream>
@@ -64,7 +65,7 @@ class AVLFile{
         file.seekg(0, ios::beg);
         NodeAVL<T> first;
         file.read((char*)&first, first.size());
-        balance(root, first);
+        //balance(root, first);
 
         //cout<<"root -> "<<root<<endl;
         printData();
@@ -87,6 +88,7 @@ class AVLFile{
         file.close();
     }
 
+/*
     void deleteFiles(){
         const char* archivo_ansi = this->heap_file.c_str();
         if (DeleteFileA(archivo_ansi)) {
@@ -96,7 +98,7 @@ class AVLFile{
             std::cerr << "No se pudo eliminar el archivo. Código de error: " << error << std::endl;
         }
     }
-
+*/
     bool remove(T key);  //elimina key del avl, cambia removed = true en filename, cambia el valor del nodo en heap_file (evaluar casos en que es hoja o no)
     void balance(long pos, NodeAVL<T> &node); //verifica si una rotación es necesaria
     void left_Rotation(long pos, NodeAVL<T> &node); //rotación a la izquierda
@@ -241,14 +243,19 @@ class AVLFile{
             file.seekg(pos_node, ios::beg);
             file.write((char*)&parent, parent.size());
 
+            // Balanceo
+            balance(pos_node, parent);
+            return true;
         }
     }
 
-    int nro_registros(){
+int nro_registros(){
         file.open(this->heap_file, ios::binary|ios::in); //abre modo lectura
         if(!file.is_open()) throw runtime_error("No se pudo abrir el archivo");
+        file.clear();
         file.seekg(0, ios::end);
         long total_bytes = file.tellg();
+        cout << "Total bytes: " << total_bytes << endl;
         file.close();
         return (total_bytes/sizeof(NodeAVL<T>));   // Registro en data.dat
     }
@@ -333,54 +340,63 @@ void AVLFile<T>::balance(long pos, NodeAVL<T> &node){//verifica si una rotación
 }
 
 template <typename T>
-void AVLFile<T>::left_Rotation(long pos, NodeAVL<T> &node){//rotación a la izquierda
-    cout << "Rotando nodo " << node.value << endl;
+void AVLFile<T>::left_Rotation(long node_pos, NodeAVL<T> &node){//rotación a la izquierda
     NodeAVL<T> hijoDer; //nodo auxiliar para el hijo derecho
-    file.seekg(ios::beg);//se posiciona en el hijo derecho
-    file.seekg(node.right);//se posiciona en el hijo derecho
-    cout << "Hijo derecho encontrado en " << file.tellg() << endl;
+    long r_pos = node.right;
+
+    file.seekg(r_pos,ios::beg);//se posiciona en el hijo derecho
     file.read((char*)&hijoDer,hijoDer.size());//se lee el hijo derecho
-    cout << "Hijo derecho: " << endl;
-    hijoDer.getValue();
 
-    NodeAVL<T> hijoIzq; //nodo auxiliar para el hijo izquierdo del hijo derecho
-    file.seekg(hijoDer.left,ios::beg);//se posiciona en el hijo izquierdo del hijo derecho
-    file.read((char*)&hijoIzq,hijoIzq.size());//se lee el hijo izquierdo del hijo derecho
-    cout << "Hijo izquierdo del hijo derecho: " << hijoIzq.value << endl;
+    node.right=hijoDer.left; //el hijo derecho del nodo actual es el hijo izquierdo del hijo derecho
+    hijoDer.left=r_pos; //el hijo izquierdo del hijo derecho es el nodo actual
 
-    node.right=hijoIzq.left; //el hijo derecho del nodo actual es el hijo izquierdo del hijo derecho
-    hijoDer.left=pos; //el hijo izquierdo del hijo derecho es el nodo actual
-    file.seekp(node.right,ios::beg);//se posiciona en el hijo derecho del nodo actual
-    file.write((char*)&node,node.size());//se escribe el nodo actual
-    file.seekp(hijoDer.left,ios::beg);//se posiciona en el hijo izquierdo del hijo derecho
+    file.seekp(node_pos,ios::beg);//se posiciona en el nodo actual
     file.write((char*)&hijoDer,hijoDer.size());//se escribe el hijo derecho
+    
+
+    file.seekp(r_pos,ios::beg);//se posiciona en el hijo derecho
+    file.write((char*)&node,node.size());//se escribe el nodo actual
 
     //actualizar altura
-    alturaActualizada(pos, node); //actualiza la altura del nodo actual
-    alturaActualizada(hijoDer.left, hijoDer); //actualiza la altura del hijo derecho
+    alturaActualizada(r_pos, node); //actualiza la altura del nodo actual
+    alturaActualizada(node_pos, hijoDer); //actualiza la altura del hijo derecho
+
+    //actualizar el node
+    node=hijoDer;
+    //escribimos el valor del nodo para que se guarde
+    file.seekp(node_pos,ios::beg);//se posiciona en el nodo actual
+    file.write((char*)&node,node.size());//se escribe el nodo actual
+
+
+
 }
 
 template <typename T>
 void AVLFile<T>::right_Rotation(long pos, NodeAVL<T> &node){
     NodeAVL<T> hijoIzq; //nodo auxiliar para el hijo izquierdo
-    file.seekg(node.left,ios::beg);//se posiciona en el hijo izquierdo
-    file.read((char*)&hijoIzq,hijoIzq.size());//se lee el hijo izquierdo
-    
-    NodeAVL<T> hijoDer; //nodo auxiliar para el hijo derecho del hijo izquierdo
-    file.seekg(hijoIzq.right,ios::beg);//se posiciona en el hijo derecho del hijo izquierdo
-    file.read((char*)&hijoDer,hijoDer.size());//se lee el hijo derecho del hijo izquierdo
+    long l_pos = node.left;
 
-    node.left=hijoDer.right; //el hijo izquierdo del nodo actual es el hijo derecho del hijo izquierdo
-    hijoIzq.right=pos; //el hijo derecho del hijo izquierdo es el nodo actual
-    file.seekp(node.left,ios::beg);//se posiciona en el hijo izquierdo del nodo actual
-    file.write((char*)&node,node.size());//se escribe el nodo actual
-    
-    file.seekp(hijoIzq.right,ios::beg);//se posiciona en el hijo derecho del hijo izquierdo
+    file.seekg(l_pos,ios::beg);//se posiciona en el hijo izquierdo
+    file.read((char*)&hijoIzq,hijoIzq.size());//se lee el hijo izquierdo
+
+    node.left=hijoIzq.right; //el hijo izquierdo del nodo actual es el hijo derecho del hijo izquierdo
+    hijoIzq.right=l_pos; //el hijo derecho del hijo izquierdo es el nodo actual
+
+    file.seekp(pos,ios::beg);//se posiciona en el nodo actual
     file.write((char*)&hijoIzq,hijoIzq.size());//se escribe el hijo izquierdo
 
+    file.seekp(l_pos,ios::beg);//se posiciona en el hijo izquierdo
+    file.write((char*)&node,node.size());//se escribe el nodo actual
+
     //actualizar altura
-    alturaActualizada(pos, node); //actualiza la altura del nodo actual
-    alturaActualizada(hijoIzq.right, hijoIzq); //actualiza la altura del hijo izquierdo
+    alturaActualizada(l_pos, node); //actualiza la altura del nodo actual
+    alturaActualizada(pos, hijoIzq); //actualiza la altura del hijo izquierdo
+
+    //actualizar el node 
+    node=hijoIzq;
+    //escribimos el valor del nodo para que se guarde
+    file.seekp(pos,ios::beg);//se posiciona en el nodo actual
+    file.write((char*)&node,node.size());//se escribe el nodo actual
 }
 
 
