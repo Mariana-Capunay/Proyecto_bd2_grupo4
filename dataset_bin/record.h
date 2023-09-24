@@ -1,8 +1,8 @@
 #ifndef PROYECTO_1_RECORD_H
 #define PROYECTO_1_RECORD_H
 #include <iostream>
-using namespace std;
-struct Record : public error_code {
+
+struct Record : public std::error_code {
     int key= {};                 // int (dni o codigo)
     char atrib1[40] = {};        // char de 40 (nombre completo o nombre producto)
     int atrib2 = {};             // int (edad o stock)
@@ -12,13 +12,13 @@ struct Record : public error_code {
 
     //friend ofstream& operator<<(ofstream& salida, Record r);
     void print(){
-        cout<<key;
-        cout<<", ";
-        cout<<atrib1;
-        cout<<", ";
-        cout<<atrib2<<", ";
-        cout<<atrib3<<", ";
-        cout<<atrib4<<"\n";
+        std::cout<<key;
+        std::cout<<", ";
+        std::cout<<atrib1;
+        std::cout<<", ";
+        std::cout<<atrib2<<", ";
+        std::cout<<atrib3<<", ";
+        std::cout<<atrib4<<"\n";
     }
     int size(){
         return sizeof(int)*2 + 40 + 25 + 4 + sizeof(bool);

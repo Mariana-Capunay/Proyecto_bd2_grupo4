@@ -14,7 +14,7 @@ csv_filename = "dataset_2.csv"
 # Define las columnas y longitudes fijas
 columnas = [
     ("Código", 8),
-    ("Nombre Producto", 40),
+    ("Nombre", 40),
     ("Stock", None),  # Usaremos None para datos de longitud fija
     ("Categoría", 25),
     ("Precio", None)  # Usaremos None para datos de longitud fija

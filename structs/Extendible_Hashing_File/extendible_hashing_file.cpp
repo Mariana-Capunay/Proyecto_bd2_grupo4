@@ -3,9 +3,10 @@
 #include <fstream>
 #include <iostream>
 #include <utility>
-#include "dataset_bin/binary_conversor.h"
+#include "../../dataset_bin/binary_conversor.h"
 
 using namespace std;
+
 struct BinaryNode{
     int left = -1;
     int right = -1;
@@ -256,6 +257,22 @@ class HashingIndex{
         file.seekp(address);
         file.write((char*)&record, record.size());
         file.close();
+    }
+
+    void load_file(){
+        ifstream file;
+        file.open(datafile,ios::binary);
+        file.seekg(0,ios::end);
+        int last_pos = file.tellg();
+        file.close();
+        int pos = 0;
+        while(pos < last_pos){
+            file.seekg(pos,ios::beg);
+            Record record = read_record(datafile,pos);
+            insert(record.key,pos);
+            pos += record.size();
+        }
+        
     }
 };
 /*

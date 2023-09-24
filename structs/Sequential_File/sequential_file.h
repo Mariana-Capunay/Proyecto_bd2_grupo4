@@ -6,8 +6,9 @@
 #include <vector>
 #include <cmath>
 #include <tuple>
-using namespace std;
+#include "record.h"
 
+using namespace std;
 
 template <typename T>
 struct Nodo{

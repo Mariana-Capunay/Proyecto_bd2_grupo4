@@ -1,7 +1,6 @@
 #include <iostream>
 #include "dataset_bin/binary_conversor.h"
 #include "structs/AVL_File/avl_file.h"
-using namespace std;
 
 int main(){
     string atr_1;
