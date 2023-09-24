@@ -19,17 +19,36 @@
 12. [Nuestro genial equipo](#idc)
 ## Objetivo del proyecto<a name="id1"></a>
 El propósito de este proyecto es la visualización y comparación de diversas técnicas de indexación de archivos, mediante la implementación de las estructuras que aprendimos en el curso de Base de Datos II.
+<p align="center">
+  <img src="images/objective.jpg" alt="Objetivo" width="300" height="200">
+</p>
+
 ## Dataset<a name="id2"></a>
 El proyecto hace uso de un dominio de datos conformado por:
+<p align="center">
+  <img src="images/dataset_csv.png" alt="Objetivo" width="250" height="180">
+</p>
+
 1. una columna de tipo **int**
 2. una columna de tipo **char[40]**
 3. una columna de tipo **int**
 4. una columna de tipo **char[25]**
 5. una columna de tipo **float**
 
-Además, el dataset proporcionado debe ser un archivo _.csv_ con registros de longitud fija.
+Además, el dataset proporcionado debe ser un archivo _.csv_ con registros de longitud fija. 
+<p align="center">
+  <img src="images/dataset.png" alt="Objetivo" width="150" height="150">
+</p>
 
+Luego de ingresar un archivo_.csv_ válido (con las columnas indicadas previamente), se procede a convertir toda la data a binario para guardarla en un nuevo archivo (binario) con la siguiente estructura:
+<p align="center">
+  <img src="images/dataset_bin.png" alt="Objetivo" width="300" height="180">
+</p>
+<p align="center">
+  <img src="images/record_struct.png" alt="Objetivo" width="500" height="130">
+</p>
 *Para los casos de prueba, hemos generado dos datasets diferentes con ayuda de las librerías _faker_ y _random_ de Python
+
 
 ## Resultados esperados<a name="id3"></a>
 Los resultados esperados al aplicar estas técnicas de indexación incluyen:

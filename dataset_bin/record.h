@@ -2,7 +2,7 @@
 #define PROYECTO_1_RECORD_H
 #include <iostream>
 
-struct Record : public std::error_code {
+struct Record {
     int key= {};                 // int (dni o codigo)
     char atrib1[40] = {};        // char de 40 (nombre completo o nombre producto)
     int atrib2 = {};             // int (edad o stock)
