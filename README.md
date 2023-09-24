@@ -52,6 +52,7 @@ Este análisis se realizará en base a los accesos a memoria secundaria.
 ### AVLFile
 
 - **Complejidad
+  
 |Insert|Search|Search Range|Remove| 
 
 | :---: | :---: | :---:  | :---:  | :---: |
@@ -84,6 +85,7 @@ Se utiliza los punteros para saltar las tuplas eliminadas.
 En la reconstrucción del archivo se serán completamente eliminados.
 
 - **Complejidad
+
 |Insert|Search|Search Range|Remove| 
 
 | :---: | :---: | :---:  | :---:  | :---: |
@@ -91,6 +93,7 @@ En la reconstrucción del archivo se serán completamente eliminados.
 ### B+ Tree
 
 - **Complejidad
+  
 |Insert|Search|Search Range|Remove| 
 
 | :---: | :---: | :---:  | :---:  | :---: |
