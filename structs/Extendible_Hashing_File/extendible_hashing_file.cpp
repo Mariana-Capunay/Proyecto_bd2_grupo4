@@ -6,6 +6,7 @@
 #include "dataset_bin/binary_conversor.h"
 
 using namespace std;
+
 struct BinaryNode{
     int left = -1;
     int right = -1;

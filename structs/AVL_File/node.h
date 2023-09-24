@@ -1,7 +1,6 @@
 #ifndef NODE_H
 #define NODE_H
 #include <iostream>
-using namespace std;
 
 template <typename T>
 struct NodeAVL  {
@@ -56,10 +55,10 @@ int NodeAVL<T>::size(){
 
 template <typename T>
 void NodeAVL<T>::getValue(){
-    cout<<"Value:  "<<this->value<<" | ";
-    cout<<"Left:  "<<this->left<<" | ";
-    cout<<"Right:  "<<this->right<<" | ";
-    cout<<"Height:  "<<this->height<<" | ";
-    cout<<"Next:  "<<this->next<<"\n";
+    std::cout<<"Value:  "<<this->value<<" | ";
+    std::cout<<"Left:  "<<this->left<<" | ";
+    std::cout<<"Right:  "<<this->right<<" | ";
+    std::cout<<"Height:  "<<this->height<<" | ";
+    std::cout<<"Next:  "<<this->next<<"\n";
 }
 #endif

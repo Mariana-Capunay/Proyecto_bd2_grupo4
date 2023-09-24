@@ -7,7 +7,6 @@
 #include <fstream>
 #include "dataset_bin/binary_conversor.h"
 #include "structs/AVL_File/avl_file.h"
-using namespace std;
 
 int flag = -1;
 
