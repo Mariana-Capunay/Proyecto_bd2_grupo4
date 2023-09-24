@@ -26,7 +26,7 @@ El propósito de este proyecto es la visualización y comparación de diversas t
 ## Dataset<a name="id2"></a>
 El proyecto hace uso de un dominio de datos conformado por:
 <p align="center">
-  <img src="images/dataset_csv.png" alt="Dataset .csv" width="250" height="180">
+  <img src="images/dataset_csv.png" alt="Dataset .csv" width="380" height="250">
 </p>
 
 1. una columna de tipo **int**
@@ -42,7 +42,7 @@ Además, el dataset proporcionado debe ser un archivo _.csv_ con registros de lo
 
 Luego de ingresar un archivo_.csv_ válido (con las columnas indicadas previamente), se procede a convertir toda la data a binario para guardarla en un nuevo archivo (binario) con la siguiente estructura:
 <p align="center">
-  <img src="images/dataset_bin.png" alt="Dataset Binario" width="300" height="180">
+  <img src="images/dataset_bin.png" alt="Dataset Binario" width="400" height="220">
 </p>
 <p align="center">
   <img src="images/record_struct.png" alt="Struct Record" width="500" height="130">
@@ -72,7 +72,10 @@ Este análisis se realizará en base a los accesos a memoria secundaria.
 
 ### AVLFile
 
-![Estructura del avl](images/avl_estructura.png)
+<p align="center">
+  <img src="images/avl_estructura.png" alt="Class AVL" width="500" height="330">
+</p>
+
 
 
 
@@ -87,8 +90,11 @@ Este análisis se realizará en base a los accesos a memoria secundaria.
 El objetivo es poder aplicar la busqueda binaria para conseguir una complejidad de acceso a memoria secundaria O(log n)
 Para ello, el archivo debe mantener los registros ordenados fisicamente en base al valor del campo de busqueda (key).
 Principalmente se ordena en base a la llave primaria de la tabla. 
-![Estructura del avl](images/sequential_estructura.jpeg)
-- **El algoritmo de búsqueda binaria**
+<p align="center">
+  <img src="images/sequential_estructura.jpeg" alt="Class AVL" width="500" height="330">
+</p>
+
+- **El algoritmo de búsqueda binaria:**
 El algoritmo de búsqueda binaria es usado para localizar un registro en el archivo dado un valor de búsqueda k.
 Se requiere O(log N) accesos a memoria secundaria. 
 En la búsqueda se debe descartar los registros marcados como eliminados. 
@@ -116,7 +122,7 @@ Se utiliza los punteros para saltar las tuplas eliminadas, e inmediatamente se r
   | :---: | :---: | :---:  |:------:|
   | O(log N) | O(log N) | O(log N) + O(K)   | (O(N)) |
 
-![image](https://github.com/Mariana-Capunay/Proyecto_bd2_grupo4/assets/91238621/76c00d4b-0b4a-4d71-9b32-8f46a9f430f7)
+
 
 ### Extendible Hashing
 
