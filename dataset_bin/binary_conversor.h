@@ -135,11 +135,42 @@ Record read_record(string file_name, int pos){
     file.read((char*)&record.atrib2,sizeof(record.atrib2));
     file.read((char*)&record.atrib3,sizeof(record.atrib3));
     file.read((char*)&record.atrib4,sizeof(record.atrib4));
+    file.read((char*)&record.removed,sizeof(record.removed));
     
-    
-    record.print();
+    if (!record.removed){
+        record.print();
+    }
+
     file.close();
     return record;
+}
+
+bool print_record(string file_name, int pos){
+    ifstream file(file_name, ios::binary);
+    if (!file.is_open()) {throw runtime_error("No se pudo abrir archivo ");}
+    Record record;
+    file.seekg(0, ios::end);
+    int dif = file.tellg();
+    if ( dif <=pos) {throw runtime_error("No existe registro en esta posicion");}
+    file.seekg(0,ios::beg);
+    file.seekg(pos); // los punteros tienen posicion exacta del registro
+    
+    
+    file.read((char*)&record.key,sizeof(record.key));
+    file.read((char*)&record.atrib1,sizeof(record.atrib1));
+    file.read((char*)&record.atrib2,sizeof(record.atrib2));
+    file.read((char*)&record.atrib3,sizeof(record.atrib3));
+    file.read((char*)&record.atrib4,sizeof(record.atrib4));
+    file.read((char*)&record.removed,sizeof(record.removed));
+    
+    if (!record.removed){ // si no fue eliminado, imprime y retorna true
+        record.print();
+        file.close();
+        return true;
+    }
+
+    file.close();
+    return false;
 }
 
 #endif //PROYECTO_1_BINARY_CONVERSOR_H
