@@ -9,7 +9,6 @@
 
 using namespace std;
 
-
 string conversor(string file_route, string& atr_1, string& atr_2, string& atr_3, string& atr_4, string& atr_5){ //retorna nombre del archivo creado
     ifstream file(file_route);
     string bin_file = "test.bin"; 
@@ -21,12 +20,12 @@ string conversor(string file_route, string& atr_1, string& atr_2, string& atr_3,
     string linea;
 
     getline(file, linea); // lee primera linea
-    std::string termino;
-    std::istringstream streamLinea(linea);
+    string termino;
+    istringstream streamLinea(linea);
 
     // Divide la línea en términos separados por comas
     int i = 0;
-    while (std::getline(streamLinea, termino,',')){
+    while (getline(streamLinea, termino,',')){
         switch(i){
             case 0:
                 atr_1 = termino;

@@ -1,6 +1,5 @@
 #include "avl_file.h"
 #include <vector>
-using namespace std;
 
 int main(){
 
