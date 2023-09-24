@@ -49,8 +49,9 @@ Las estructuras implementadas son: **AVL File**, **Sequential File** y **Extendi
 ## Análisis comparativo - teórico <a name="id6"></a>
 Este análisis se realizará en base a los accesos a memoria secundaria.
 
+
 ### AVLFile
-![Captura de pantalla 2023-09-24 105635](https://github.com/Mariana-Capunay/Proyecto_bd2_grupo4/assets/91238621/afadc5f3-2607-4016-a943-4383d446fb77)
+![Copy of Base de datos2 _ proyecto1](https://github.com/Mariana-Capunay/Proyecto_bd2_grupo4/assets/91238621/f0b3daac-644c-4922-b22a-727ca0227574)
 
 
 
