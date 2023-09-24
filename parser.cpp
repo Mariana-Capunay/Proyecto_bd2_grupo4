@@ -1,18 +1,6 @@
-#include <iostream>
-#include <string>
-#include <vector>
-#include <sstream>
-#include <algorithm> // Necesario para transformar a minúsculas o mayúsculas
-#include <regex>
-#include <fstream>
-#include <cctype>
-#include "dataset_bin/binary_conversor.h"
-#include "structs/AVL_File/avl_file.h"
+#include "parser.h"
 
-#include "structs/Extendible_Hashing_File/extendible_hashing_file.cpp"
 using namespace std;
-
-int flag = -1;
 
 std::string table_name = "";
 std::string file_binary = "test.bin"; //dataset en binario
@@ -27,6 +15,8 @@ AVLFile<int>* columna3 = new AVLFile<int>(file_binary, "columna_3");
 AVLFile<float>* columna5 = new AVLFile<float>(file_binary, "columna_5");
 
 // *"test.bin" es la ruta que se asigna en funcion conversor
+
+int flag = -1;
 
 bool contieneSoloDigitos(const std::string& cadena) {
     for (char caracter : cadena) {
@@ -44,39 +34,6 @@ bool esFloat(const std::string& str) {
     return (ss >> numero) && (ss.eof() || ss.peek() == '\n');
 }
 
-// Estructura para representar una consulta CREATE TABLE
-struct CreateTableQuery {
-    std::string tableName;
-    std::string filePath;
-};
-
-// Estructura para representar una consulta SELECT
-struct SelectQuery {
-    std::string tableName;
-    std::string whereClause;
-};
-
-// Estructura para representar una consulta INSERT INTO
-struct InsertQuery {
-    std::string tableName;
-    std::vector<std::string> values;
-};
-
-// Estructura para representar una consulta DELETE FROM
-struct DeleteQuery {
-    std::string tableName;
-    std::string whereClause;
-};
-
-// Estructura para representar Expresiones regulares
-struct ExpresionRelacional {
-    std::string atributo;
-    std::string operador;
-    std::string valor;
-    std::string valor2;
-};
-
-
 // Funciones de verificación de tipos de datos
 bool isValidChar(const std::string& value, int size) {
     return value.size() <= size;
@@ -93,11 +50,11 @@ bool isValidFloat(const std::string& value) {
 
 bool parsearExpresionRelacional(const std::string& expresion, ExpresionRelacional& resultado) {
     std::istringstream ss(expresion);
-    
+
     // Extraer el atributo
     ss >> resultado.atributo;
     // verifica si atributo pertenece al vector de atributos
-    auto it = std::find(atributos.begin(), atributos.end(), resultado.atributo);
+    auto it = find(atributos.begin(), atributos.end(), resultado.atributo);
     if (it==atributos.end()) {
         cout<<"Nombre de atributo no valido"<<endl;
         return false;
@@ -107,10 +64,10 @@ bool parsearExpresionRelacional(const std::string& expresion, ExpresionRelaciona
     if (resultado.operador!="between" && resultado.operador!="="){
         return false; // verifica si son las operaciones validas
     }
-    
+
     // Extraer el valor, teniendo en cuenta caracteres especiales
     std::getline(ss, resultado.valor);
-    
+
     // Eliminar espacios en blanco al principio y al final del valor (tambien comillas, en caso sea string)
     resultado.valor = resultado.valor.substr(resultado.valor.find_first_not_of(" "), resultado.valor.find_last_not_of(" ") + 1);
     if (resultado.operador!="between"){ // si no es operador _between_ entonces no debe admitir espacios en blanco
@@ -127,17 +84,18 @@ bool parsearExpresionRelacional(const std::string& expresion, ExpresionRelaciona
             resultado.valor2  = resultado.valor.substr(pos + 5); // 'ruben'
 
             resultado.valor = variable1; // se da el valor de variable anterior
-            
+
             // Eliminar las comillas simples (si es necesario)
-            if ((variable1[0]=='\'' && variable1[variable1.size()-1]=='\'' && 
-            resultado.valor2[0]=='\'' && resultado.valor2[resultado.valor.size()-1]=='\'') || 
-            (variable1[0]=='\"' && variable1[variable1.size()-1]=='\"' && 
-            resultado.valor2[0]=='\"' && resultado.valor2[resultado.valor.size()-1]=='\"')){
+            if ((variable1[0]=='\'' && variable1[variable1.size()-1]=='\'' &&
+                 resultado.valor2[0]=='\'' && resultado.valor2[resultado.valor.size()-1]=='\'') ||
+                (variable1[0]=='\"' && variable1[variable1.size()-1]=='\"' &&
+                 resultado.valor2[0]=='\"' && resultado.valor2[resultado.valor.size()-1]=='\"')){
                 variable1 = variable1.substr(1, variable1.size() - 2);
                 resultado.valor2 = resultado.valor2.substr(1, resultado.valor2.size() - 2);
                 std::cout << "Variable 1: " << variable1 << std::endl;
                 std::cout << "Variable 2: " << resultado.valor2 << std::endl;
             }
+            return true;
 
         } else {
             std::cout << "No se encontró ' and ' en la cadena." << std::endl;
@@ -166,8 +124,8 @@ CreateTableQuery parseCreateTableQuery(const std::string& sqlQuery) {
         //table_name = query.tableName;  // valores generales
 
         //TODO crear dataset en binario y pasar a todas las estructuras
-        /*  
-            1. abre el archivo, lo lleva a binario 
+        /*
+            1. abre el archivo, lo lleva a binario
             2. llena todas las estructuras (de acuerdo a sus columnas asignadas)
         */
         ifstream file(query.filePath);
@@ -188,11 +146,11 @@ CreateTableQuery parseCreateTableQuery(const std::string& sqlQuery) {
             flag = 1; // archivo existe
 
             // añadimos valor de atributos al vector
-            std::transform(atr_1.begin(), atr_1.end(), atr_1.begin(), ::tolower); 
-            std::transform(atr_2.begin(), atr_2.end(), atr_2.begin(), ::tolower); 
-            std::transform(atr_3.begin(), atr_3.end(), atr_3.begin(), ::tolower); 
-            std::transform(atr_4.begin(), atr_4.end(), atr_4.begin(), ::tolower); 
-            std::transform(atr_5.begin(), atr_5.end(), atr_5.begin(), ::tolower); 
+            std::transform(atr_1.begin(), atr_1.end(), atr_1.begin(), ::tolower);
+            std::transform(atr_2.begin(), atr_2.end(), atr_2.begin(), ::tolower);
+            std::transform(atr_3.begin(), atr_3.end(), atr_3.begin(), ::tolower);
+            std::transform(atr_4.begin(), atr_4.end(), atr_4.begin(), ::tolower);
+            std::transform(atr_5.begin(), atr_5.end(), atr_5.begin(), ::tolower);
             atributos.push_back(atr_1);
             atributos.push_back(atr_2);
             atributos.push_back(atr_3);
@@ -203,7 +161,7 @@ CreateTableQuery parseCreateTableQuery(const std::string& sqlQuery) {
 
             /*agregar valores a todas las estructuras*/
         }
-        
+
     } else {
         std::cerr << "Consulta CREATE TABLE no válida." << std::endl; // Consulta CREATE TABLE no válida
     }
@@ -212,14 +170,14 @@ CreateTableQuery parseCreateTableQuery(const std::string& sqlQuery) {
 }
 
 
-// Función para analizar una consulta SELECT 
+// Función para analizar una consulta SELECT
 SelectQuery parseSelectQuery(const std::string& sqlQuery) {
     SelectQuery query;
 
     // Utiliza una expresión regular para extraer el nombre de la tabla y la cláusula WHERE
     std::regex regexPattern(R"(select\s+(?:\*\s+)?from\s+(\w+)(?:\s+where\s+(.*))?)", std::regex::icase);
     std::smatch match;
-    
+
 
     if (std::regex_search(sqlQuery, match, regexPattern)) {
         query.tableName = match[1].str(); // El primer grupo capturado contiene el nombre de la tabla
@@ -228,15 +186,15 @@ SelectQuery parseSelectQuery(const std::string& sqlQuery) {
             std::cerr << "Tabla "<<query.tableName << " no existe" << "-> Solo cuenta con la tabla "<<table_name<<std::endl;
         }  else{
 
-            query.whereClause = match[2].str(); // El segundo grupo capturado contiene la cláusula WHERE si está presente    
+            query.whereClause = match[2].str(); // El segundo grupo capturado contiene la cláusula WHERE si está presente
             if (query.whereClause!=""){ // se hace consulta where
                 //std::cout<<"select con WHERE"<<std::endl;
-                
+
                 /*
                     evaluar where ( <, >, =, between x and y)
                 */
                 ExpresionRelacional resultado;
-                bool parseo = parsearExpresionRelacional(query.whereClause, resultado); 
+                bool parseo = parsearExpresionRelacional(query.whereClause, resultado);
                 //std::cout<<"query-operator: "<<resultado.operador;
                 // evaluar que estructuras llamar para cada atributo
                 if (parseo){ // se completó el parseo
@@ -252,7 +210,7 @@ SelectQuery parseSelectQuery(const std::string& sqlQuery) {
                                 flag = 5;
                             }
                         } else if (resultado.atributo==atributos[1]){
-                            
+
                         } else if (resultado.atributo==atributos[2]){
                             if (contieneSoloDigitos(resultado.valor)){
                                 res= columna3->search(stoi(resultado.valor)); // retornar
@@ -260,9 +218,9 @@ SelectQuery parseSelectQuery(const std::string& sqlQuery) {
                             } else {
                                 flag = 5;
                             }
-                            
+
                         } else if (resultado.atributo==atributos[3]){
-                            
+
                         } else{
                             if (esFloat(resultado.valor)){
                                 res = columna5->search(stof(resultado.valor)); // retornar
@@ -284,7 +242,7 @@ SelectQuery parseSelectQuery(const std::string& sqlQuery) {
                     }
                 } else{
                     flag = 5;
-                }                
+                }
             } else { // sin where
                 //std::cout<<"select sin WHERE"<<std::endl;
                 flag = 3;
@@ -299,7 +257,7 @@ SelectQuery parseSelectQuery(const std::string& sqlQuery) {
                     if (res) cont++;
                 }
             }
-            
+
 
             //TODO evaluar where (where simple-> >25, <50, between x and y, =x)
         } //std::cout<<"Tablename: "<<query.tableName<<" - Where: "<<query.whereClause<<std::endl;
@@ -328,6 +286,7 @@ InsertQuery parseInsertQuery(const std::string& sqlQuery) {
         query.tableName = match[1].str();
 
         if (query.tableName!=table_name){
+            flag = 11;
             std::cerr << "Tabla "<<query.tableName << " no existe" << "-> Solo cuenta con la tabla "<<table_name<<std::endl;
         } else{
             // Los grupos capturados 2 a 6 son los valores de diferentes tipos de datos
@@ -340,8 +299,8 @@ InsertQuery parseInsertQuery(const std::string& sqlQuery) {
             // Verifica si los tipos de datos coinciden con lo esperado
             if (!isValidInt(char8Value) || char8Value.size()>8 || // verifica que key sea numero y con 8 cifras
                 !isValidChar(char40Value,40) ||
-                !isValidInt(intValue) || 
-                !isValidChar(char25Value,25) ||  
+                !isValidInt(intValue) ||
+                !isValidChar(char25Value,25) ||
                 !isValidFloat(floatValue)) {
                 std::cerr << "Tipos de datos no válidos en la consulta INSERT INTO." << std::endl;
                 flag = 7;
@@ -380,7 +339,7 @@ InsertQuery parseInsertQuery(const std::string& sqlQuery) {
                 file.close();
             }
 
-            /* insertar cada valor en una estructura */            
+            /* insertar cada valor en una estructura */
 
             //for (auto value:query.values) std::cout<<value<<" - ";
 
@@ -407,10 +366,11 @@ DeleteQuery parseDeleteQuery(const std::string& sqlQuery) {
             query.tableName = match[1].str();
             if (query.tableName!=table_name){
                 std::cerr << "Tabla "<<query.tableName << " no existe" << "-> Solo cuenta con la tabla "<<table_name<<std::endl;
+                flag = 11;
             }
-            
+
             query.whereClause = match[2].str(); // El tercer grupo capturado es la cláusula WHERE
-            if (query.whereClause!="") { 
+            if (query.whereClause!="") {
                 query.whereClause = match[2].str();
                 std::cout<<query.whereClause<<std::endl;
 
@@ -418,17 +378,16 @@ DeleteQuery parseDeleteQuery(const std::string& sqlQuery) {
                 //parsearExpresionRelacional(query.whereClause, resultado);
 
                 // evaluar que estructuras llamar para cada atributo
-                if (resultado.operador=="<"){
+                if (resultado.operador=="="){
 
-
-                } else if (resultado.operador==">"){
-
-                } else if (resultado.operador=="="){
-
+                    //busca elemento en la estructura asociada
+                    // si no lo encuentra, flag = 10. Si lo encuentra, lo elimina, flag=8
                 } else if (resultado.operador=="between"){
                     std::cout<<"Eliminación por rango no implementada"<<std::endl;
+                    flag = 9;
                 } else {
-                    std::cout<<"No deberia llegar aqui"<<std::endl;
+                    flag = 11;
+                    std::cout<<"Nombre de tabla no existe"<<std::endl;
                 }
 
             } else { // sin where
@@ -442,7 +401,7 @@ DeleteQuery parseDeleteQuery(const std::string& sqlQuery) {
         } else{
             std::cout<<"Debe indicar condicion para eliminar"<<std::endl;
         }
-        
+
     } else {
         // Consulta DELETE FROM no válida
         std::cerr << "Consulta DELETE FROM no válida." << std::endl;
@@ -451,7 +410,7 @@ DeleteQuery parseDeleteQuery(const std::string& sqlQuery) {
     return query;
 }
 
-int wae() {
+int main() {
     /*
     std::cout << "Ingresa la consulta SQL y presiona Enter:" << std::endl;
     std::string sqlQuery;
@@ -462,6 +421,7 @@ int wae() {
     */
 
     while (table_name==""){ // debe crear la tabla para hacer otras consultas
+        std::cout << "Waiting" << std::endl;
         std::string sqlQuery;
         std::getline(std::cin, sqlQuery);
         std::transform(sqlQuery.begin(), sqlQuery.end(), sqlQuery.begin(), ::tolower); //se ingresa consulta (en este caso, se espera CREATE)
@@ -469,17 +429,18 @@ int wae() {
         std::istringstream iss(sqlQuery);
         std::string firstKeyword;
         iss >> firstKeyword;
-
+        //create table tabla from file "dataset/10k/dataset_1.csv"
         if (firstKeyword == "create") { // Analiza una consulta CREATE TABLE
+            cout << "Creando tabla" << endl;
             CreateTableQuery query = parseCreateTableQuery(sqlQuery); //acciones en función de la estructura de la consulta CREATE TABLE
         } else {
             std::cout<<"Debe crear la tabla"<<std::endl;
         }
     }
-        
+
     //for (auto x:atributos) cout<<x<<" ";  // para verificar que atributos están en minuscula
 
-    while (true){
+    while(true){
         std::string sqlQuery;
         std::getline(std::cin, sqlQuery);
         std::transform(sqlQuery.begin(), sqlQuery.end(), sqlQuery.begin(), ::tolower); //se ingresa consulta (en este caso, se espera CREATE)
