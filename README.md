@@ -42,7 +42,7 @@ Los resultados esperados al aplicar estas técnicas de indexación incluyen:
 Las estructuras implementadas son: **AVL File**, **Sequential File** y **Extendible Hashing**. 
 - **AVL File:** Esta estructura hace uso de un archivo _heapfile_ para guardar la información de los nodos
 - **Sequential File:** Esta estructura ...
-- **Extendible Hashing:** Esta estructura ...
+- **Extendible Hashing:** Esta estructura hace uso de un archivo _hashing_directory.dat_ para guardar la información de los nodos y _hashing_index.dat_ para guardar los addresses respectivos. Cuando ocurra desbordamiento, la información desbordada estará se guardará en _hashing_overflow.dat_.
 
 ## Algoritmos implementados <a name="id5"></a>
 - 
