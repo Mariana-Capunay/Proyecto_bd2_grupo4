@@ -4,7 +4,7 @@
 int main(){
 
     AVLFile<int>* avl = new AVLFile<int>("filename.bin", "atributo");
-    vector<int> a = {6,8,7,9,1,2,3,4};
+    vector<int> a = {1,2,3,4,5,6,7,8};
     for (auto x:a) avl->insert(x);
 
     //prueba remove
@@ -28,6 +28,6 @@ int main(){
     avl->printData();
     vector<long> r = avl->search(4);
     for (auto x:r) cout<<x<<" ";
-    avl->deleteFiles();
+    //avl->deleteFiles();
     return 0;
 }
