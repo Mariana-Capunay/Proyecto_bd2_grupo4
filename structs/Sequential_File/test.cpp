@@ -4,7 +4,7 @@
 #include <cstring>
 #include <string>
 #include <cmath>
-
+#include "../../dataset_bin/binary_conversor.h"
 using namespace std;
 
 class Record {
@@ -35,6 +35,7 @@ public:
 class SequentialFile
 {
 private:
+    string document,atr;
     string data_file;//guara los registros
     string aux_file;//guarda los punteros
 
@@ -44,7 +45,9 @@ private:
 public:
 
 
-    SequentialFile(){
+    SequentialFile(string _document,string _atr){
+        document = _document;
+        atr = _atr;
         /*
         En el constructor:
         -   Creamos data.bin y auxiliar.bin de ser necesario
@@ -53,8 +56,8 @@ public:
         */
 
 
-        this->data_file = "data.bin";
-        this->aux_file = "auxiliar.bin";
+        this->data_file = _atr + "data.bin";
+        this->aux_file = _atr + "auxiliar.bin";
 
         // Verificar si el archivo está vacío antes de escribir el registro predeterminado
         ifstream checkFile(data_file, ios::binary);
@@ -91,14 +94,14 @@ public:
         data_size = size(this->data_file);
         aux_size = size(this->aux_file);
 
-    }
+    };
 
     //Metodo que imprime todos los archivos de data y auxiliar
     void print(){
 
         cout << "size data y aux :" << data_size <<" "<<aux_size<<endl;
 
-        SequentialFile file2;
+        SequentialFile file2(document,atr);
         vector<Record> records = file2.scanAll("data.bin");
         for(Record r : records){
             r.showData();
@@ -107,7 +110,7 @@ public:
         cout << endl << "-----------------------" <<endl;
 
         //Lectura
-        SequentialFile file5;
+        SequentialFile file5(document,atr);
         vector<Record> records2 = file5.scanAll("auxiliar.bin");
         for(Record r : records2){
             r.showData();
@@ -295,8 +298,7 @@ public:
 
     }
 
-
-
+    
 
     bool remove_(const string& key){
 
@@ -773,43 +775,70 @@ private:
 
         return records;
     }
+
+    void load_file(){
+        ifstream fileaux;
+        fileaux.open(document,ios::binary | ios::in);
+        fileaux.seekg(0,ios::end);
+        fileaux.close();
+        int x = fileaux.tellg(), pos = 0;
+        while(pos < x){
+            Record record = readRecord(pos,document);
+            add(record);
+            pos +=  sizeof(Record);
+        }
+    
+    }
+
 };
 
 int main()
 {
-    //Add
-    /*SequentialFile file1;
-    Record record;
-    record.setData();
-    file1.add(record);*/
+    // Crear el archivo secuencial
+    
+    string atr_1;
+    string atr_2;
+    string atr_3;
+    string atr_4;
+    string atr_5;
+    string new_file = conversor("dataset/10k/dataset_1.csv", atr_1, atr_2, atr_3, atr_4, atr_5);
+    SequentialFile file(new_file,atr_1);
+    // Agregar algunos registros
+    file.add({"Andrea", "Perez", 0.1});
+    file.add({"Carlos", "Perez", 0.2});
+    file.add({"Cinthya", "Perez", 0.3});
+    file.add({"Josimar", "Perez", 0.4});
+    file.add({"Jorge", "Perez", 0.5});
+    file.add({"Mabel", "Perez", 0.6});
+    file.add({"Saulo", "Perez", 0.7});
 
-    //Remove
-    /*
-    SequentialFile file9;
-    file9.remove_("Aburrida");
-    */
+    // Imprimir todos los registros
+    file.print();
 
-    //Print
-    SequentialFile file8;
-    file8.print();
+    // Agregar algunos registros
+    file.add({"Gabriel", "Perez", 0.1});
+    file.add({"Diana", "Perez", 0.2});
+    file.add({"Maria", "Perez", 0.3});
+    // Imprimir todos los registros}
+    
+    file.print();
 
+    // Eliminar algunos registros
+    file.remove_("Andrea");
+    file.remove_("Maria");
+    file.remove_("Cinthya");
+    file.remove_("Gabriel");
 
-    cout << "-------------------------" <<endl;
+    // Imprimir todos los registros
+    file.print();
 
-    //Search
-    /*
-    SequentialFile file10;
-    vector<Record> resultados = file10.search("Azteca");
-    // Recorrer el vector e imprimir los resultados
-    for(Record r : resultados){
-        r.showData();
-    }*/
-
-    //Range Search
-    SequentialFile file7;
-    vector<Record> resultados = file7.rangeSearch("Mortina","Azteca");
-    // Recorrer el vector e imprimir los resultados
-    for(Record r : resultados){
-        r.showData();
+    // Buscar algunos registros
+    vector<Record> result = file.search("Carlos");
+    cout << "Resultados de la búsqueda: " << endl;
+    for (Record record : result) {
+        record.showData();
     }
+
+
+
 }

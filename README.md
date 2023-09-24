@@ -156,6 +156,9 @@ En este apartado incluiremos los cuadros comparativos de desempeño de las técn
 ## Análisis de resultados experimentales <a name="ida"></a>
 
 ## Interfaz gráfica <a name="idb"></a>
+
+## Cómo ejecutar el programa
+g++ parser.cpp dataset_bin/binary_conversor.cpp structs/AVL_File/avl_file.cpp
 ## 👩‍💻 Nuestro Genial Equipo <a name="idc"></a>
 
 ¡Estos cracks están detrás de todo el caos (código) aquí!

@@ -176,6 +176,7 @@ CreateTableQuery parseCreateTableQuery(const std::string& sqlQuery) {
             columna5->buildFromFile(new_file, 5);
             cout<<"Imprimiendo data";
             columna5->printData();
+
         }  
 
     } else {
