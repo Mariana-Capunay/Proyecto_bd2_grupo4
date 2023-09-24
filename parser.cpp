@@ -4,6 +4,12 @@
 #include <sstream>
 #include <algorithm> // Necesario para transformar a minúsculas o mayúsculas
 #include <regex>
+#include <fstream>
+#include "dataset_bin/binary_conversor.h"
+#include "structs/AVL_File/avl_file.h"
+using namespace std;
+
+int flag = -1;
 
 std::string table_name = "";
 std::vector<std::string> atributos; //se lee del csv
@@ -100,18 +106,43 @@ CreateTableQuery parseCreateTableQuery(const std::string& sqlQuery) {
         query.tableName = match[1].str(); // El primer grupo capturado es el nombre de la tabla
         query.filePath = match[2].str(); // El segundo grupo capturado es la ruta del archivo
 
-        table_name = query.tableName;  // valores generales
+        //table_name = query.tableName;  // valores generales
 
         //TODO crear dataset en binario y pasar a todas las estructuras
         /*  
             1. abre el archivo, lo lleva a binario 
             2. llena todas las estructuras (de acuerdo a sus columnas asignadas)
         */
+        ifstream file(query.filePath);
+        if (!file.is_open()) {
+            flag = 2; //archivo no existe
+            cout<<"Archivo "<<query.filePath<<" no existe"<<endl;
+        } else{
+            file.close();
 
+            // generamos version binaria del archivo
+            string atr_1;
+            string atr_2;
+            string atr_3;
+            string atr_4;
+            string atr_5;
+
+            string new_file = conversor(query.filePath, atr_1, atr_2, atr_3, atr_4, atr_5);
+            flag = 1; // archivo existe
+
+            // añadimos valor de atributos al vector
+            atributos.push_back(atr_1);
+            atributos.push_back(atr_2);
+            atributos.push_back(atr_3);
+            atributos.push_back(atr_4);
+            atributos.push_back(atr_5);
+
+            table_name = query.tableName; //se da nombre a la tabla (en caso todo haya ido bien)
+        }
+        
     } else {
         std::cerr << "Consulta CREATE TABLE no válida." << std::endl; // Consulta CREATE TABLE no válida
     }
-    table_name = query.tableName; //se da nombre a la tabla
     //std::cout<<"Table name: "<<query.tableName<<" - filePath: "<<query.filePath<<std::endl;
     return query;
 }
