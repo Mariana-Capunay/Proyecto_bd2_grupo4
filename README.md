@@ -53,7 +53,7 @@ Este análisis se realizará en base a los accesos a memoria secundaria.
 
 - **Complejidad
   
-|Insert|Search|Search Range|Remove| 
+| Insert | Search | Search Range | Remove | 
 
 | :---: | :---: | :---:  | :---:  | :---: |
 
@@ -86,7 +86,7 @@ En la reconstrucción del archivo se serán completamente eliminados.
 
 - **Complejidad
 
-|Insert|Search|Search Range|Remove| 
+| Insert | Search | Search Range | Remove | 
 
 | :---: | :---: | :---:  | :---:  | :---: |
 
@@ -94,7 +94,7 @@ En la reconstrucción del archivo se serán completamente eliminados.
 
 - **Complejidad
   
-|Insert|Search|Search Range|Remove| 
+| Insert | Search | Search Range | Remove | 
 
 | :---: | :---: | :---:  | :---:  | :---: |
 
