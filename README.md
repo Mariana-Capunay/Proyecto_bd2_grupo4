@@ -106,8 +106,8 @@ En la reconstrucción del archivo se serán completamente eliminados.
     Asumiendo una distribución estable.
   
   | Insert | Search | Search Range | Remove | 
-  | :O(log(n)): | :O(log(n)): | :O(n):  | :O(log(n)):  |
-  | :O(log(n)): | :O(log(n)): | :O(n):  | :O(log(n)):  |
+  | :---: | :---: | :---:  | :---:  |
+  | O(log(n)) | O(log(n)) | O(n)  | O(log(n))  |
 
 ## Optimización de memoria secundaria <a name="id7"></a>
 
