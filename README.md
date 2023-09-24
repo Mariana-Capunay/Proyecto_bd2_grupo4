@@ -88,7 +88,9 @@ En la reconstrucción del archivo se serán completamente eliminados.
   
   | Insert | Search | Search Range | Remove | 
   | :---: | :---: | :---:  | :---:  |
-  | :---: | :---: | :---:  | :---:  |
+  | O(log N) | O(log N) | O(log N) + O(K)   |  (O(1))  |
+![image](https://github.com/Mariana-Capunay/Proyecto_bd2_grupo4/assets/91238621/f6a3c596-aba9-4e84-81a8-18f0b41da50f)
+![image](https://github.com/Mariana-Capunay/Proyecto_bd2_grupo4/assets/91238621/76c00d4b-0b4a-4d71-9b32-8f46a9f430f7)
 
 ### Extendible Hashing
 
