@@ -24,7 +24,7 @@ HashingIndex* keys = new HashingIndex(file_binary);
 //SequentialFile<string>* columna2 = new SequentialFile<string>("dataset/test.bin");
 AVLFile<int>* columna3 = new AVLFile<int>(file_binary, "columna_3");
 //SequentialFile<string>* columna4 = new SequentialFile<string>("test.bin");
-AVLFile<float>* columna5 = new AVLFile<float>(file_binary, "columna_4");
+AVLFile<float>* columna5 = new AVLFile<float>(file_binary, "columna_5");
 
 // *"test.bin" es la ruta que se asigna en funcion conversor
 
@@ -37,6 +37,12 @@ bool contieneSoloDigitos(const std::string& cadena) {
     return true; // Todos los caracteres son dígitos
 }
 
+
+bool esFloat(const std::string& str) {
+    std::istringstream ss(str);
+    float numero;
+    return (ss >> numero) && (ss.eof() || ss.peek() == '\n');
+}
 
 // Estructura para representar una consulta CREATE TABLE
 struct CreateTableQuery {
@@ -84,132 +90,62 @@ bool isValidFloat(const std::string& value) {
     return std::regex_match(value, std::regex("-?\\d+(\\.\\d+)?"));
 }
 
-/*
-// Funcion para evaluar expresiones de WHERE
-bool parsearExpresionRelacional(std::string& expresion, ExpresionRelacional& resultado) {
-    //std::cout<<expresion<<std::endl;
 
-    // buscamos entre todos los elementos un simbolo igual a 
+bool parsearExpresionRelacional(const std::string& expresion, ExpresionRelacional& resultado) {
     std::istringstream ss(expresion);
     
     // Extraer el atributo
     ss >> resultado.atributo;
     // verifica si atributo pertenece al vector de atributos
-    
+    auto it = std::find(atributos.begin(), atributos.end(), resultado.atributo);
+    if (it==atributos.end()) return false;
     // Extraer el operador
     ss >> resultado.operador;
-    if (resultado.operador!="<" && resultado.operador!=">" && resultado.operador!="between" && resultado.operador!="="){
+    if (resultado.operador!="between" && resultado.operador!="="){
         return false; // verifica si son las operaciones validas
     }
     
     // Extraer el valor, teniendo en cuenta caracteres especiales
     std::getline(ss, resultado.valor);
     
-    // Eliminar espacios en blanco al principio y al final del valor
+    // Eliminar espacios en blanco al principio y al final del valor (tambien comillas, en caso sea string)
     resultado.valor = resultado.valor.substr(resultado.valor.find_first_not_of(" "), resultado.valor.find_last_not_of(" ") + 1);
     if (resultado.operador!="between"){ // si no es operador _between_ entonces no debe admitir espacios en blanco
+        if ((resultado.valor[0]=='\'' && resultado.valor[resultado.valor.size()-1]=='\'') || (resultado.valor[0]=='\"' && resultado.valor[resultado.valor.size()-1]=='\"' )){
+            resultado.valor = resultado.valor.substr(1, resultado.valor.size() - 2);
+        }
         for (auto x:resultado.valor){
             if (x==' ') return false;
         }
-    }
-    // Comprobar si se logró extraer los tres elementos
-    return !resultado.atributo.empty() && !resultado.operador.empty() && !resultado.valor.empty();
-}
-*/
-/*
-bool parsearExpresionRelacional(std::string& expresion, ExpresionRelacional& resultado) {
-    // verificamos si condicion contiene operador "=" o "between"
+    } else{ // verificacion para BETWEEN
+        size_t pos = resultado.valor.find(" and ");
+        if (pos != std::string::npos) {
+            std::string variable1 = resultado.valor.substr(0, pos); // 'carlos'
+            resultado.valor2  = resultado.valor.substr(pos + 5); // 'ruben'
 
-    // Inicializar resultado
-    resultado = ExpresionRelacional(); // Asegura que resultado esté vacío
-    size_t igualPos = expresion.find('='); // Buscar la posición del igual
-
-    if (igualPos == std::string::npos) { // Si no se encuentra un igual, verificamos "between"
-        // hacemos lectura respectiva para el between
-
-        size_t betweenPos = expresion.find("between"); // Buscar la posición del between
-        if (igualPos == std::string::npos) {
-            return false; // caso en el que la consulta no es valida
-        } else {
-            // asignamos operador between
-            std::istringstream ss(expresion);
-    
-            ss >> resultado.atributo; // Extraer el atributo
+            resultado.valor = variable1; // se da el valor de variable anterior
             
-            ss >> resultado.operador; // Extraer el operador
-
-            if (resultado.operador!="between"){
-                return false; // consulta no valida
+            // Eliminar las comillas simples (si es necesario)
+            if ((variable1[0]=='\'' && variable1[variable1.size()-1]=='\'' && 
+            resultado.valor2[0]=='\'' && resultado.valor2[resultado.valor.size()-1]=='\'') || 
+            (variable1[0]=='\"' && variable1[variable1.size()-1]=='\"' && 
+            resultado.valor2[0]=='\"' && resultado.valor2[resultado.valor.size()-1]=='\"')){
+                variable1 = variable1.substr(1, variable1.size() - 2);
+                resultado.valor2 = resultado.valor2.substr(1, resultado.valor2.size() - 2);
+                std::cout << "Variable 1: " << variable1 << std::endl;
+                std::cout << "Variable 2: " << resultado.valor2 << std::endl;
             }
 
-            // Extraer el valor
-            std::getline(ss, resultado.valor);
-
-            // Eliminar espacios en blanco al principio y al final del valor
-            resultado.valor = resultado.valor.substr(resultado.valor.find_first_not_of(" "), resultado.valor.find_last_not_of(" ") + 1);
-            // operador igual a between, implica usar "and"
-             size_t pos = resultado.valor.find(" and ");
-            if (pos != std::string::npos) {  // CASO en el que se compara con texto
-                std::string variable1 = resultado.valor.substr(0, pos); // 'casrlos'
-                resultado.valor2  = resultado.valor.substr(pos + 5); // 'ruben'
-                resultado.valor = variable1; // se da el valor de variable anterior
-                return true;
-
-            } else { 
-                std::cout << "No se encontró ' and ' en la cadena." << std::endl;
-                return false;
-            }
-        }
-    }
-
-    // consulta tipo "="
-    
-    // Extraer el atributo antes del igual
-    resultado.atributo = expresion.substr(0, igualPos);
-
-    // Extraer el operador "="
-    resultado.operador = "=";
-
-    // Extraer el valor después del igual
-    resultado.valor = expresion.substr(igualPos + 1);
-
-    // Comprobar si se logró extraer los elementos requeridos
-    return !resultado.atributo.empty() && !resultado.valor.empty();
-}
-*/
-
-// Funcion para evaluar expresiones de WHERE
-bool parsearExpresionRelacional(std::string& expresion, ExpresionRelacional& resultado) {
-    //std::cout<<expresion<<std::endl;
-
-    // buscamos entre todos los elementos un simbolo igual a 
-    std::istringstream ss(expresion);
-    
-    // Extraer el atributo
-    ss >> resultado.atributo;
-    // verifica si atributo pertenece al vector de atributos
-    
-    // Extraer el operador
-    ss >> resultado.operador;
-    if (resultado.operador!="<" && resultado.operador!=">" && resultado.operador!="between" && resultado.operador!="="){
-        return false; // verifica si son las operaciones validas
-    }
-    
-    // Extraer el valor, teniendo en cuenta caracteres especiales
-    std::getline(ss, resultado.valor);
-    
-    // Eliminar espacios en blanco al principio y al final del valor
-    resultado.valor = resultado.valor.substr(resultado.valor.find_first_not_of(" "), resultado.valor.find_last_not_of(" ") + 1);
-    if (resultado.operador!="between"){ // si no es operador _between_ entonces no debe admitir espacios en blanco
-        for (auto x:resultado.valor){
-            if (x==' ') return false;
+        } else {
+            std::cout << "No se encontró ' and ' en la cadena." << std::endl;
         }
     }
     // Comprobar si se logró extraer los tres elementos
     return !resultado.atributo.empty() && !resultado.operador.empty() && !resultado.valor.empty();
 }
 
-// CREATE TABLE <nombre> from file "dfdfdfdf"
+
+
 
 // Funcion para analizar consulta CREATE
 CreateTableQuery parseCreateTableQuery(const std::string& sqlQuery) {
@@ -256,6 +192,8 @@ CreateTableQuery parseCreateTableQuery(const std::string& sqlQuery) {
             atributos.push_back(atr_5);
 
             table_name = query.tableName; //se da nombre a la tabla (en caso todo haya ido bien)
+
+            /*agregar valores a todas las estructuras*/
         }
         
     } else {
@@ -278,6 +216,7 @@ SelectQuery parseSelectQuery(const std::string& sqlQuery) {
     if (std::regex_search(sqlQuery, match, regexPattern)) {
         query.tableName = match[1].str(); // El primer grupo capturado contiene el nombre de la tabla
         if (match[1].str()!=table_name){ // si es distinto al nombre de la tabla o no fue creada
+            flag = 11;
             std::cerr << "Tabla "<<query.tableName << " no existe" << "-> Solo cuenta con la tabla "<<table_name<<std::endl;
         }  else{
 
@@ -289,25 +228,58 @@ SelectQuery parseSelectQuery(const std::string& sqlQuery) {
                     evaluar where ( <, >, =, between x and y)
                 */
                 ExpresionRelacional resultado;
-                parsearExpresionRelacional(query.whereClause, resultado); 
-                std::cout<<"query-operator: "<<resultado.operador;
+                bool parseo = parsearExpresionRelacional(query.whereClause, resultado); 
+                //std::cout<<"query-operator: "<<resultado.operador;
                 // evaluar que estructuras llamar para cada atributo
-                if (resultado.operador=="<"){
-                    
+                if (parseo){ // se completó el parseo
+                    if (resultado.operador=="="){   // selecciona busqueda puntual en cada estructura
+                        flag = 4;
+                        cout<<"operador = ";
+                        cout<<"atributo: "<<resultado.atributo<<" | value: "<<resultado.valor<<endl;
+                        vector<long> res;
+                        if (resultado.atributo==atributos[0]){
+                            if (contieneSoloDigitos(resultado.valor)){
+                                keys->find(stoi(resultado.valor)); //retornar
+                            } else{
+                                flag = 5;
+                            }
+                        } else if (resultado.atributo==atributos[1]){
+                            
+                        } else if (resultado.atributo==atributos[2]){
+                            if (contieneSoloDigitos(resultado.valor)){
+                                res= columna3->search(stoi(resultado.valor)); // retornar
+                                for (auto x:res) read_record(file_binary,x);
+                            } else {
+                                flag = 5;
+                            }
+                            
+                        } else if (resultado.atributo==atributos[3]){
+                            
+                        } else{
+                            if (esFloat(resultado.valor)){
+                                res = columna5->search(stoi(resultado.valor)); // retornar
+                                for (auto x:res) read_record(file_binary,x);
+                            }
+                        }
 
-                } else if (resultado.operador==">"){
+                    } else if (resultado.operador=="between"){ // selecciona busqueda por rango en cada estructura
+                        flag = 4;
+                        if (resultado.atributo==atributos[0]){ flag =5; cout<<"Key no soporta busqueda por rango"<<endl; }
+                        else if (resultado.atributo==atributos[1]);
+                        else if (resultado.atributo==atributos[2]);
+                        else if (resultado.atributo==atributos[3]);
+                        else;
 
-                } else if (resultado.operador=="="){
-
-                } else if (resultado.operador=="between"){
-
-                } else {
-                    std::cout<<"No deberia llegar aqui"<<std::endl;
-                }
-
+                    } else {
+                        flag = 5;
+                        std::cout<<"No deberia llegar aqui"<<std::endl;
+                    }
+                } else{
+                    flag = 5;
+                }                
             } else { // sin where
                 //std::cout<<"select sin WHERE"<<std::endl;
-
+                flag = 3;
                 /*
                     mostrar todo el contenido
                 */
@@ -324,6 +296,7 @@ SelectQuery parseSelectQuery(const std::string& sqlQuery) {
             //TODO evaluar where (where simple-> >25, <50, between x and y, =x)
         } //std::cout<<"Tablename: "<<query.tableName<<" - Where: "<<query.whereClause<<std::endl;
     } else {
+        flag = 5;
         // Consulta SQL no válida
         std::cerr << "Consulta SQL no válida." << std::endl;
     }
@@ -452,7 +425,6 @@ int main() {
     //std::string queryLower = sqlQuery;
     std::transform(sqlQuery.begin(), sqlQuery.end(), sqlQuery.begin(), ::tolower);
     */
-    
 
     while (table_name==""){ // debe crear la tabla para hacer otras consultas
         std::string sqlQuery;
@@ -469,7 +441,7 @@ int main() {
             std::cout<<"Debe crear la tabla"<<std::endl;
         }
     }
-
+for (auto x:atributos) cout<<x<<" ";
 
     while (true){
         std::string sqlQuery;

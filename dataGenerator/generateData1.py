@@ -14,7 +14,7 @@ csv_filename = "dataset_1.csv"
 # Define las columnas y longitudes fijas
 columnas = [
     ("DNI", 8),
-    ("Nombre Completo", 40),
+    ("Nombre", 40),
     ("Edad", None),  # Usaremos None para datos de longitud fija
     ("Ciudad", 25),
     ("Sueldo", None)  # Usaremos None para datos de longitud fija
