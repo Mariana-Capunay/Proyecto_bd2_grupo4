@@ -26,7 +26,7 @@ El propósito de este proyecto es la visualización y comparación de diversas t
 ## Dataset<a name="id2"></a>
 El proyecto hace uso de un dominio de datos conformado por:
 <p align="center">
-  <img src="images/dataset_csv.png" alt="Objetivo" width="250" height="180">
+  <img src="images/dataset_csv.png" alt="Dataset .csv" width="250" height="180">
 </p>
 
 1. una columna de tipo **int**
@@ -37,15 +37,15 @@ El proyecto hace uso de un dominio de datos conformado por:
 
 Además, el dataset proporcionado debe ser un archivo _.csv_ con registros de longitud fija. 
 <p align="center">
-  <img src="images/dataset.png" alt="Objetivo" width="150" height="150">
+  <img src="images/dataset.png" alt="Dataset" width="150" height="150">
 </p>
 
 Luego de ingresar un archivo_.csv_ válido (con las columnas indicadas previamente), se procede a convertir toda la data a binario para guardarla en un nuevo archivo (binario) con la siguiente estructura:
 <p align="center">
-  <img src="images/dataset_bin.png" alt="Objetivo" width="300" height="180">
+  <img src="images/dataset_bin.png" alt="Dataset Binario" width="300" height="180">
 </p>
 <p align="center">
-  <img src="images/record_struct.png" alt="Objetivo" width="500" height="130">
+  <img src="images/record_struct.png" alt="Struct Record" width="500" height="130">
 </p>
 *Para los casos de prueba, hemos generado dos datasets diferentes con ayuda de las librerías _faker_ y _random_ de Python
 
