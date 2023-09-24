@@ -65,7 +65,8 @@ class AVLFile{
 
     void insert(NodeAVL<T>& nodo){
         file.open(heap_file, ios::binary|ios::in|ios::out);
-        if (this->insert(root,nodo)){
+        bool res = this->insert(root,nodo);
+        if (res){
             size++;
             file.close();
         }
@@ -82,6 +83,7 @@ class AVLFile{
         ifstream record_file(this->filename,ios::binary);
         while (file.peek() != EOF){//nodo.read(file)){
             NodeAVL<T> nodo;
+            file.seekg(cont);
             file.read((char*)&nodo,nodo.size()); // obtiene nodo del heap_file
 
             //lee nodo del dataset en binario
@@ -89,6 +91,16 @@ class AVLFile{
             Record record;
             record_file.read((char*)&record, record.size());
             record.print();
+            cont += nodo.size();
+            while (nodo.next!=-1){
+                file.seekg(nodo.next);
+                file.read((char*)&nodo,nodo.size()); // obtiene nodo del heap_file
+                record_file.seekg(nodo.pointer_value);
+                Record record;
+                record_file.read((char*)&record, record.size());
+                record.print();
+                cont+= nodo.size();
+            }
             //nodo.getValue();
         }
         record_file.close();
@@ -228,7 +240,7 @@ class AVLFile{
 
                 if (new_pos==-1) new_pos = pos_node;
                 
-                cout<<"insertando repetido";
+                //cout<<"insertando repetido";
                 //coloca nodo al final
                 file.seekg(0, ios::end); 
                 parent.next = file.tellg();
@@ -250,13 +262,13 @@ class AVLFile{
             NodeAVL<T> r;
             long acc = 0;
             if(parent.left != -1){
-                cout << "Hijo izquierdo existe" << endl;
+                //cout << "Hijo izquierdo existe" << endl;
                 file.seekg(parent.left);
                 file.read((char*)& l, l.size());
                 acc = l.height;
             }
             if(parent.right != -1){
-                cout << "Hijo derecho existe" << endl;
+                //cout << "Hijo derecho existe" << endl;
                 file.seekg(parent.right);
                 file.read((char*)& r, r.size());
                 if(r.height > acc){
@@ -265,7 +277,7 @@ class AVLFile{
             }
             if(acc+1 > parent.height) {
                 parent.height++;
-                cout << "Altura del padre actualizada" << endl;
+                //cout << "Altura del padre actualizada" << endl;
             }
             file.seekp(pos_node, ios::beg);
             file.seekg(pos_node, ios::beg);
@@ -283,7 +295,7 @@ int nro_registros(){
         file.clear();
         file.seekg(0, ios::end);
         long total_bytes = file.tellg();
-        cout << "Total bytes: " << total_bytes << endl;
+        //cout << "Total bytes: " << total_bytes << endl;
         file.close();
         Record record;
         return (total_bytes/record.size());   // Registro en data.dat
@@ -291,9 +303,9 @@ int nro_registros(){
 
     long balanceFactor(NodeAVL<T> &node){//balance factor
         long alturaIzq=altura(node.left); //altura del hijo izquierdo
-        cout << "Altura del hijo izquierdo: " << alturaIzq << endl;
+        //cout << "Altura del hijo izquierdo: " << alturaIzq << endl;
         long alturaDer=altura(node.right); //altura del hijo derecho
-        cout << "Altura del hijo derecho: " << alturaDer << endl;
+        //cout << "Altura del hijo derecho: " << alturaDer << endl;
         return alturaIzq-alturaDer; //retorna la diferencia de alturas entre el hijo izquierdo y el derecho
     }
 
@@ -339,18 +351,18 @@ int nro_registros(){
 template <typename T>
 void AVLFile<T>::balance(long pos, NodeAVL<T> &node){//verifica si una rotación es necesaria
     //factor de balanceo
-    cout<<"ingreso de balanceo..............................................."<<endl;
+    //cout<<"ingreso de balanceo..............................................."<<endl;
         long FacB=balanceFactor(node); //balanceFactor es la diferencia de alturas entre el hijo izquierdo y el derecho
-        cout << "Factor de balanceo del nodo " << node.value << ": " << FacB << endl;
+        //cout << "Factor de balanceo del nodo " << node.value << ": " << FacB << endl;
         if(FacB>1){ //si el factor de balanceo es mayor a 1, se debe rotar a la derecha
             NodeAVL<T> hijoIzq; //nodo auxiliar para el hijo izquierdo
             file.seekg(node.left,ios::beg);//se posiciona en el hijo izquierdo
             file.read((char*)&hijoIzq,hijoIzq.size());//se lee el hijo izquierdo
             if(balanceFactor(hijoIzq)<=-1){ //si el factor de balanceo del hijo izquierdo es menor o igual a -1, se debe hacer una rotación doble a la derecha
-                cout << "\tEjecutando rotacion doble hacia la izquierda..." << endl;
+                //cout << "\tEjecutando rotacion doble hacia la izquierda..." << endl;
                 left_Rotation(pos,node);
             }
-            cout << "Ejecutando rotacion a la derecha..." << endl;
+            //cout << "Ejecutando rotacion a la derecha..." << endl;
             right_Rotation(pos,node);
         }
 
@@ -360,10 +372,10 @@ void AVLFile<T>::balance(long pos, NodeAVL<T> &node){//verifica si una rotación
             file.read((char*)&hijoDer,hijoDer.size());//se lee el hijo derecho
 
             if(balanceFactor(hijoDer)>=1){ //si el factor de balanceo del hijo derecho es mayor o igual a 1, se debe hacer una rotación doble a la izquierda
-                cout << "\tEjecutando rotacion doble hacia la derecha..." << endl;
+                //cout << "\tEjecutando rotacion doble hacia la derecha..." << endl;
                 right_Rotation(pos,node);
             }
-            cout << "Ejecutando rotacion a la izquierda..." << endl;
+            //cout << "Ejecutando rotacion a la izquierda..." << endl;
             left_Rotation(pos,node); 
         }
 }
@@ -472,7 +484,7 @@ vector <long> AVLFile<T>::search(T key){
         } else if (nodo.value < key){
             pos = nodo.right; //Actualizar pos a hijo derecho
         }  else{
-            cout<<"no debería llegar aqui"<<endl;
+            //cout<<"no debería llegar aqui"<<endl;
         }
     }
 
@@ -574,7 +586,7 @@ void AVLFile<T>::buildFromFile(string sourceName, int atributo_col){
 
         this->insert(nodo);
 
-        cout << record.key << endl;
+        //cout << record.key << endl;
         //this->insert(nodo);
         bytes+= record.size(); // se aumenta contador de bytes
     }
