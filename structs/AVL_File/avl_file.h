@@ -4,7 +4,7 @@
 #include <vector>
 #include <fstream>
 #include "../../dataset_bin/record.h" //importando record
-#include <windows.h>
+//#include <windows.h>
 
 using namespace std;
 
