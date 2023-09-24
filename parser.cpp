@@ -452,7 +452,7 @@ DeleteQuery parseDeleteQuery(const std::string& sqlQuery) {
     return query;
 }
 
-int main() {
+int wae() {
     /*
     std::cout << "Ingresa la consulta SQL y presiona Enter:" << std::endl;
     std::string sqlQuery;
