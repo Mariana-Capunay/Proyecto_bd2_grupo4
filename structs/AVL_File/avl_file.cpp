@@ -1,5 +1,5 @@
 #include "avl_file.h"
-
+/*
 bool archivo_existe(const string& nombre){
     ifstream archivo(nombre.c_str());
     return archivo.good();
@@ -13,4 +13,4 @@ void crear_archivo(const string& nombre) {
     }
     ofstream file(nombre, ios::binary);
     file.close();
-}
+}*/
