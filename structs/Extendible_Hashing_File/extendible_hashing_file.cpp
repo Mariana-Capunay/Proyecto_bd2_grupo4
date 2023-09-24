@@ -3,7 +3,7 @@
 #include <fstream>
 #include <iostream>
 #include <utility>
-#include "dataset_bin/binary_conversor.h"
+#include "../../dataset_bin/binary_conversor.h"
 
 using namespace std;
 struct BinaryNode{

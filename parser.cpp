@@ -5,15 +5,38 @@
 #include <algorithm> // Necesario para transformar a minúsculas o mayúsculas
 #include <regex>
 #include <fstream>
+#include <cctype>
 #include "dataset_bin/binary_conversor.h"
 #include "structs/AVL_File/avl_file.h"
+
+#include "structs/Extendible_Hashing_File/extendible_hashing_file.cpp"
 using namespace std;
 
 int flag = -1;
 
 std::string table_name = "";
+std::string file_binary = "test.bin"; //dataset en binario
 std::vector<std::string> atributos; //se lee del csv
 std::vector<std::string> tipos_atributo = {"int","char","int","char","float"};
+
+// estructuras de los atributos
+HashingIndex* keys = new HashingIndex(file_binary);
+//SequentialFile<string>* columna2 = new SequentialFile<string>("dataset/test.bin");
+AVLFile<int>* columna3 = new AVLFile<int>(file_binary, "columna_3");
+//SequentialFile<string>* columna4 = new SequentialFile<string>("test.bin");
+AVLFile<float>* columna5 = new AVLFile<float>(file_binary, "columna_4");
+
+// *"test.bin" es la ruta que se asigna en funcion conversor
+
+bool contieneSoloDigitos(const std::string& cadena) {
+    for (char caracter : cadena) {
+        if (!std::isdigit(caracter)) {
+            return false; // Se encontró un carácter que no es un dígito
+        }
+    }
+    return true; // Todos los caracteres son dígitos
+}
+
 
 // Estructura para representar una consulta CREATE TABLE
 struct CreateTableQuery {
@@ -44,6 +67,7 @@ struct ExpresionRelacional {
     std::string atributo;
     std::string operador;
     std::string valor;
+    std::string valor2;
 };
 
 
@@ -59,6 +83,100 @@ bool isValidInt(const std::string& value) {
 bool isValidFloat(const std::string& value) {
     return std::regex_match(value, std::regex("-?\\d+(\\.\\d+)?"));
 }
+
+/*
+// Funcion para evaluar expresiones de WHERE
+bool parsearExpresionRelacional(std::string& expresion, ExpresionRelacional& resultado) {
+    //std::cout<<expresion<<std::endl;
+
+    // buscamos entre todos los elementos un simbolo igual a 
+    std::istringstream ss(expresion);
+    
+    // Extraer el atributo
+    ss >> resultado.atributo;
+    // verifica si atributo pertenece al vector de atributos
+    
+    // Extraer el operador
+    ss >> resultado.operador;
+    if (resultado.operador!="<" && resultado.operador!=">" && resultado.operador!="between" && resultado.operador!="="){
+        return false; // verifica si son las operaciones validas
+    }
+    
+    // Extraer el valor, teniendo en cuenta caracteres especiales
+    std::getline(ss, resultado.valor);
+    
+    // Eliminar espacios en blanco al principio y al final del valor
+    resultado.valor = resultado.valor.substr(resultado.valor.find_first_not_of(" "), resultado.valor.find_last_not_of(" ") + 1);
+    if (resultado.operador!="between"){ // si no es operador _between_ entonces no debe admitir espacios en blanco
+        for (auto x:resultado.valor){
+            if (x==' ') return false;
+        }
+    }
+    // Comprobar si se logró extraer los tres elementos
+    return !resultado.atributo.empty() && !resultado.operador.empty() && !resultado.valor.empty();
+}
+*/
+/*
+bool parsearExpresionRelacional(std::string& expresion, ExpresionRelacional& resultado) {
+    // verificamos si condicion contiene operador "=" o "between"
+
+    // Inicializar resultado
+    resultado = ExpresionRelacional(); // Asegura que resultado esté vacío
+    size_t igualPos = expresion.find('='); // Buscar la posición del igual
+
+    if (igualPos == std::string::npos) { // Si no se encuentra un igual, verificamos "between"
+        // hacemos lectura respectiva para el between
+
+        size_t betweenPos = expresion.find("between"); // Buscar la posición del between
+        if (igualPos == std::string::npos) {
+            return false; // caso en el que la consulta no es valida
+        } else {
+            // asignamos operador between
+            std::istringstream ss(expresion);
+    
+            ss >> resultado.atributo; // Extraer el atributo
+            
+            ss >> resultado.operador; // Extraer el operador
+
+            if (resultado.operador!="between"){
+                return false; // consulta no valida
+            }
+
+            // Extraer el valor
+            std::getline(ss, resultado.valor);
+
+            // Eliminar espacios en blanco al principio y al final del valor
+            resultado.valor = resultado.valor.substr(resultado.valor.find_first_not_of(" "), resultado.valor.find_last_not_of(" ") + 1);
+            // operador igual a between, implica usar "and"
+             size_t pos = resultado.valor.find(" and ");
+            if (pos != std::string::npos) {  // CASO en el que se compara con texto
+                std::string variable1 = resultado.valor.substr(0, pos); // 'casrlos'
+                resultado.valor2  = resultado.valor.substr(pos + 5); // 'ruben'
+                resultado.valor = variable1; // se da el valor de variable anterior
+                return true;
+
+            } else { 
+                std::cout << "No se encontró ' and ' en la cadena." << std::endl;
+                return false;
+            }
+        }
+    }
+
+    // consulta tipo "="
+    
+    // Extraer el atributo antes del igual
+    resultado.atributo = expresion.substr(0, igualPos);
+
+    // Extraer el operador "="
+    resultado.operador = "=";
+
+    // Extraer el valor después del igual
+    resultado.valor = expresion.substr(igualPos + 1);
+
+    // Comprobar si se logró extraer los elementos requeridos
+    return !resultado.atributo.empty() && !resultado.valor.empty();
+}
+*/
 
 // Funcion para evaluar expresiones de WHERE
 bool parsearExpresionRelacional(std::string& expresion, ExpresionRelacional& resultado) {
@@ -193,7 +311,13 @@ SelectQuery parseSelectQuery(const std::string& sqlQuery) {
                 /*
                     mostrar todo el contenido
                 */
-                std::cout<<"Especifique busqueda"<<std::endl;
+                int cont = 0; int pos = 0;
+                Record record;
+                while (cont<20){
+                    bool res = print_record(file_binary,pos);
+                    pos+=record.size();
+                    if (res) cont++;
+                }
             }
             
 
@@ -205,6 +329,7 @@ SelectQuery parseSelectQuery(const std::string& sqlQuery) {
     }
     return query;
 }
+
 
 // Función para analizar una consulta INSERT INTO con tipos de datos específicos
 InsertQuery parseInsertQuery(const std::string& sqlQuery) {
@@ -282,7 +407,7 @@ DeleteQuery parseDeleteQuery(const std::string& sqlQuery) {
                 std::cout<<query.whereClause<<std::endl;
 
                 ExpresionRelacional resultado;
-                parsearExpresionRelacional(query.whereClause, resultado);
+                //parsearExpresionRelacional(query.whereClause, resultado);
 
                 // evaluar que estructuras llamar para cada atributo
                 if (resultado.operador=="<"){
