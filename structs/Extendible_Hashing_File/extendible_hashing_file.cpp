@@ -257,6 +257,22 @@ class HashingIndex{
         file.write((char*)&record, record.size());
         file.close();
     }
+
+    void load_file(){
+        ifstream file;
+        file.open(datafile,ios::binary);
+        file.seekg(0,ios::end);
+        int last_pos = file.tellg();
+        file.close();
+        int pos = 0;
+        while(pos < last_pos){
+            file.seekg(pos,ios::beg);
+            Record record = read_record(datafile,pos);
+            insert(record.key,pos);
+            pos += record.size();
+        }
+        
+    }
 };
 /*
 int main(){
