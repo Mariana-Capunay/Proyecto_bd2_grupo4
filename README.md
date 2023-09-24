@@ -54,7 +54,6 @@ Este análisis se realizará en base a los accesos a memoria secundaria.
 - **Complejidad
   
 | Insert | Search | Search Range | Remove | 
-
 | :---: | :---: | :---:  | :---:  | :---: |
 
 ### Sequential File
@@ -87,7 +86,6 @@ En la reconstrucción del archivo se serán completamente eliminados.
 - **Complejidad
 
 | Insert | Search | Search Range | Remove | 
-
 | :---: | :---: | :---:  | :---:  | :---: |
 
 ### B+ Tree
@@ -95,7 +93,6 @@ En la reconstrucción del archivo se serán completamente eliminados.
 - **Complejidad
   
 | Insert | Search | Search Range | Remove | 
-
 | :---: | :---: | :---:  | :---:  | :---: |
 
 ## Optimización de memoria secundaria <a name="id7"></a>
