@@ -400,153 +400,289 @@ public:
                         result.push_back(current);
                     }
                 } else {
-                    // Si no se cumple ninguno de los anteriores casos,
-                    // buscar el nodo que le antecede, actualizar los next's, e insertar en heapNodeFile
-                    auto [prevPos, prevFile] = locatePrev(key);
+                    break; // Si ya no se repiten, detener la búsqueda
+                }
+            }
 
-                    // No insertar si ya existe la llave
-                    if (prevPos == -1) {
-                        return;
+            // Recorrer los elementos después del key_pos para ver si se repiten y agregarlos
+            for (int i = key_pos + 1; i < size(data_file); i++) {
+                current = readRecord(i, data_file);
+                Record next = readRecord(i - 1, data_file);
+                if (current.compare(next) == 0) {
+                    if (getPunteroAtPosition(i, data_file) != -1) {
+                        result.push_back(current);
                     }
+                } else {
+                    break; // Si ya no se repiten, detener la búsqueda
+                }
+            }
 
-                    Nodo<T> prev;
-                    int nNodosHeap = nro_nodos("aux.dat");
 
-                    // Guardar el next de prev en next del nuevo y
-                    // actualizar el next de prev para que apunte al nuevo
-                    if (prevFile == 'a') {
-                        heapNodeFile->seekg(prevPos*prev.size(), ios::beg);
-                        heapNodeFile->read((char*) &prev, prev.size());
-                        nuevoNodo.setNext(prev.next, prev.nextFile);
-                        prev.setNext(nNodosHeap, 'a');
-                        heapNodeFile->seekg(prevPos*prev.size(), ios::beg);
-                        heapNodeFile->write((char*) &prev, prev.size());
-                    } else if (prevFile == 'd') {
-                        sortedNodeFile->seekg(prevPos*prev.size(), ios::beg);
-                        sortedNodeFile->read((char*) &prev, prev.size());
-                        nuevoNodo.setNext(prev.next, prev.nextFile);
-                        prev.setNext(nNodosHeap, 'a');
-                        sortedNodeFile->seekg(prevPos*prev.size(), ios::beg);
-                        sortedNodeFile->write((char*) &prev, prev.size());
-                    }
+            //AUXILIAR FILE
+            ifstream file2(this->aux_file, ios::binary);
+            if (!file2.is_open()) {
+                throw ("No se pudo abrir el archivo de datos.");
+            }
 
-                    // Escribir el nuevo nodo en aux.dat (heapFile)
-                    heapNodeFile->seekg(nNodosHeap*nuevoNodo.size(), ios::beg);
-                    heapNodeFile->write((char*) &nuevoNodo, nuevoNodo.size());
+            int totalRecords = size(this->aux_file);
+
+            for (int i = 0; i < totalRecords; i++) {
+                Record record = readRecord(i, this->aux_file);
+
+                // Comparar el nombre del registro con la clave proporcionada (insensible a mayúsculas y minúsculas)
+                if (strcasecmp(record.Nombre, key.c_str()) == 0 && getPunteroAtPosition(i, this->aux_file) != -1) {
+                    result.push_back(record);
+                }
+            }
+
+            file2.close();
+
+            return result;
+
+        }
+
+
+    }
+
+    vector<Record> rangeSearch(const string& begin, const string& end) {
+        rebuild();
+
+        //Busco con busqueda binaria la posicion del begin
+        Record encontrar_begin;
+        strcpy(encontrar_begin.Nombre, begin.c_str());
+        int limite_inferior = binarySearchPosition(encontrar_begin);
+
+        if (limite_inferior == 0){
+            throw runtime_error("No se encontró el límite inferior");
+        }
+        else {
+            limite_inferior -= 1;
+            Record inf = readRecord(limite_inferior, this->data_file);
+            if (inf.Nombre != begin){
+                throw runtime_error("No se encontró la key inferior");
+            }
+        }
+
+        //Busco con busqueda binaria la posicion del end
+        Record encontrar_end;
+        strcpy(encontrar_end.Nombre, end.c_str());
+        int limite_superior = binarySearchPosition(encontrar_end);
+        if (limite_superior == 0){
+            throw runtime_error("No se encontró el límite superior");
+        }
+        else {
+            limite_superior -= 1;
+            Record sup = readRecord(limite_superior, this->data_file);
+            if (sup.Nombre != end){
+                throw runtime_error("No se encontró la key superior");
+            }
+        }
+
+
+        vector<Record> result;
+
+        /*// Agregar los elementos que están entre el límite inferior y el superior (Si apuntan a -1 no se agregan)
+        for (int i = limite_inferior; i <= limite_superior; i++) {
+            Record record = readRecord(i, data_file);
+            if (getPunteroAtPosition(i, data_file) != -1) {
+                result.push_back(record);
+            }
+        }
+        */
+
+        // Agregar los elementos que están entre el límite inferior y el superior (Si apuntan a -1 no se agregan)
+        if (limite_inferior <= limite_superior);
+        else swap(limite_inferior, limite_superior);// En caso de que begin sea mayor que end, intercambiamos los límites
+
+        for (int i = limite_inferior; i <= limite_superior; i++) {
+            Record record = readRecord(i, data_file);
+            if (getPunteroAtPosition(i, data_file) != -1) {
+                result.push_back(record);
+            }
+        }
+
+
+        // Recorrer los elementos antes del límite inferior para ver si se repiten y agregarlos (si apuntan a -1 no se agregan)
+        for (int i = limite_inferior - 1; i >= 0; i--) {
+            Record current = readRecord(i, data_file);
+            Record prev = readRecord(i + 1, data_file);
+            if (current.compare(prev) == 0 && getPunteroAtPosition(i, data_file) != -1) {
+                result.push_back(current);
+            } else if (current.compare(prev) != 0){
+                break; // Si ya no se repiten o apuntan a -1, detener la búsqueda
+            }
+        }
+
+        // Recorrer los elementos después del límite superior para ver si se repiten y agregarlos (si apuntan a -1 no se agregan)
+        for (int i = limite_superior + 1; i < size(data_file); i++) {
+            Record current = readRecord(i, data_file);
+            Record next = readRecord(i - 1, data_file);
+            if (current.compare(next) == 0 && getPunteroAtPosition(i, data_file) != -1) {
+                result.push_back(current);
+            } else if (current.compare(next) != 0){
+                break; // Si ya no se repiten o apuntan a -1, detener la búsqueda
+            }
+        }
+
+        return result;
+
+    }
+
+private:
+    //Metodo para reconstruir
+    void rebuild() {
+
+        ifstream dataFileStream(data_file, ios::binary);
+        if (!dataFileStream.is_open()) {
+            cerr << "No se pudo abrir el archivo de datos: " << data_file << endl;
+            return;
+        }
+
+        ofstream newFileStream("nuevo_data_file.bin", ios::binary);
+        if (!newFileStream.is_open()) {
+            cerr << "No se pudo crear el nuevo archivo de datos." << endl;
+            return;
+        }
+
+        Record X;
+        float puntero = -0.9;
+        float puntero_temporal;
+
+        int cantidad_eliminados = 0;
+
+        // Iterar a través de los registros en el archivo de datos
+        while (dataFileStream.read(reinterpret_cast<char*>(&X), sizeof(Record))) {
+
+            if (X.Puntero == -1){
+                cantidad_eliminados += 1;
+            }
+
+            //Nos saltamos los records que apunten a -1, ya que estos estan eliminados
+            if (X.Puntero != -1){
+                //Agregamos X al nuevo data_file
+                puntero += 1;
+                puntero_temporal = X.Puntero;
+                X.Puntero = puntero;
+                writeRecordEND(X,"nuevo_data_file.bin");
+
+                //En caso X apunte a un registro perteneciente al espacio auxiliar
+                if (analyzeFloat(puntero_temporal ) == "Auxiliar"){
+                    //Sabemos que X apunta a Y
+                    //Nos ubicamos en Y
+                    Record Y;
+                    while (analyzeFloat(puntero_temporal) != "Data" ){
+                        puntero += 1;
+                        Y = readRecord(puntero_temporal,this->aux_file);
+                        puntero_temporal = Y.Puntero;
+                        Y.Puntero = puntero;
+                        writeRecordEND(Y,"nuevo_data_file.bin");
+                    };
                 }
             }
         }
+
+        dataFileStream.close();
+        newFileStream.close();
+
+        // Reemplazar el archivo original con el nuevo archivo
+        if (remove(data_file.c_str()) != 0) {
+            cerr << "Error al eliminar el archivo original." << endl;
+        }
+
+        if (rename("nuevo_data_file.bin", data_file.c_str()) != 0) {
+            cerr << "Error al renombrar el nuevo archivo." << endl;
+        }
+
+        clearFile(this->aux_file);
+
+        //Actualizamos la cantidad de elementos que hay en ambos archivos
+        data_size += (aux_size - cantidad_eliminados);
+        aux_size = 0;
+
     }
 
-    tuple<int, char> locatePrev (T key) {
-        int nNodos = nro_nodos("datos.dat");
+    // Método para limpiar un archivo (borrar su contenido)
+    void clearFile(const string& _file) {
+        std::ofstream file(_file, std::ofstream::trunc);
+        if (!file.is_open()) {
+            throw ("No se pudo abrir el archivo para limpiar.");
+        }
+        file.close();
+    }
+
+    //Binary Search Position me devuelve la posicion donde tiene que ser insertado cierto registro
+    //Si en data_file existe A (ubicado en pos 0), y quiero insertar B, entonces binary me devuelve pos 1 (pos 0 + 1), ya que A esta despues que B.
+    int binarySearchPosition(const Record& nuevoRecord) {
+
+        /*
+        En este código, el método binarySearchPosition utiliza la búsqueda binaria para encontrar
+        la posición de inserción del nuevo registro nuevoRecord en orden alfabético. Devolverá la
+        posición en la que debería insertarse el nuevo registro en función del nombre. Si el
+        registro ya existe en la lista, devolverá la posición actual del registro encontrado.
+        */
+        ifstream file(this->data_file, ios::binary);
+        if (!file.is_open()) throw ("No se pudo abrir el archivo");
+
         int left = 0;
-        int right = nNodos - 1;
-        int currNodePos;
-        Nodo<T> nodo;
+        int right = size(this->data_file) - 1;
 
-        for (int i = 0; i < log2(nNodos); ++i) {
-            currNodePos = floor((left + right)/2);
-            sortedNodeFile->seekg(currNodePos*nodo.size(), ios::beg);
-            sortedNodeFile->read((char*) &nodo, nodo.size());
-            if (nodo.value == key) {
-                return {-1,' '};
-            } else if (nodo.value > key) {
-                right = currNodePos - 1;
+        while (left <= right) {
+            int middle = left + (right - left) / 2;
+            Record record = readRecord(middle, this->data_file);//Obtener el registro en la mitad
+
+            // Comparar el nombre del registro con el nombre del nuevo record
+            int cmp = record.compare(nuevoRecord);
+
+            if (cmp == 0) {//Si el nombre del registro es igual al nombre del nuevo record
+
+                file.close();
+                middle += 1; //Si encuentra un nombre igual que me el nuevo registro se ponga despues
+
+                //Para la eliminacion si B se inserta despues que A, tenemos que verificar que este no apunte a un -1
+                //En caso a apunte a un menos -1, vamos a ir retrocediendo de pos en data_file hasta encontrar el mas registro 
+                //superior alfabeticamente a B que no este eliminado.
+                while (getPunteroAtPosition(middle-1,this->data_file) == -1){
+                    middle -= 1;
+                    //Si esta A y quiero insertar B. Entonces el metodo me retornada left, ya que A estaba en left -1
+                }
+
+                return middle; // Encontrado, devuelve la posición actual
+            } else if (cmp < 0) {
+                left = middle + 1; // El nombre está en la mitad derecha
             } else {
-                left = currNodePos + 1;
+                right = middle - 1; // El nombre está en la mitad izquierda
             }
         }
 
-        // Si en la búsqueda se pasó el lugar, cambiar al anterior
-        if (nodo.value > key) {
-            currNodePos--;
-            sortedNodeFile->seekg(currNodePos*nodo.size(), ios::beg);
-            sortedNodeFile->read((char*) &nodo, nodo.size());
+        file.close();
+
+        // Si no se encuentra un registro igual, devolver la posición en la que debería insertarse
+
+        //Para la eliminacion si B se inserta despues que A, tenemos que verificar que este no apunte a un -1
+        //En caso a apunte a un menos -1, vamos a ir retrocediendo de pos en data_file hasta encontrar el mas registro superior alfabeticamente a B que no este eliminado.
+        while (getPunteroAtPosition(left-1,this->data_file) == -1){
+            left -= 1;
+
+            //Si esta A y quiero insertar B. Entonces el metodo me retornada left, ya que A estaba en left -1
         }
-
-        // Buscar también en los next del nodo
-        while (nodo.next != -1 && nodo.nextFile == 'a') {
-            Nodo<T> nodoAux;
-            heapNodeFile->seekg(nodo.next*nodoAux.size(), ios::beg);
-            heapNodeFile->read((char*) &nodoAux, nodoAux.size());
-
-            if (nodoAux.value > key) {
-                break;
-            } else {
-                nodo = nodoAux;
-            }
-            // TODO: ultimo caso
-        }
-
-        return {3,'d'};
-        return {1,'a'};
+        return left;
     }
 
-    void rebuild () {
-        vector<Nodo<T>> nodos;
-        Nodo<T> nodo;
-        int pos = primerNodoPos;
-        fstream* nodeFile;
-        if (primerNodoFile == 'a') {
-            nodeFile = heapNodeFile;
-        } else if (primerNodoFile == 'd') {
-            nodeFile = sortedNodeFile;
-        }
+    //Metodo para hallar la cantidad de registros en un archivo especifico
+    int size(string _file){
+        ifstream file(_file, ios::binary);
+        if(!file.is_open()) throw ("No se pudo abrir el archivo");
 
-        // Llenar el vector nodos
-        while (pos != -1) {
-            nodeFile->seekg(pos*nodo.size(), ios::beg);
-            nodeFile->read((char*) &nodo, nodo.size());
-            nodos.push_back(nodo);
-
-            if (nodo.nextFile == 'a') {
-                nodeFile = heapNodeFile;
-            } else if (nodo.nextFile == 'd') {
-                nodeFile = sortedNodeFile;
-            }
-            pos = nodo.next;
-        }
-
-        // Actualizar primer nodo del Sequential
-        primerNodoPos = 0;
-        primerNodoFile = 'd';
-
-        // Sobreescribir datos.dat
-        sortedNodeFile->seekg(0, ios::beg);
-        for (int i = 0; i < nodos.size(); ++i) {
-            nodos[i].setNext(i+1, 'd'); // Actualizar next de cada nodo ahora ordenado
-            sortedNodeFile->write((char*) &nodos[i], nodos[i].size());
-        }
-
-        // Vaciar aux.dat
-        // TODO
+        file.seekg(0, ios::end);//ubicar cursos al final del archivo
+        long total_bytes = file.tellg();//cantidad de bytes del archivo
+        file.close();
+        return total_bytes / sizeof(Record);
     }
 
-
-public:
-    SequentialFile () {}
-
-    SequentialFile (string file_name) {
-
-        fstream regF(file_name, ios::binary | ios::in | ios::out);
-        regFile = &regF;
-
-        fstream sortedF ("datos.dat", ios::binary | ios::in | ios::out | ios::trunc);
-        sortedNodeFile = &sortedF;
-
-        fstream heapF ("aux.dat", ios::binary | ios::in | ios::out | ios::trunc);
-        heapNodeFile = &heapF;
-
-        int nRegs = nro_registros();
-        if (nRegs > 0) {
-            kHeapLimit = trunc(log2(nRegs));
-            Record r;
-            regFile->seekg(0, ios::beg);
-            for (int i = 0; i < nRegs; ++i) {
-                regFile->read((char*) &r, r.size());
-                insert(i, r.key);
-            }
+    //Metodo para determinar si un registro punta otro perteneciente a data file o a aux_file
+    string analyzeFloat(float number) {
+        if (std::floor(number) == number) {
+            return "Auxiliar";
         } else {
             return "Data";
         }
@@ -571,28 +707,88 @@ public:
         file.close();
     }
 
-    void printRegistros() {
-        cout << "Archivo de registros:" << endl;
-        fstream registros ("file.bin", ios::binary | ios::in | ios::out);
-        Record r;
-        registros.seekg(0, ios::beg);
-        for (int i = 0; i < 8; ++i) {
-            registros.read((char*) &r, r.size());
-            r.print();
-        }
+    //Metodo para leer un registro en una pos especifica
+    Record readRecord(int pos, string _file){
+        ifstream file(_file, ios::binary);
+        if(!file.is_open()) throw ("No se pudo abrir el archivo");
+
+        Record record;
+        file.seekg(pos * sizeof(Record), ios::beg);//fixed length record
+        file.read((char*) &record, sizeof(Record));//leer el registro en la posicion
+        file.close();
+        return record;
     }
 
-    void printSortedNodes() {
-        cout << "Archivo ordenado:" << endl;
-        fstream ordenado ("datos.dat", ios::binary | ios::in | ios::out);
-        Nodo<int> nodo;
-        ordenado.seekg(0, ios::beg);
-        for (int i = 0; i < 8; ++i) {
-            ordenado.read((char*) &nodo, nodo.size());
-            nodo.print();
+    //Metodo que te devuelve el puntero de un registro en una pos especifica
+    float getPunteroAtPosition(int pos, string _file) {
+        ifstream file(_file, ios::binary);
+        if (!file.is_open()) throw ("No se pudo abrir el archivo auxiliar");
+
+        Record record;
+        file.seekg(pos * sizeof(Record), ios::beg); // Ir a la posición especificada
+        file.read((char*)&record, sizeof(Record)); // Leer el registro en la posición
+        file.close();
+
+        return record.Puntero; // Devolver el valor del puntero del registro
+    }
+
+    //Metodo que te modifica el puntero de un registro en una pos especifica
+    void updatePunteroAtPosition(int pos, float newPunteroValue, string _file) {
+        // Open the data file in read-write mode
+        fstream file(_file, ios::in | ios::out | ios::binary);
+        if (!file.is_open()) throw ("No se pudo abrir el archivo de datos");
+
+        // Seek to the position specified
+        file.seekg(pos * sizeof(Record), ios::beg);
+
+        // Read the record at that position
+        Record record;
+        file.read((char*)&record, sizeof(Record));
+
+        // Update the Puntero field
+        record.Puntero = newPunteroValue;
+
+        // Seek back to the same position
+        file.seekp(pos * sizeof(Record), ios::beg);
+
+        // Write the updated record back to the data file
+        file.write((char*)&record, sizeof(Record));
+
+        // Close the file
+        file.close();
+    }
+
+    //Metodo que retorna todos los elementos de un archivo
+    vector<Record> scanAll(string _file){
+        ifstream file(_file, ios::binary);
+        if(!file.is_open()) throw ("No se pudo abrir el archivo");
+
+        vector<Record> records;
+        Record record;
+
+        while(file.peek() != EOF){
+            record = Record();
+            file.read((char*) &record, sizeof(Record));
+            records.push_back(record);
         }
+        file.close();
+
+        return records;
+    }
+
+    void load_file(){
+        ifstream fileaux;
+        fileaux.open(document,ios::binary | ios::in);
+        fileaux.seekg(0,ios::end);
+        fileaux.close();
+        int x = fileaux.tellg(), pos = 0;
+        while(pos < x){
+            Record record = readRecord(pos,document);
+            add(record);
+            pos +=  sizeof(Record);
+        }
+    
     }
 
 };
 
-#endif
