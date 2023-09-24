@@ -1,7 +1,8 @@
 #ifndef PROYECTO_1_RECORD_H
 #define PROYECTO_1_RECORD_H
 #include <iostream>
-
+#include <fstream>
+using namespace std;
 struct Record {
     int key= {};                 // int (dni o codigo)
     char atrib1[40] = {};        // char de 40 (nombre completo o nombre producto)
@@ -22,6 +23,15 @@ struct Record {
     }
     int size(){
         return sizeof(int)*2 + 40 + 25 + 4 + sizeof(bool);
+    }
+
+    void read(ifstream& record_file){
+        record_file.read((char*)&key,sizeof(key));
+        record_file.read((char*)&atrib1,sizeof(atrib1));
+        record_file.read((char*)&atrib2,sizeof(atrib2));
+        record_file.read((char*)&atrib3,sizeof(atrib3));
+        record_file.read((char*)&atrib4,sizeof(atrib4));
+        record_file.read((char*)&removed,sizeof(removed));
     }
 };
 

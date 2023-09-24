@@ -342,7 +342,7 @@ InsertQuery parseInsertQuery(const std::string& sqlQuery) {
             strncpy(record.atrib3, char25Value.c_str(), sizeof(record.atrib3) - 1); // -1 para dejar espacio para el carácter nulo
             record.atrib3[sizeof(record.atrib3) - 1] = '\0'; // Asegura que el último carácter sea nulo
             strncpy(record.atrib3, char25Value.c_str(), sizeof(record.atrib3) - 1); // -1 para dejar espacio para el carácter nulo
-            record.atrib4 = stoi(floatValue);
+            record.atrib4 = stof(floatValue);
             record.removed = false;
 
             ofstream file(file_binary, ios::binary);

@@ -89,7 +89,7 @@ class AVLFile{
             //lee nodo del dataset en binario
             record_file.seekg(nodo.pointer_value);
             Record record;
-            record_file.read((char*)&record, record.size());
+            record.read(record_file);
             record.print();
             cont += nodo.size();
             while (nodo.next!=-1){
