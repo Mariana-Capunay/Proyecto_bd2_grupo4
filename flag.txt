@@ -2,5 +2,10 @@
 2 -> si se inserta consulta create y archivo no existe
 3 -> select* from tabla : muestra todo el dataset (.csv y verificar que registro no esté eliminado)
 4 -> select ... where x=  // between x and y
-5 -> insert 
-6 -> remove (solo llama a la estructura y elimina)
+5 -> select no valido (no es =, ni between, falla en la consulta: atributo, value, etc)
+6 -> insert correcto
+7 -> insert no valido
+8 -> remove correcto (solo llama a la estructura y elimina) 
+9 -> remove no valido
+10 -> remove con elemento que no existe en el dataset
+11 -> nombre incorrecto de tabla
