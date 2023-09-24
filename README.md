@@ -45,7 +45,8 @@ Las estructuras implementadas son: **AVL File**, **Sequential File** y **Extendi
 - **Extendible Hashing:** Esta estructura hace uso de un archivo _hashing_directory.dat_ para guardar la información de los nodos y _hashing_index.dat_ para guardar los addresses respectivos. Cuando ocurra desbordamiento, la información desbordada estará se guardará en _hashing_overflow.dat_.
 
 ## Algoritmos implementados <a name="id5"></a>
-- 
+- Para el **AVL File** y **Sequential File** hemos implementado  **_insert_**, **_search_**, **_search_by_range_** y **_remove_**.
+- Para el **Extendible Hashing** implementamos **_insert_**, **_search_** y **_search_by_range_**, debido a que no soporta la búsqueda por rango.
 ## Análisis comparativo - teórico <a name="id6"></a>
 Este análisis se realizará en base a los accesos a memoria secundaria.
 
