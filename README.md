@@ -51,7 +51,7 @@ Este análisis se realizará en base a los accesos a memoria secundaria.
 
 ### AVLFile
 
-- **Complejidad
+- **Complejidad**
   
 | Insert | Search | Search Range | Remove | 
 | :---: | :---: | :---:  | :---:  |
@@ -84,7 +84,7 @@ Se requiere reorganizar el archivo original cada cierto tiempo mezclando ordenad
 Se utiliza los punteros para saltar las tuplas eliminadas.
 En la reconstrucción del archivo se serán completamente eliminados.
 
-- **Complejidad
+- **Complejidad**
 
 | Insert | Search | Search Range | Remove | 
 | :---: | :---: | :---:  | :---:  |
@@ -92,7 +92,7 @@ En la reconstrucción del archivo se serán completamente eliminados.
 
 ### B+ Tree
 
-- **Complejidad
+- **Complejidad**
   
 | Insert | Search | Search Range | Remove | 
 | :---: | :---: | :---:  | :---:  |
