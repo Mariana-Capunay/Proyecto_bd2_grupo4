@@ -90,13 +90,24 @@ En la reconstrucción del archivo se serán completamente eliminados.
   | :---: | :---: | :---:  | :---:  |
   | :---: | :---: | :---:  | :---:  |
 
-### B+ Tree
+### Extendible Hashing
 
-- **Complejidad**
+- **Funcion hashing**
+    Se utilizó una función polinómica si _key_ = $a_n,a_{n-1},...a_2,a_1,a_0$ , entonces _hashing_ = $a_0 + a_1 \cdot p + a_2 \cdot p^2 + ... $ . Donde $p$ es un primo que sirve como base.
+
+- **Árbol binario**
+    Se implementó el arbol binario a partir del _hashing_ de las _key_. Se establece un límite para el tamaño de los bucket de los nodos hojas.  
+
+- **Manejo de overflow**       
+    Cuando la altura exceda el límite permitido, las llaves se guardan en un archivo separado en el cual se recorre linealmente en la búsqueda y eliminación.
+
+- **Complejidad** 
+
+    Asumiendo una distribución estable.
   
   | Insert | Search | Search Range | Remove | 
   | :---: | :---: | :---:  | :---:  |
-  | :---: | :---: | :---:  | :---:  |
+  | O(log(n)) | O(log(n)) | O(n)  | O(log(n))  |
 
 ## Optimización de memoria secundaria <a name="id7"></a>
 
