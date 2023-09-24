@@ -51,7 +51,33 @@ Este análisis se realizará en base a los accesos a memoria secundaria.
 
 
 ### AVLFile
-![Copy of Base de datos2 _ proyecto1](https://github.com/Mariana-Capunay/Proyecto_bd2_grupo4/assets/91238621/f0b3daac-644c-4922-b22a-727ca0227574)
+archivo avl
+Implementación de árbol de búsqueda binaria autoequilibrado que funciona con memoria secundaria para almacenar registros. Admite inserción, búsqueda basada en claves, búsqueda y eliminación basada en rangos.
+
+Funciones miembro
+operador bool()
+
+Convierte como verdadera la instancia de clase si su archivo de índice ya existe y como falsa en caso contrario.
+crear índice()
+
+Itera sobre el archivo del montón e inserta registro por registro en cada clave en el archivo de índice.
+Si el índice ya existe, elimina el índice existente para reconstruir un índice nuevo.
+insertar (tecla KeyType, puntero largo)
+
+Inserta un nuevo nodo (clave, puntero) en el archivo de índice. Dicho nodo almacena una referencia a un registro en un archivo de montón y su clave correspondiente asociada.
+Internamente, desciende el AVL hasta alcanzar un nodo DISK_NULL para colocar el nuevo nodo al final del archivo de índice y reasignar el puntero padre.
+Si ya existe un nodo con la misma clave, hay dos casos: si el archivo de índice indexa una clave no repetible, en cuyo caso se lanza una excepción; De lo contrario, los nodos que comparten la misma clave se vinculan en una lista directa.
+buscar (tecla KeyType)
+
+Busca todos los registros de manera que record.key = key
+Si el archivo de índice indexa una clave no repetible, devuelve un registro como máximo.
+range_search(Tipo de clave límite_inferior, Tipo de clave límite_superior)
+
+Busca todos los registros de modo que límite_inferior <= índice (registro) <= límite_superior
+Realiza llamadas recursivas, podando los estados que no son útiles para la búsqueda.
+eliminar (tecla KeyType)
+
+Elimina (lógicamente) todos los registros tales que index(record) = key marcando todos los record.removed como verdadero y eliminando dichos nodos de AVL.
 
 
 
@@ -60,6 +86,8 @@ Este análisis se realizará en base a los accesos a memoria secundaria.
   | Insert | Search | Search Range | Remove | 
   | :---: | :---: | :---:  | :---:  |
   | :---: | :---: | :---:  | :---:  |
+
+![Copy of Base de datos2 _ proyecto1](https://github.com/Mariana-Capunay/Proyecto_bd2_grupo4/assets/91238621/f0b3daac-644c-4922-b22a-727ca0227574)
 
 ### Sequential File
 El objetivo es poder aplicar la busqueda binaria para conseguir una complejidad de acceso a memoria secundaria O(log n)
