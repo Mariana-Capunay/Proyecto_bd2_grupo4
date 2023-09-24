@@ -5,47 +5,60 @@
 #include <fstream>
 #include <vector>
 #include <cmath>
+#include <tuple>
 using namespace std;
 
 
 template <typename T>
 struct Nodo{
-    long pointer_value; // posicion (en file de registros) del registro correspondiente al value
+    int regPos; // posicion (en file de registros) del registro correspondiente al value
     T value; // valor de la key guardada
-    long next; // posicion (en archivos de nodos) del nodo siguiente (si no hay, -1)
+    int next; // posicion (en archivos de nodos) del nodo siguiente (si no hay, -1)
     char nextFile; // char que indica si next está en el heap ('a' de aux.dat), o sorted ('d' de datos.dat)
 
     Nodo() {
-        pointer_value = -1;
+        regPos = -1;
         next = -1;
         nextFile = ' ';
     }
 
-    Nodo(long puntero, T key) {
-        pointer_value = puntero;
+    Nodo(int puntero, T key) {
+        regPos = puntero;
         value = key;
         next = -1;
         nextFile = ' ';
     }
 
-    Nodo(long puntero, T key, long punteroNext, char fileLoc) {
-        pointer_value = puntero;
+    Nodo(int puntero, T key, int nodoNext, char nodoNextFile) {
+        regPos = puntero;
         value = key;
-        next = punteroNext;
-        nextFile = fileLoc;
+        next = nodoNext;
+        nextFile = nodoNextFile;
     }
 
-    void setValue(long puntero, T key) {
-        pointer_value = puntero;
+    void setValue(int puntero, T key) {
+        regPos = puntero;
         value = key;
     }
 
-    void setNext(long puntero) {
-        next = puntero;
+    void setNext(int nodoNext, char nodoNextFile) {
+        next = nodoNext;
+        nextFile = nodoNextFile;
+    }
+
+    void print(){
+        cout << regPos;
+        cout << " ";
+        cout << value;
+        cout << " ";
+        cout << next;
+        cout << " ";
+        cout << nextFile;
+        cout << endl;
     }
 
     int size() {
-        return 2*sizeof(long) + sizeof(T) + sizeof(char);
+        return 2*sizeof(int) + sizeof(T) + sizeof(char);
     }
 };
 
@@ -53,151 +66,153 @@ struct Nodo{
 template <typename T>
 class SequentialFile {
 private:
-    // Punteros
-    long root; //posicion en archivo file del primer registro, -1 si no hay
-    int kHeapLimit;
+    // Primer nodo
+    int primerNodoPos = -1; // posicion (en archivos de nodos) del primer nodo (si no hay, -1)
+    char primerNodoFile = ' ';
 
-    // File names
-    string file_name; //data set en binario
-    string reorg_file_name;//archivo con llave ordenadas
-    string heap_file_name; // para guardar insercciones
+    int kHeapLimit; // Limite k de nodos en el heap antes de ser reconstruido
 
     // Files
-    fstream regFile;
-    fstream sortedNodeFile;
-    fstream heapNodeFile;
+    fstream* regFile;
+    fstream* sortedNodeFile;
+    fstream* heapNodeFile;
 
-    long nro_registros() {
-        this->regFile.seekg(0, ios::end);
+    // Devuelve el nro de registros en file.bin
+    int nro_registros() {
+        this->regFile->seekg(0, ios::end);
         Record r;
-        long nRegs = this->regFile.tellg() / r.size();
-
-        return nRegs;
+        return (this->regFile->tellg() / r.size());
     }
 
-    long nro_nodos(string nodeFile) {
-        // Devuelve el nro de nodos del archivo aux.dat o el de datos.dat, dependiendo qué le pasen
+    // Devuelve el nro de nodos en aux.dat o datos.dat, dependiendo qué le pasen
+    int nro_nodos(string nodeFile) {
         Nodo<T> nodo;
-        long nNodos;
         if (nodeFile == "datos.dat"){
-            sortedNodeFile.seekg(0, ios::end);
-            nNodos = sortedNodeFile.tellg() / nodo.size();
+            sortedNodeFile->seekg(0, ios::end);
+            return (sortedNodeFile->tellg() / nodo.size());
         } else if (nodeFile == "aux.dat") {
-            heapNodeFile.seekg(0, ios::end);
-            nNodos = heapNodeFile.tellg() / nodo.size();
+            heapNodeFile->seekg(0, ios::end);
+            return (heapNodeFile->tellg() / nodo.size());
         }
-
-        return nNodos;
     }
 
-    void insert (long pos, T key) {
-        Nodo<T> nuevoNodo(pos, key); // Creo el nuevo nodo
+    void insert (int regPos, T key) {
+        Nodo<T> nuevoNodo(regPos, key); // Creo el nuevo nodo
 
-        // si sortedNodeFile está vacio insertar directamente al sortedNodeFile
-        long nNodos = nro_nodos("datos.dat");
+        // Si sortedNodeFile está vacio insertar directamente al sortedNodeFile
+        int nNodos = nro_nodos("datos.dat");
         if (nNodos == 0) {
-            sortedNodeFile.seekg(0, ios::beg);
-            sortedNodeFile.write((char*) &nuevoNodo, nuevoNodo.size());
+            // Actualizar primerNodo de la clase Sequential
+            primerNodoPos = 0;
+            primerNodoFile = 'd';
+
+            // Escribir nuevo nodo
+            sortedNodeFile->seekg(0, ios::beg);
+            sortedNodeFile->write((char*) &nuevoNodo, nuevoNodo.size());
+        } else {
+            // Si la nueva key es mayor a la ultima key del sortedFile, insertar directamente al final
+            Nodo<T> last;
+
+            // Leer el ultimo nodo en el sortedNodeFile
+            sortedNodeFile->seekg((nNodos-1)*last.size(), ios::beg);
+            sortedNodeFile->read((char*) &last, last.size());
+
+            if (key > last.value) {
+                // Actualizar next del ultimo nodo en datos.dat
+                last.setNext(nNodos, 'd');
+                sortedNodeFile->seekg((nNodos-1)*last.size(), ios::beg);
+                sortedNodeFile->write((char*) &last, last.size());
+
+                // Escribir nuevo nodo (luego del ultimo)
+                sortedNodeFile->write((char*) &nuevoNodo, nuevoNodo.size());
+            } else {
+                // Si la nueva key es menor al valor del primer nodo
+                Nodo<T> first;
+
+                // Leer el primer nodo del SequentialFile (ya sea en el datos.dat o aux.dat)
+                if (primerNodoFile == 'a') {
+                    heapNodeFile->seekg(primerNodoPos*first.size(), ios::beg);
+                    heapNodeFile->read((char*) &first, first.size());
+                } else if (primerNodoFile == 'd') {
+                    sortedNodeFile->seekg(primerNodoPos*first.size(), ios::beg);
+                    sortedNodeFile->read((char*) &first, first.size());
+                }
+
+                if (first.value < key) {
+                    // El nuevo nodo guardará como next al primer nodo
+                    nuevoNodo.setNext(primerNodoPos, primerNodoFile);
+
+                    // Escribir el nuevo nodo en aux.dat (heapFile)
+                    int nNodosHeap = nro_nodos("aux.dat");
+                    heapNodeFile->seekg(nNodosHeap*nuevoNodo.size(), ios::beg);
+                    heapNodeFile->write((char*) &nuevoNodo, nuevoNodo.size());
+
+                    // Actualizar primer nodo del Sequential por el nuevo
+                    primerNodoPos = nNodosHeap;
+                    primerNodoFile = 'a';
+                } else {
+                    // Si no se cumple ninguno de los anteriores casos,
+                    // buscar el nodo que le antecede, actualizar los next's, e insertar en heapNodeFile
+                    auto [prevPos, prevFile] = locatePrev(key);
+                    Nodo<T> prev;
+                    int nNodosHeap = nro_nodos("aux.dat");
+
+                    // Guardar el next de prev en next del nuevo y
+                    // actualizar el next de prev para que apunte al nuevo
+                    if (prevFile == 'a') {
+                        heapNodeFile->seekg(prevPos*prev.size(), ios::beg);
+                        heapNodeFile->read((char*) &prev, prev.size());
+                        nuevoNodo.setNext(prev.next, prev.nextFile);
+                        prev.setNext(nNodosHeap, 'a');
+                        heapNodeFile->seekg(prevPos*prev.size(), ios::beg);
+                        heapNodeFile->write((char*) &prev, prev.size());
+                    } else if (prevFile == 'd') {
+                        sortedNodeFile->seekg(prevPos*prev.size(), ios::beg);
+                        sortedNodeFile->read((char*) &prev, prev.size());
+                        nuevoNodo.setNext(prev.next, prev.nextFile);
+                        prev.setNext(nNodosHeap, 'a');
+                        sortedNodeFile->seekg(prevPos*prev.size(), ios::beg);
+                        sortedNodeFile->write((char*) &prev, prev.size());
+                    }
+
+                    // Escribir el nuevo nodo en aux.dat (heapFile)
+                    heapNodeFile->seekg(nNodosHeap*nuevoNodo.size(), ios::beg);
+                    heapNodeFile->write((char*) &nuevoNodo, nuevoNodo.size());
+                }
+            }
         }
-
-        // si a nueva key es mayor a la ultima key del archivo, insertar directamente al final
-        Nodo<T> last;
-        sortedNodeFile.seekg((nNodos-1)*last.size(), ios::beg); // Leer el ultimo nodo en el sortedNodeFile
-        sortedNodeFile.read((char*) &last, last.size());
-        if (key > last.value) {
-            sortedNodeFile.write((char*) &nuevoNodo, nuevoNodo.size());
-        }
-
-        // sino, buscar el nodo que le antecede, cambiar el next, e insertar en heapNodeFile
-        Nodo<T> prev = locatePlace(key);
-
-
-
     }
 
-    Nodo<T> locatePlace (T key) {}
-    //vendria a ser esto: (adaptar)
-//    int binarySearchPosition(const Record& nuevoRecord) {
-//
-//        /*
-//        En este código, el método binarySearchPosition utiliza la búsqueda binaria para encontrar
-//        la posición de inserción del nuevo registro nuevoRecord en orden alfabético. Devolverá la
-//        posición en la que debería insertarse el nuevo registro en función del nombre. Si el
-//        registro ya existe en la lista, devolverá la posición actual del registro encontrado.
-//        */
-//        ifstream file(this->data_file, ios::binary);
-//        if (!file.is_open()) throw ("No se pudo abrir el archivo");
-//
-//        int left = 0;
-//        int right = size(this->data_file) - 1;
-//
-//        while (left <= right) {
-//            int middle = left + (right - left) / 2;
-//            Record record = readRecord(middle, this->data_file);//Obtener el registro en la mitad
-//
-//            // Comparar el nombre del registro con el nombre del nuevo record
-//            int cmp = record.compare(nuevoRecord);
-//
-//            if (cmp == 0) {//Si el nombre del registro es igual al nombre del nuevo record
-//
-//                file.close();
-//                middle += 1; //Si encuentra un nombre igual que me el nuevo registro se ponga despues
-//
-//                //Para la eliminacion si B se inserta despues que A, tenemos que verificar que este no apunte a un -1
-//                //En caso a apunte a un menos -1, vamos a ir retrocediendo de pos en data_file hasta encontrar el mas registro
-//                //superior alfabeticamente a B que no este eliminado.
-//                while (getPunteroAtPosition(middle-1,this->data_file) == -1){
-//                    middle -= 1;
-//                    //Si esta A y quiero insertar B. Entonces el metodo me retornada left, ya que A estaba en left -1
-//                }
-//
-//                return middle; // Encontrado, devuelve la posición actual
-//            } else if (cmp < 0) {
-//                left = middle + 1; // El nombre está en la mitad derecha
-//            } else {
-//                right = middle - 1; // El nombre está en la mitad izquierda
-//            }
-//        }
-//
-//        file.close();
-//
-//        // Si no se encuentra un registro igual, devolver la posición en la que debería insertarse
-//
-//        //Para la eliminacion si B se inserta despues que A, tenemos que verificar que este no apunte a un -1
-//        //En caso a apunte a un menos -1, vamos a ir retrocediendo de pos en data_file hasta encontrar el mas registro superior alfabeticamente a B que no este eliminado.
-//        while (getPunteroAtPosition(left-1,this->data_file) == -1){
-//            left -= 1;
-//
-//            //Si esta A y quiero insertar B. Entonces el metodo me retornada left, ya que A estaba en left -1
-//        }
-//        return left;
-//    }
+    tuple<int, char> locatePrev (T key) {
+        return {1,'a'};
+    }
+
 
 public:
-    SequentialFile () {
-        root = -1;
-    }
+    SequentialFile () {}
 
     SequentialFile (string file_name) {
-        root = -1;
 
-        this->file_name = file_name;
-        reorg_file_name = "datos.dat";
-        heap_file_name = "aux.bin";
+        fstream regF(file_name, ios::binary | ios::in | ios::out);
+        regFile = &regF;
 
-        regFile.open(file_name, ios::binary | ios::in | ios::out);
-        sortedNodeFile.open(reorg_file_name, ios::binary | ios::in | ios::out);
-        heapNodeFile.open(heap_file_name, ios::binary | ios::in | ios::out);
+        fstream sortedF ("datos.dat", ios::binary | ios::in | ios::out | ios::trunc);
+        sortedNodeFile = &sortedF;
 
-        long nRegs = nro_registros();
+        fstream heapF ("aux.dat", ios::binary | ios::in | ios::out | ios::trunc);
+        heapNodeFile = &heapF;
+
+        int nRegs = nro_registros();
         if (nRegs > 0) {
             kHeapLimit = trunc(log2(nRegs));
             Record r;
-            regFile.seekg(0, ios::beg);
+            regFile->seekg(0, ios::beg);
             for (int i = 0; i < nRegs; ++i) {
-                regFile.read((char*) &r, r.size());
-                insert(i, r.atrib1);
+                regFile->read((char*) &r, r.size());
+                insert(i, r.key);
             }
+        } else {
+            kHeapLimit = 10;
         }
     }
 
@@ -206,25 +221,33 @@ public:
     }
 
     virtual ~SequentialFile() {
-        this->regFile.close();
-        this->sortedNodeFile.close();
-        this->heapNodeFile.close();
+        this->regFile->close();
+        this->sortedNodeFile->close();
+        this->heapNodeFile->close();
+    }
+
+    void printRegistros() {
+        cout << "Archivo de registros:" << endl;
+        fstream registros ("file.bin", ios::binary | ios::in | ios::out);
+        Record r;
+        registros.seekg(0, ios::beg);
+        for (int i = 0; i < 8; ++i) {
+            registros.read((char*) &r, r.size());
+            r.print();
+        }
+    }
+
+    void printSortedNodes() {
+        cout << "Archivo ordenado:" << endl;
+        fstream ordenado ("datos.dat", ios::binary | ios::in | ios::out);
+        Nodo<int> nodo;
+        ordenado.seekg(0, ios::beg);
+        for (int i = 0; i < 8; ++i) {
+            ordenado.read((char*) &nodo, nodo.size());
+            nodo.print();
+        }
     }
 
 };
-
-/*Cambios:
- * se cambió Node a Nodo para evitar conflictos con el std
- *
- * nuevo atributo a Nodo, un char que indica si el next esta en el heap (aux.dat) o sorted (datos.dat)
-(ya no va lo de usar positivos y negativos, se complica innecesariamente)
- *
- * coloqué files en la clase SequentialFile y los abro en el constructor para no tener que abrirlos y cerrarlos en cada funcion
-(cierro los archivos en el destructor de clase)
- *
- * se eliminó el atributo de SequentialFile que guardaba la posicion al primer elemento, ya que siempre será el primero del sorted file (datos.dat)
- *
- * */
-
 
 #endif
