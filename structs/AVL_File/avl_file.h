@@ -152,15 +152,23 @@ class AVLFile{
             } else if (nodo.right==-1){ //caso en el que tiene hijo izquierdo
                 return nodo.left; //retorna "nodo.left" para que no se elimine esta referencia al nodo
 
-            } else{ // nodo existe y tiene dos hijos
-                
+            } else{ // nodo existe y tiene dos hijo
                 //se debe reemplazar por su sucesor (retornar valor del sucesor - actualizar altura)
-            } 
+                NodeAVL<T> sucesor = find_sucesor(nodo); //se busca sucesor
+                T value_sucesor = sucesor.value; //se guarda valor del sucesor
+                long pos_sucesor = sucesor.pointer_value; //se guarda posicion del sucesor
+                this->remove(nodo.right, value_sucesor); //se elimina sucesor
+                nodo.value = value_sucesor; //se reemplaza valor del nodo por el valor del sucesor
+                return pos; //se retorna posicion del nodo
+            }
         }
 
+        //actualizar altura
+        alturaActulizada(pos,nodo); //actualiza la altura del nodo actual
         //balancear
+        balance(pos, nodo); //se balancea el arbol
         //retornar
-        return 0;
+        return pos;
     }
 
     bool insert(long& pos_node, NodeAVL<T>& node){
@@ -176,7 +184,6 @@ class AVLFile{
             file.seekg(0,ios::end);
 
             // Llamada al autobalanceo
-
             file.seekg(0, ios::beg);
             NodeAVL<T> first;
             file.read((char*)&first, first.size());
@@ -240,20 +247,11 @@ class AVLFile{
     }
 
     long balanceFactor(NodeAVL<T> &node){//balance factor
-        long FacB=0;
-        NodeAVL<T> hijoIzq;
-        NodeAVL<T> hijoDer;
-        if(node.left!=-1){ //si tiene hijo izquierdo
-            file.seekg(node.left,ios::beg);//se posiciona en el hijo izquierdo
-            file.read((char*)&hijoIzq,hijoIzq.size());//se lee el hijo izquierdo
-            FacB+=hijoIzq.height; //se suma la altura del hijo izquierdo
-        }
-        if(node.right!=-1){ //si tiene hijo derecho
-            file.seekg(node.right,ios::beg);//se posiciona en el hijo derecho
-            file.read((char*)&hijoDer,hijoDer.size());//se lee el hijo derecho
-            FacB-=hijoDer.height; //se resta la altura del hijo derecho
-        }
-        return FacB;
+        long alturaIzq=altura(node.left); //altura del hijo izquierdo
+        cout << "Altura del hijo izquierdo: " << alturaIzq << endl;
+        long alturaDer=altura(node.right); //altura del hijo derecho
+        cout << "Altura del hijo derecho: " << alturaDer << endl;
+        return alturaIzq-alturaDer; //retorna la diferencia de alturas entre el hijo izquierdo y el derecho
     }
 
     long altura(long node){//retorna la altura del nodo
@@ -264,7 +262,7 @@ class AVLFile{
         return nodo.height; //retorna la altura del nodo
     
     }
-    
+
     void alturaActualizada(long pos, NodeAVL<T> &node){//actualiza la altura del nodo
         long alturaIzq=altura(node.left); //altura del hijo izquierdo
         long alturaDer=altura(node.right); //altura del hijo derecho
@@ -278,6 +276,19 @@ class AVLFile{
         file.write((char*)&node,node.size());//se escribe el nodo
     }
 
+    NodeAVL<T> find_sucesor(NodeAVL<T> &node){//retorna el sucesor del nodo
+        NodeAVL<T> nodo;
+        file.seekg(node.right,ios::beg);//se posiciona en el hijo derecho
+        file.read((char*)&nodo,nodo.size());//se lee el hijo derecho
+        long pos=nodo.left;//posicion del hijo izquierdo del hijo derecho
+
+        while(pos!=-1){//mientras exista un hijo izquierdo
+            file.seekg(pos,ios::beg);//se posiciona en el hijo izquierdo
+            file.read((char*)&nodo,nodo.size());//se lee el hijo izquierdo
+            pos=nodo.left;//posicion del hijo izquierdo del hijo derecho
+        }
+        return nodo;//retorna el sucesor
+    }
 };
 
 
@@ -285,6 +296,7 @@ class AVLFile{
 template <typename T>
 void AVLFile<T>::balance(long pos, NodeAVL<T> &node){//verifica si una rotación es necesaria
     //factor de balanceo
+    cout<<"ingreso de balanceo..............................................."<<endl;
         long FacB=balanceFactor(node); //balanceFactor es la diferencia de alturas entre el hijo izquierdo y el derecho
         cout << "Factor de balanceo del nodo " << node.value << ": " << FacB << endl;
         if(FacB>1){ //si el factor de balanceo es mayor a 1, se debe rotar a la derecha
