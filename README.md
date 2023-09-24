@@ -54,7 +54,7 @@ Este análisis se realizará en base a los accesos a memoria secundaria.
 - **Complejidad
   
 | Insert | Search | Search Range | Remove | 
-| :---: | :---: | :---:  | :---:  | :---: |
+| :---: | :---: | :---:  | :---:  |
 
 ### Sequential File
 El objetivo es poder aplicar la busqueda binaria para conseguir una complejidad de acceso a memoria secundaria O(log n)
@@ -86,14 +86,14 @@ En la reconstrucción del archivo se serán completamente eliminados.
 - **Complejidad
 
 | Insert | Search | Search Range | Remove | 
-| :---: | :---: | :---:  | :---:  | :---: |
+| :---: | :---: | :---:  | :---:  |
 
 ### B+ Tree
 
 - **Complejidad
   
 | Insert | Search | Search Range | Remove | 
-| :---: | :---: | :---:  | :---:  | :---: |
+| :---: | :---: | :---:  | :---:  |
 
 ## Optimización de memoria secundaria <a name="id7"></a>
 
