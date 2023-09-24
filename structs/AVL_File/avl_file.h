@@ -50,14 +50,14 @@ class AVLFile{
 
         int pos = nro_registros(); 
 
-        cout<<"posicion: "<<pos<<endl;
+        //cout<<"posicion: "<<pos<<endl;
         file.open(heap_file, ios::binary|ios::in|ios::out);
         if (!file.is_open()) throw runtime_error("no se pudo abrir archivo en funcion insert(T key)");
 
         NodeAVL<T> nodo(pos,key);// = NodeAVL<T>(pos, key);
 
         bool result = insert(root, nodo);
-        cout<<"root -> "<<root<<endl;
+        //cout<<"root -> "<<root<<endl;
         file.close();
         return result;
     }
@@ -85,9 +85,6 @@ class AVLFile{
             DWORD error = GetLastError();
             std::cerr << "No se pudo eliminar el archivo. Código de error: " << error << std::endl;
         }
-    }
-    bool insert(NodeAVL<T> nodo){
-        return insert(root,nodo);
     }
 
     bool remove(T key);  //elimina key del avl, cambia removed = true en filename, cambia el valor del nodo en heap_file (evaluar casos en que es hoja o no)
@@ -169,18 +166,17 @@ class AVLFile{
     bool insert(long& pos_node, NodeAVL<T>& node){
         if(pos_node == -1){
             // Inserción
-
             file.seekg(0, ios::end);
             pos_node = file.tellg();                    // Obtener la posición de inserción
-            cout<<"insertando en pos: "<<pos_node<<endl;
+            //cout<<"insertando en pos: "<<pos_node<<endl;
             file.seekp(pos_node, ios::beg);
-            cout<<"tamaño del registro: "<<node.size()<<" | ";
+            //cout<<"tamaño del registro: "<<node.size()<<" | ";
 
             file.write((char*)&node, node.size());
 
             //prueba de longitud de archivo
             file.seekg(0,ios::end);
-            cout<<"nuevo tamaño. "<<file.tellg()<<endl;
+            //cout<<"nuevo tamaño. "<<file.tellg()<<endl;
             
             // Llamada al autobalanceo
 
@@ -191,7 +187,7 @@ class AVLFile{
 
             return true;
         } else{
-            cout << "Comparando nodos..." << endl;
+            //cout << "Comparando nodos..." << endl;
             // Lee el nodo en el que se encuentra actualmente a través de parent
             file.seekg(pos_node, ios::beg);
             NodeAVL<T> parent;
@@ -207,7 +203,7 @@ class AVLFile{
             } else if(node.value > parent.value){
                 //node.height++;                          // Incrementa la altura del nodo a ingresar
                 insert(parent.right, node);             // Llama a la función insert para el hijo izquierdo de parent
-                cout<<"new parent.right: "<<parent.right<<endl;
+                //cout<<"new parent.right: "<<parent.right<<endl;
 
             } else{
                 // Cuando ya existe un nodo con dicho valor
@@ -218,7 +214,7 @@ class AVLFile{
                 }
             }
             // Actualización del nodo padre
-            cout << "Actualizando padre" <<"(posicion "<<pos_node<<")"<< endl;
+            //cout << "Actualizando padre" <<"(posicion "<<pos_node<<")"<< endl;
             NodeAVL<T> l;
             NodeAVL<T> r;
             long acc = 0;
@@ -278,7 +274,7 @@ class AVLFile{
     
     }
     
-    void alturaActulizada(long pos,NodeAVL<T> &node){//actualiza la altura del nodo
+    void alturaActualizada(long pos, NodeAVL<T> &node){//actualiza la altura del nodo
         long alturaIzq=altura(node.left); //altura del hijo izquierdo
         long alturaDer=altura(node.right); //altura del hijo derecho
 
@@ -299,23 +295,28 @@ template <typename T>
 void AVLFile<T>::balance(long pos, NodeAVL<T> &node){//verifica si una rotación es necesaria
     //factor de balanceo
         long FacB=balanceFactor(node); //balanceFactor es la diferencia de alturas entre el hijo izquierdo y el derecho
+        cout << "Factor de balanceo del nodo " << node.value << ": " << FacB << endl;
         if(FacB>1){ //si el factor de balanceo es mayor a 1, se debe rotar a la derecha
+            cout << "Ejecutando rotación a la derecha..." << endl;
             NodeAVL<T> hijoIzq; //nodo auxiliar para el hijo izquierdo
             file.seekg(node.left,ios::beg);//se posiciona en el hijo izquierdo
             file.read((char*)&hijoIzq,hijoIzq.size());//se lee el hijo izquierdo
-
             if(balanceFactor(hijoIzq)<=-1){ //si el factor de balanceo del hijo izquierdo es menor o igual a -1, se debe hacer una rotación doble a la derecha
+                cout << "\tEjecutando rotación doble..." << endl;
                 left_Rotation(pos,node);
             }
+
             right_Rotation(pos,node);
         }
 
         else if(FacB<=-2){ //si el factor de balanceo es menor o igual a -2, se debe rotar a la izquierda
+            cout << "Ejecutando rotación a la izquierda..." << endl;
             NodeAVL<T> hijoDer; //nodo auxiliar para el hijo derecho
             file.seekg(node.right,ios::beg);//se posiciona en el hijo derecho
             file.read((char*)&hijoDer,hijoDer.size());//se lee el hijo derecho
 
             if(balanceFactor(hijoDer)>=1){ //si el factor de balanceo del hijo derecho es mayor o igual a 1, se debe hacer una rotación doble a la izquierda
+                cout << "\tEjecutando rotación doble..." << endl;
                 right_Rotation(pos,node);
             }
             left_Rotation(pos,node); 
@@ -340,8 +341,8 @@ void AVLFile<T>::left_Rotation(long pos, NodeAVL<T> &node){//rotación a la izqu
     file.write((char*)&hijoDer,hijoDer.size());//se escribe el hijo derecho
 
     //actualizar altura
-    alturaActulizada(pos,node); //actualiza la altura del nodo actual
-    alturaActulizada(hijoDer.left,hijoDer); //actualiza la altura del hijo derecho
+    alturaActualizada(pos, node); //actualiza la altura del nodo actual
+    alturaActualizada(hijoDer.left, hijoDer); //actualiza la altura del hijo derecho
 
     
 }
@@ -365,8 +366,8 @@ void AVLFile<T>::right_Rotation(long pos, NodeAVL<T> &node){
     file.write((char*)&hijoIzq,hijoIzq.size());//se escribe el hijo izquierdo
 
     //actualizar altura
-    alturaActulizada(pos,node); //actualiza la altura del nodo actual
-    alturaActulizada(hijoIzq.right,hijoIzq); //actualiza la altura del hijo izquierdo
+    alturaActualizada(pos, node); //actualiza la altura del nodo actual
+    alturaActualizada(hijoIzq.right, hijoIzq); //actualiza la altura del hijo izquierdo
 }
 
 
