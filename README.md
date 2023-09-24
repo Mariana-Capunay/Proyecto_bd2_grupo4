@@ -49,13 +49,31 @@ Las estructuras implementadas son: **AVL File**, **Sequential File** y **Extendi
 ## Análisis comparativo - teórico <a name="id6"></a>
 Este análisis se realizará en base a los accesos a memoria secundaria.
 
+
 ### AVLFile
+archivo avl
+Implementación de árbol de búsqueda binaria autoequilibrado que funciona con memoria secundaria para almacenar registros. Admite inserción, búsqueda basada en claves, búsqueda y eliminación basada en rangos.
+
+Funciones miembro
+
+- **insertar (tecla KeyType, puntero largo)**
+
+Inserta un nuevo nodo (clave, puntero) en el archivo de índice. Dicho nodo almacena una referencia a un registro en un archivo de montón y su clave correspondiente asociada.
+Internamente, desciende el AVL hasta alcanzar un nodo DISK_NULL para colocar el nuevo nodo al final del archivo de índice y reasignar el puntero padre.
+Si ya existe un nodo con la misma clave, hay dos casos: si el archivo de índice indexa una clave no repetible, en cuyo caso se lanza una excepción; De lo contrario, los nodos que comparten la misma clave se vinculan en una lista directa.
+
+- **remove**
+Elimina (lógicamente) todos los registros tales que index(record) = key marcando todos los record.removed como verdadero y eliminando dichos nodos de AVL.
+
+
 
 - **Complejidad**
   
   | Insert | Search | Search Range | Remove | 
   | :---: | :---: | :---:  | :---:  |
   | :---: | :---: | :---:  | :---:  |
+
+![Copy of Base de datos2 _ proyecto1](https://github.com/Mariana-Capunay/Proyecto_bd2_grupo4/assets/91238621/f0b3daac-644c-4922-b22a-727ca0227574)
 
 ### Sequential File
 El objetivo es poder aplicar la busqueda binaria para conseguir una complejidad de acceso a memoria secundaria O(log n)
@@ -88,12 +106,14 @@ En la reconstrucción del archivo se serán completamente eliminados.
   
   | Insert | Search | Search Range | Remove | 
   | :---: | :---: | :---:  | :---:  |
-  | :---: | :---: | :---:  | :---:  |
+  | O(log N) | O(log N) | O(log N) + O(K)   |  (O(1))  |
+
+![image](https://github.com/Mariana-Capunay/Proyecto_bd2_grupo4/assets/91238621/76c00d4b-0b4a-4d71-9b32-8f46a9f430f7)
 
 ### Extendible Hashing
 
 - **Funcion hashing**
-    Se utilizó una función polinómica si _key_ = $a_n,a_{n-1},...a_2,a_1,a_0$ , entonces _hashing_ = $a_0 + a_1 \cdot p + a_2 \cdot p^2 + ... $ . Donde $p$ es un primo que sirve como base.
+    Se utilizó una función polinómica si _key_ = $a_n,a_{n-1},...a_2,a_1,a_0$ , entonces _hashing_ = $a_0 + a_1 \cdot p + a_2 \cdot p^2 + ...$ . Donde $p$ es un primo que sirve como base.
 
 - **Árbol binario**
     Se implementó el arbol binario a partir del _hashing_ de las _key_. Se establece un límite para el tamaño de los bucket de los nodos hojas.  

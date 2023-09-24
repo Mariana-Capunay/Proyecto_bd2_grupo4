@@ -155,6 +155,12 @@ private:
                     // Si no se cumple ninguno de los anteriores casos,
                     // buscar el nodo que le antecede, actualizar los next's, e insertar en heapNodeFile
                     auto [prevPos, prevFile] = locatePrev(key);
+
+                    // No insertar si ya existe la llave
+                    if (prevPos == -1) {
+                        return;
+                    }
+
                     Nodo<T> prev;
                     int nNodosHeap = nro_nodos("aux.dat");
 
@@ -185,7 +191,88 @@ private:
     }
 
     tuple<int, char> locatePrev (T key) {
+        int nNodos = nro_nodos("datos.dat");
+        int left = 0;
+        int right = nNodos - 1;
+        int currNodePos;
+        Nodo<T> nodo;
+
+        for (int i = 0; i < log2(nNodos); ++i) {
+            currNodePos = floor((left + right)/2);
+            sortedNodeFile->seekg(currNodePos*nodo.size(), ios::beg);
+            sortedNodeFile->read((char*) &nodo, nodo.size());
+            if (nodo.value == key) {
+                return {-1,' '};
+            } else if (nodo.value > key) {
+                right = currNodePos - 1;
+            } else {
+                left = currNodePos + 1;
+            }
+        }
+
+        // Si en la búsqueda se pasó el lugar, cambiar al anterior
+        if (nodo.value > key) {
+            currNodePos--;
+            sortedNodeFile->seekg(currNodePos*nodo.size(), ios::beg);
+            sortedNodeFile->read((char*) &nodo, nodo.size());
+        }
+
+        // Buscar también en los next del nodo
+        while (nodo.next != -1 && nodo.nextFile == 'a') {
+            Nodo<T> nodoAux;
+            heapNodeFile->seekg(nodo.next*nodoAux.size(), ios::beg);
+            heapNodeFile->read((char*) &nodoAux, nodoAux.size());
+
+            if (nodoAux.value > key) {
+                break;
+            } else {
+                nodo = nodoAux;
+            }
+            // TODO: ultimo caso
+        }
+
+        return {3,'d'};
         return {1,'a'};
+    }
+
+    void rebuild () {
+        vector<Nodo<T>> nodos;
+        Nodo<T> nodo;
+        int pos = primerNodoPos;
+        fstream* nodeFile;
+        if (primerNodoFile == 'a') {
+            nodeFile = heapNodeFile;
+        } else if (primerNodoFile == 'd') {
+            nodeFile = sortedNodeFile;
+        }
+
+        // Llenar el vector nodos
+        while (pos != -1) {
+            nodeFile->seekg(pos*nodo.size(), ios::beg);
+            nodeFile->read((char*) &nodo, nodo.size());
+            nodos.push_back(nodo);
+
+            if (nodo.nextFile == 'a') {
+                nodeFile = heapNodeFile;
+            } else if (nodo.nextFile == 'd') {
+                nodeFile = sortedNodeFile;
+            }
+            pos = nodo.next;
+        }
+
+        // Actualizar primer nodo del Sequential
+        primerNodoPos = 0;
+        primerNodoFile = 'd';
+
+        // Sobreescribir datos.dat
+        sortedNodeFile->seekg(0, ios::beg);
+        for (int i = 0; i < nodos.size(); ++i) {
+            nodos[i].setNext(i+1, 'd'); // Actualizar next de cada nodo ahora ordenado
+            sortedNodeFile->write((char*) &nodos[i], nodos[i].size());
+        }
+
+        // Vaciar aux.dat
+        // TODO
     }
 
 
@@ -227,24 +314,35 @@ public:
         this->heapNodeFile->close();
     }
 
-    void printRegistros() {
+    void printRegistros(int n) {
         cout << "Archivo de registros:" << endl;
         fstream registros ("file.bin", ios::binary | ios::in | ios::out);
         Record r;
         registros.seekg(0, ios::beg);
-        for (int i = 0; i < 8; ++i) {
+        for (int i = 0; i < n; ++i) {
             registros.read((char*) &r, r.size());
             r.print();
         }
     }
 
-    void printSortedNodes() {
+    void printSortedNodes(int n) {
         cout << "Archivo ordenado:" << endl;
         fstream ordenado ("datos.dat", ios::binary | ios::in | ios::out);
         Nodo<int> nodo;
         ordenado.seekg(0, ios::beg);
-        for (int i = 0; i < 8; ++i) {
+        for (int i = 0; i < n; ++i) {
             ordenado.read((char*) &nodo, nodo.size());
+            nodo.print();
+        }
+    }
+
+    void printHeapNodes(int n) {
+        cout << "Archivo auxiliar:" << endl;
+        fstream heap ("aux.dat", ios::binary | ios::in | ios::out);
+        Nodo<int> nodo;
+        heap.seekg(0, ios::beg);
+        for (int i = 0; i < n; ++i) {
+            heap.read((char*) &nodo, nodo.size());
             nodo.print();
         }
     }
