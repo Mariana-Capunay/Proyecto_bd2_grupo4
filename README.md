@@ -41,7 +41,7 @@ Los resultados esperados al aplicar estas técnicas de indexación incluyen:
 ## Técnicas de indexación <a name="id4"></a>
 Las estructuras implementadas son: **AVL File**, **Sequential File** y **Extendible Hashing**. 
 - **AVL File:** Esta estructura hace uso de un archivo _heapfile_ para guardar la información de los nodos
-- **Sequential File:** Esta estructura ...
+- **Sequential File:** Esta estructura hace uso de un archivo _data.bin_ para las inserciones de los registros, y  el registro _auxiliar.bin_ para las nuevas inserciones que se iran almacenando en un espacio auxiliar.
 - **Extendible Hashing:** Esta estructura hace uso de un archivo _hashing_directory.dat_ para guardar la información de los nodos y _hashing_index.dat_ para guardar los addresses respectivos. Cuando ocurra desbordamiento, la información desbordada estará se guardará en _hashing_overflow.dat_.
 
 ## Algoritmos implementados <a name="id5"></a>
@@ -50,9 +50,50 @@ Las estructuras implementadas son: **AVL File**, **Sequential File** y **Extendi
 Este análisis se realizará en base a los accesos a memoria secundaria.
 
 ### AVLFile
+
+- **Complejidad
+|Insert|Search|Search Range|Remove| 
+
+| :---: | :---: | :---:  | :---:  | :---: |
+
 ### Sequential File
+El objetivo es poder aplicar la busqueda binaria para conseguir una complejidad de acceso a memoria secundaria O(log n)
+Para ello, el archivo debe mantener los registros ordenados fisicamente en base al valor del campo de busqueda (key).
+Principalmente se ordena en base a la llave primaria de la tabla. 
+
+- **El algoritmo de búsqueda binaria
+El algoritmo de búsqueda binaria es usado para localizar un registro en el archivo dado un valor de búsqueda k.
+Se requiere O(log N) accesos a memoria secundaria. 
+En la búsqueda se debe descartar los registros marcados como eliminados. 
+
+- **Estrategia del espacio auxiliar:
+Las nuevas inserciones se van almacenando en un espacio auxiliar
+Mantener un limite máximo de K registros en el espacio auxiliar
+La búsqueda se debe hacer en ambos espacios.
+Cada cierto tiempo el archivo de datos debe reconstruirse con los registros del espacio auxiliar. 
+
+- **Inserciones enlazadas
+Localizar la posición en donde será insertado el nuevo registro.
+Si el espacio está libre, insertar.
+Sino, insertar el registro en un espacio auxiliar.
+En este caso, los punteros deberían ser actualizados.
+Se requiere reorganizar el archivo original cada cierto tiempo mezclando ordenadamente con el espacio auxiliar. 
+
+- **Eliminación de un registro
+Se utiliza los punteros para saltar las tuplas eliminadas.
+En la reconstrucción del archivo se serán completamente eliminados.
+
+- **Complejidad
+|Insert|Search|Search Range|Remove| 
+
+| :---: | :---: | :---:  | :---:  | :---: |
+
 ### B+ Tree
 
+- **Complejidad
+|Insert|Search|Search Range|Remove| 
+
+| :---: | :---: | :---:  | :---:  | :---: |
 
 ## Optimización de memoria secundaria <a name="id7"></a>
 
