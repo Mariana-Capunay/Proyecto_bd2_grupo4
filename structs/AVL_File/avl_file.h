@@ -63,23 +63,35 @@ class AVLFile{
         return result;
     }
 
-    void insert(NodeAVL<T> nodo){
-        this->insert(root,nodo);
-        size++;
+    void insert(NodeAVL<T>& nodo){
+        file.open(heap_file, ios::binary|ios::in|ios::out);
+        if (this->insert(root,nodo)){
+            size++;
+            file.close();
+        }
+        file.close();
     }
 
     void printData(){ // method for debug
         cout<<"nro de registros: "<<this->size<<endl;
         
-        file.open(heap_file, ios::binary|ios::in);
-        file.seekg(0,ios::beg);
+        file.open(this->heap_file, ios::binary|ios::in);
+        
         int cont = 0;
         
+        ifstream record_file(this->filename,ios::binary);
         while (file.peek() != EOF){//nodo.read(file)){
             NodeAVL<T> nodo;
-            file.read((char*)&nodo,nodo.size());
-            nodo.getValue();
+            file.read((char*)&nodo,nodo.size()); // obtiene nodo del heap_file
+
+            //lee nodo del dataset en binario
+            record_file.seekg(nodo.pointer_value);
+            Record record;
+            record_file.read((char*)&record, record.size());
+            record.print();
+            //nodo.getValue();
         }
+        record_file.close();
         file.close();
     }
 
