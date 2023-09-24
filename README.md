@@ -19,17 +19,36 @@
 12. [Nuestro genial equipo](#idc)
 ## Objetivo del proyecto<a name="id1"></a>
 El propósito de este proyecto es la visualización y comparación de diversas técnicas de indexación de archivos, mediante la implementación de las estructuras que aprendimos en el curso de Base de Datos II.
+<p align="center">
+  <img src="images/objective.jpg" alt="Objetivo" width="300" height="200">
+</p>
+
 ## Dataset<a name="id2"></a>
 El proyecto hace uso de un dominio de datos conformado por:
+<p align="center">
+  <img src="images/dataset_csv.png" alt="Dataset .csv" width="340" height="235">
+</p>
+
 1. una columna de tipo **int**
 2. una columna de tipo **char[40]**
 3. una columna de tipo **int**
 4. una columna de tipo **char[25]**
 5. una columna de tipo **float**
 
-Además, el dataset proporcionado debe ser un archivo _.csv_ con registros de longitud fija.
+Además, el dataset proporcionado debe ser un archivo _.csv_ con registros de longitud fija. 
+<p align="center">
+  <img src="images/dataset.png" alt="Dataset" width="150" height="150">
+</p>
 
+Luego de ingresar un archivo_.csv_ válido (con las columnas indicadas previamente), se procede a convertir toda la data a binario para guardarla en un nuevo archivo (binario) con la siguiente estructura:
+<p align="center">
+  <img src="images/dataset_bin.png" alt="Dataset Binario" width="400" height="220">
+</p>
+<p align="center">
+  <img src="images/record_struct.png" alt="Struct Record" width="500" height="130">
+</p>
 *Para los casos de prueba, hemos generado dos datasets diferentes con ayuda de las librerías _faker_ y _random_ de Python
+
 
 ## Resultados esperados<a name="id3"></a>
 Los resultados esperados al aplicar estas técnicas de indexación incluyen:
@@ -45,42 +64,37 @@ Las estructuras implementadas son: **AVL File**, **Sequential File** y **Extendi
 - **Extendible Hashing:** Esta estructura hace uso de un archivo _hashing_directory.dat_ para guardar la información de los nodos y _hashing_index.dat_ para guardar los addresses respectivos. Cuando ocurra desbordamiento, la información desbordada estará se guardará en _hashing_overflow.dat_.
 
 ## Algoritmos implementados <a name="id5"></a>
-- 
+- Para el **AVL File** y **Sequential File** hemos implementado  **_insert_**, **_search_**, **_search_by_range_** y **_remove_**.
+- Para el **Extendible Hashing** implementamos **_insert_**, **_search_** y **_search_by_range_**, debido a que no soporta la búsqueda por rango.
 ## Análisis comparativo - teórico <a name="id6"></a>
 Este análisis se realizará en base a los accesos a memoria secundaria.
 
 
 ### AVLFile
-archivo avl
-Implementación de árbol de búsqueda binaria autoequilibrado que funciona con memoria secundaria para almacenar registros. Admite inserción, búsqueda basada en claves, búsqueda y eliminación basada en rangos.
 
-Funciones miembro
+<p align="center">
+  <img src="images/avl_estructura.png" alt="Class AVL" width="500" height="330">
+</p>
 
-- **insertar (tecla KeyType, puntero largo)**
-
-Inserta un nuevo nodo (clave, puntero) en el archivo de índice. Dicho nodo almacena una referencia a un registro en un archivo de montón y su clave correspondiente asociada.
-Internamente, desciende el AVL hasta alcanzar un nodo DISK_NULL para colocar el nuevo nodo al final del archivo de índice y reasignar el puntero padre.
-Si ya existe un nodo con la misma clave, hay dos casos: si el archivo de índice indexa una clave no repetible, en cuyo caso se lanza una excepción; De lo contrario, los nodos que comparten la misma clave se vinculan en una lista directa.
-
-- **remove**
-Elimina (lógicamente) todos los registros tales que index(record) = key marcando todos los record.removed como verdadero y eliminando dichos nodos de AVL.
 
 
 
 - **Complejidad**
   
   | Insert | Search | Search Range | Remove | 
-  | :---: | :---: | :---:  | :---:  |
-  | :---: | :---: | :---:  | :---:  |
+  | :---: | :---: | :---:  | :---:  |       
+  | :---: | :---: | :---:  | :---:  |       
 
-![Copy of Base de datos2 _ proyecto1](https://github.com/Mariana-Capunay/Proyecto_bd2_grupo4/assets/91238621/f0b3daac-644c-4922-b22a-727ca0227574)
 
 ### Sequential File
 El objetivo es poder aplicar la busqueda binaria para conseguir una complejidad de acceso a memoria secundaria O(log n)
 Para ello, el archivo debe mantener los registros ordenados fisicamente en base al valor del campo de busqueda (key).
 Principalmente se ordena en base a la llave primaria de la tabla. 
+<p align="center">
+  <img src="images/sequential_estructura.jpeg" alt="Class AVL" width="500" height="330">
+</p>
 
-- **El algoritmo de búsqueda binaria**
+- **El algoritmo de búsqueda binaria:**
 El algoritmo de búsqueda binaria es usado para localizar un registro en el archivo dado un valor de búsqueda k.
 Se requiere O(log N) accesos a memoria secundaria. 
 En la búsqueda se debe descartar los registros marcados como eliminados. 
@@ -89,7 +103,8 @@ En la búsqueda se debe descartar los registros marcados como eliminados.
 Las nuevas inserciones se van almacenando en un espacio auxiliar
 Mantener un limite máximo de K registros en el espacio auxiliar
 La búsqueda se debe hacer en ambos espacios.
-Cada cierto tiempo el archivo de datos debe reconstruirse con los registros del espacio auxiliar. 
+Cada cierto tiempo el archivo de datos debe reconstruirse con los registros del espacio auxiliar.
+El espacio auxiliar tiene un tamaño máximo de k = log2(n) registros, haciendo que la búsqueda se mantenga en O(log n).
 
 - **Inserciones enlazadas**
 Localizar la posición en donde será insertado el nuevo registro.
@@ -99,16 +114,15 @@ En este caso, los punteros deberían ser actualizados.
 Se requiere reorganizar el archivo original cada cierto tiempo mezclando ordenadamente con el espacio auxiliar. 
 
 - **Eliminación de un registro**
-Se utiliza los punteros para saltar las tuplas eliminadas.
-En la reconstrucción del archivo se serán completamente eliminados.
+Se utiliza los punteros para saltar las tuplas eliminadas, e inmediatamente se recontruye el archivo ordenado con todos los registros.
 
 - **Complejidad**
   
   | Insert | Search | Search Range | Remove | 
-  | :---: | :---: | :---:  | :---:  |
-  | O(log N) | O(log N) | O(log N) + O(K)   |  (O(1))  |
+  | :---: | :---: | :---:  |:------:|
+  | O(log N) | O(log N) | O(log N) + O(K)   | (O(N)) |
 
-![image](https://github.com/Mariana-Capunay/Proyecto_bd2_grupo4/assets/91238621/76c00d4b-0b4a-4d71-9b32-8f46a9f430f7)
+
 
 ### Extendible Hashing
 

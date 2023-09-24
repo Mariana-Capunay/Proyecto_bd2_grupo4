@@ -9,20 +9,9 @@
 
 using namespace std;
 
-bool archivo_existe(const string& nombre){
-    ifstream archivo(nombre.c_str());
-    return archivo.good();
-}
+bool archivo_existe(const string& nombre);
 
-void crear_archivo(const string& nombre) {
-    ifstream archivo(nombre.c_str());
-    if (archivo.good()) { //si existe
-        archivo.close(); //cerrarlo
-        return; //ya no es necesario crear
-    }
-    ofstream file(nombre, ios::binary);
-    file.close();
-}
+void crear_archivo(const string& nombre);
 
 template <typename T>
 class AVLFile{
@@ -32,7 +21,7 @@ class AVLFile{
     string filename; //data con todos los registros
     string heap_file; //archivo en el que se guardan los nodos  (value, left, hight, pointer_value, next, height)
     fstream file; //para manejar heap_file sin abrir y cerrar tantas veces el archivo
-
+    int size = 0;
     void inicializar_root(){
         bool existe = archivo_existe(this->heap_file);
         crear_archivo(this->heap_file);
@@ -45,13 +34,13 @@ class AVLFile{
     public:
     AVLFile();
     AVLFile(string file_name, string atributo);//, int atributo_col);
-    void buildFromFile(int atributo_col);
+    void buildFromFile(string sourceName, int atributo_col);
     vector<long> search(T key); //devuelve posiciones de key en filename
     vector<long> rangeSearch(T begin_key, T end_key); //devuelve posiciones de key en filename
 
-    bool insert(T key) {  //inserta key en el AVL y guarda nodo en heap_file
+    bool insert(T key, long pos) {  //inserta key en el AVL y guarda nodo en heap_file
         cout << "Insertando elemento..." << endl;
-        int pos = nro_registros(); 
+        //int pos = nro_registros();
 
         //cout<<"posicion: "<<pos<<endl;
         file.open(heap_file, ios::binary|ios::in|ios::out);
@@ -70,11 +59,17 @@ class AVLFile{
         //cout<<"root -> "<<root<<endl;
         printData();
         file.close();
+        size++;
         return result;
     }
 
+    void insert(NodeAVL<T> nodo){
+        this->insert(root,nodo);
+        size++;
+    }
+
     void printData(){ // method for debug
-        cout<<"nro de registros: "<<nro_registros()<<endl;
+        cout<<"nro de registros: "<<this->size<<endl;
         
         file.open(heap_file, ios::binary|ios::in);
         file.seekg(0,ios::beg);
@@ -209,12 +204,33 @@ class AVLFile{
                 insert(parent.right, node);             // Llama a la función insert para el hijo izquierdo de parent
                 //cout<<"new parent.right: "<<parent.right<<endl;
 
+
             } else{
-                // Cuando ya existe un nodo con dicho valor
-                if(parent.next == -1){
-                } else {
-                    insert(parent.next, node);          // Llama a la función insert para el nodo next
+                // Cuando ya existe un nodo con dicho valor     
+                int new_pos = parent.next; 
+                while (parent.next!=-1){ //lee para insertar en next
+                    new_pos = parent.next;
+                    file.seekg(parent.next,ios::beg);
+                    file.read((char*)&parent, parent.size());
                 }
+
+                if (new_pos==-1) new_pos = pos_node;
+                
+                cout<<"insertando repetido";
+                //coloca nodo al final
+                file.seekg(0, ios::end); 
+                parent.next = file.tellg();
+                file.seekp(0, ios::end); 
+                node.next = -1;
+                file.write((char*)&node, node.size());
+
+                // guarda cambios por "next"
+                file.seekp(new_pos, ios::beg);
+                file.write((char*)&parent, parent.size());
+                file.close();
+                return true;
+                    
+                
             }
             // Actualización del nodo padre
             //cout << "Actualizando padre" <<"(posicion "<<pos_node<<")"<< endl;
@@ -250,14 +266,15 @@ class AVLFile{
     }
 
 int nro_registros(){
-        file.open(this->heap_file, ios::binary|ios::in); //abre modo lectura
+        file.open(this->filename, ios::binary|ios::in); //abre modo lectura
         if(!file.is_open()) throw runtime_error("No se pudo abrir el archivo");
         file.clear();
         file.seekg(0, ios::end);
         long total_bytes = file.tellg();
         cout << "Total bytes: " << total_bytes << endl;
         file.close();
-        return (total_bytes/sizeof(NodeAVL<T>));   // Registro en data.dat
+        Record record;
+        return (total_bytes/record.size());   // Registro en data.dat
     }
 
     long balanceFactor(NodeAVL<T> &node){//balance factor
@@ -492,7 +509,8 @@ bool AVLFile<T>::remove(T key){
     
     int result = this->remove(root, key);
     file.close();
-    if (result!=-1) return true;
+
+    if (result!=-1){ size--; return true;}
     return false;
 }
 
@@ -521,25 +539,36 @@ void AVLFile<T>::delete_equals(long pos){
 }
 
 template <typename T>
-void AVLFile<T>::buildFromFile(int atributo_col){
-    ifstream data(this->filename, ios::binary);
+void AVLFile<T>::buildFromFile(string sourceName, int atributo_col){
+    this->filename = sourceName;
+    ifstream source(sourceName, ios::binary);
     string msg = "No existe archivo" + filename;
-    if (!data.is_open()) throw runtime_error(msg);
-    
+    if (!source.is_open()) throw runtime_error(msg);
+
     long bytes = 0;
+    source.seekg(0,ios::end);
+    int max_bytes = source.tellg();
     //cargamos los datos uno a uno  //cargamos cada registro del file_name como un nodo
-    while (data.tellg()<bytes){
+    //cout << "Archivos encontrados: " << source.tellg() << endl;
+    source.seekg(0,ios::beg);
+    while (bytes < max_bytes){
         Record record;
-        data.read((char*)&record, sizeof(Record)); // leemos record actual
+        source.seekg(bytes,ios::beg);
+        source.read((char*)&record, record.size()); // leemos record actual
 
         NodeAVL<T> nodo;
         if (atributo_col == 2) nodo.setValue(bytes, record.atrib2); // creamos el nodo
         else nodo.setValue(bytes, record.atrib4);
+
         this->insert(nodo);
-        bytes+= sizeof(Record); // se aumenta contador de bytes
+            
+        
+        cout << record.key << endl;
+        //this->insert(nodo);
+        bytes+= record.size(); // se aumenta contador de bytes
     }
 
-    data.close();
+    source.close();
 }
 
 template <typename T>

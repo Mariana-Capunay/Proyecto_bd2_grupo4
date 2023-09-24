@@ -1,4 +1,5 @@
 #include "parser.h"
+#include "structs/AVL_File/avl_file.h"
 
 using namespace std;
 
@@ -128,12 +129,12 @@ CreateTableQuery parseCreateTableQuery(const std::string& sqlQuery) {
             1. abre el archivo, lo lleva a binario
             2. llena todas las estructuras (de acuerdo a sus columnas asignadas)
         */
-        ifstream file(query.filePath);
-        if (!file.is_open()) {
+        ifstream binSource(query.filePath);
+        if (!binSource.is_open()) {
             flag = 2; //archivo no existe
             cout<<"Archivo "<<query.filePath<<" no existe"<<endl;
         } else{
-            file.close();
+            binSource.close();
 
             // generamos version binaria del archivo
             string atr_1;
@@ -143,6 +144,7 @@ CreateTableQuery parseCreateTableQuery(const std::string& sqlQuery) {
             string atr_5;
 
             string new_file = conversor(query.filePath, atr_1, atr_2, atr_3, atr_4, atr_5);
+            cout << "Archivo creado: " << new_file << endl;
             flag = 1; // archivo existe
 
             // añadimos valor de atributos al vector
@@ -160,7 +162,17 @@ CreateTableQuery parseCreateTableQuery(const std::string& sqlQuery) {
             table_name = query.tableName; //se da nombre a la tabla (en caso todo haya ido bien)
 
             /*agregar valores a todas las estructuras*/
-        }
+            //binSource.open(new_file, ios::binary);
+            //binSource.seekg(0,ios::end);
+            string avl_filename_1 = "AVL_file";
+            avl_filename_1 += atr_2;
+
+            auto avl1 = new AVLFile<int>(new_file, atr_2);
+            //cout << "Construyendo avl desde " << new_file << " de tamahnio " << binSource.tellg() << endl;
+            avl1->buildFromFile(new_file, 2);
+            cout<<"Imprimiendo data";
+            avl1->printData();
+        }  
 
     } else {
         std::cerr << "Consulta CREATE TABLE no válida." << std::endl; // Consulta CREATE TABLE no válida
