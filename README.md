@@ -89,7 +89,8 @@ En la búsqueda se debe descartar los registros marcados como eliminados.
 Las nuevas inserciones se van almacenando en un espacio auxiliar
 Mantener un limite máximo de K registros en el espacio auxiliar
 La búsqueda se debe hacer en ambos espacios.
-Cada cierto tiempo el archivo de datos debe reconstruirse con los registros del espacio auxiliar. 
+Cada cierto tiempo el archivo de datos debe reconstruirse con los registros del espacio auxiliar.
+El espacio auxiliar tiene un tamaño máximo de k = log2(n) registros, haciendo que la búsqueda se mantenga en O(log n).
 
 - **Inserciones enlazadas**
 Localizar la posición en donde será insertado el nuevo registro.
@@ -99,14 +100,13 @@ En este caso, los punteros deberían ser actualizados.
 Se requiere reorganizar el archivo original cada cierto tiempo mezclando ordenadamente con el espacio auxiliar. 
 
 - **Eliminación de un registro**
-Se utiliza los punteros para saltar las tuplas eliminadas.
-En la reconstrucción del archivo se serán completamente eliminados.
+Se utiliza los punteros para saltar las tuplas eliminadas, e inmediatamente se recontruye el archivo ordenado con todos los registros.
 
 - **Complejidad**
   
   | Insert | Search | Search Range | Remove | 
-  | :---: | :---: | :---:  | :---:  |
-  | O(log N) | O(log N) | O(log N) + O(K)   |  (O(1))  |
+  | :---: | :---: | :---:  |:------:|
+  | O(log N) | O(log N) | O(log N) + O(K)   | (O(N)) |
 
 ![image](https://github.com/Mariana-Capunay/Proyecto_bd2_grupo4/assets/91238621/76c00d4b-0b4a-4d71-9b32-8f46a9f430f7)
 
