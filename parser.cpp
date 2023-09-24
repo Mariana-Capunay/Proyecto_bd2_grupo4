@@ -265,7 +265,7 @@ SelectQuery parseSelectQuery(const std::string& sqlQuery) {
                             
                         } else{
                             if (esFloat(resultado.valor)){
-                                res = columna5->search(stoi(resultado.valor)); // retornar
+                                res = columna5->search(stof(resultado.valor)); // retornar
                                 for (auto x:res) read_record(file_binary,x);
                             }
                         }
@@ -317,7 +317,8 @@ InsertQuery parseInsertQuery(const std::string& sqlQuery) {
     InsertQuery query;
 
     // Busca "insert into" independientemente de los espacios en blanco
-    std::regex regexPattern(R"(insert\s+into\s+(\w+)\s+values\s*\(\s*["']([^"']*)["']\s*,\s*["']([^"']*)["']\s*,\s*(\d+)\s*,\s*["']([^"']*)["']\s*,\s*([+-]?\d+(\.\d+)?)\s*\))");
+    //std::regex regexPattern(R"(insert\s+into\s+(\w+)\s+values\s*\(\s*["']([^"']*)["']\s*,\s*["']([^"']*)["']\s*,\s*(\d+)\s*,\s*["']([^"']*)["']\s*,\s*([+-]?\d+(\.\d+)?)\s*\))");
+    std::regex regexPattern(R"(insert\s+into\s+(\w+)\s+values\s*\(\s*(\d+)\s*,\s*["']([^"']*)["']\s*,\s*(\d+)\s*,\s*["']([^"']*)["']\s*,\s*([+-]?\d+(\.\d+)?)\s*\))");
     //std::regex regexPattern(R"(insert\s+into\s+(\w+)\s+values\s*\(\s*\"([^\"]*)\"\s*,\s*\"([^\"]*)\"\s*,\s*(\d+)\s*,\s*\"([^\"]*)\"\s*,\s*([+-]?\d+(\.\d+)?)\s*\))");
     //std::regex regexPattern(R"(insert\s+into\s+([^\s]+)\s+values\s*\(\s*(\S+)\s*,\s*(\S+)\s*,\s*(\S+)\s*,\s*(\S+)\s*,\s*(\S+)\s*\))"); //ejemplo
     std::smatch match;
@@ -337,13 +338,13 @@ InsertQuery parseInsertQuery(const std::string& sqlQuery) {
             std::string floatValue = match[6].str();
 
             // Verifica si los tipos de datos coinciden con lo esperado
-            if (!isValidInt(char8Value) || !isValidChar(char8Value,8)||  // verifica que key sea numero y con 8 cifras
+            if (!isValidInt(char8Value) || char8Value.size()>8 || // verifica que key sea numero y con 8 cifras
                 !isValidChar(char40Value,40) ||
                 !isValidInt(intValue) || 
                 !isValidChar(char25Value,25) ||  
                 !isValidFloat(floatValue)) {
                 std::cerr << "Tipos de datos no válidos en la consulta INSERT INTO." << std::endl;
-                
+                flag = 7;
                 return query; // Puedes manejar este error de la manera que desees
             }
 
@@ -354,15 +355,40 @@ InsertQuery parseInsertQuery(const std::string& sqlQuery) {
             query.values.push_back(char25Value);
             query.values.push_back(floatValue);
 
-            //for (auto value:query.values) std::cout<<value<<" - ";
-
             /*
                 TODO insert values (en archivo bin, dataset y en todas las estructuras)
             */
+            Record record;
+            record.key = stoi(intValue);
+            strncpy(record.atrib1, char40Value.c_str(), sizeof(record.atrib1) - 1); // -1 para dejar espacio para el carácter nulo
+            record.atrib1[sizeof(record.atrib1) - 1] = '\0'; // Asegura que el último carácter sea nulo
+            record.atrib2 = stoi(intValue);
+            strncpy(record.atrib3, char25Value.c_str(), sizeof(record.atrib3) - 1); // -1 para dejar espacio para el carácter nulo
+            record.atrib3[sizeof(record.atrib3) - 1] = '\0'; // Asegura que el último carácter sea nulo
+            strncpy(record.atrib3, char25Value.c_str(), sizeof(record.atrib3) - 1); // -1 para dejar espacio para el carácter nulo
+            record.atrib4 = stoi(floatValue);
+            record.removed = false;
+
+            ofstream file(file_binary, ios::binary);
+            if (!file.is_open()){
+                flag = 7;
+                cout<<"No se pudo abrir archivo dataset en binario"<<endl;
+            } else{
+                file.seekp(0,ios::end);
+                flag = 6;
+                file.write((char*)&record,record.size()); //escribe registro al final
+                file.close();
+            }
+
+            /* insertar cada valor en una estructura */            
+
+            //for (auto value:query.values) std::cout<<value<<" - ";
+
         }
     } else {
         // Consulta INSERT INTO no válida
         std::cerr << "Consulta INSERT INTO no válida." << std::endl;
+        flag = 7;
     }
     return query;
 }
@@ -450,7 +476,8 @@ int main() {
             std::cout<<"Debe crear la tabla"<<std::endl;
         }
     }
-for (auto x:atributos) cout<<x<<" ";
+        
+    //for (auto x:atributos) cout<<x<<" ";  // para verificar que atributos están en minuscula
 
     while (true){
         std::string sqlQuery;
