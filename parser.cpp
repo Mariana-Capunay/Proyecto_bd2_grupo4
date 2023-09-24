@@ -161,17 +161,17 @@ CreateTableQuery parseCreateTableQuery(const std::string& sqlQuery) {
 
             table_name = query.tableName; //se da nombre a la tabla (en caso todo haya ido bien)
 
-            /*agregar valores a todas las estructuras*/
-            //binSource.open(new_file, ios::binary);
-            //binSource.seekg(0,ios::end);
-            string avl_filename_1 = "AVL_file";
+            string avl_filename_1 = "AVL_file_";
             avl_filename_1 += atr_2;
-
-            auto avl1 = new AVLFile<int>(new_file, atr_2);
-            //cout << "Construyendo avl desde " << new_file << " de tamahnio " << binSource.tellg() << endl;
+            auto avl1 = new AVLFile<int>(avl_filename_1, atr_2);
             avl1->buildFromFile(new_file, 2);
-            cout<<"Imprimiendo data";
-            avl1->printData();
+
+            string avl_filename_2 = "AVL_file_";
+            avl_filename_2 += atr_4;
+            auto avl2 = new AVLFile<int>(avl_filename_2, atr_4);
+            avl2->buildFromFile(new_file, 4);
+            //cout<<"Imprimiendo data";
+            //avl1->printData();
         }  
 
     } else {

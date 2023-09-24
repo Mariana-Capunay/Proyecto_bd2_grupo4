@@ -561,13 +561,11 @@ void AVLFile<T>::buildFromFile(string sourceName, int atributo_col){
         else nodo.setValue(bytes, record.atrib4);
 
         this->insert(nodo);
-            
-        
+
         cout << record.key << endl;
         //this->insert(nodo);
         bytes+= record.size(); // se aumenta contador de bytes
     }
-
     source.close();
 }
 
