@@ -487,7 +487,6 @@ DeleteQuery parseDeleteQuery(const std::string& sqlQuery) {
                     flag = 9;
                 } else {
                     flag = 11;
-                    std::cout<<"Nombre de tabla no existe"<<std::endl;
                 }
 
             } else { // sin where

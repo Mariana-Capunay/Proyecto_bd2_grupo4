@@ -15,8 +15,7 @@
 ### Resultados experimentales
 9. [Gráfico comparativo de las técnicas de indexación](#id9)
 10. [Análisis de resultados experimentales](#ida)
-11. [Interfaz gráfica](#idb)
-12. [Nuestro genial equipo](#idc)
+11. [Nuestro equipo](#idc)
 ## Objetivo del proyecto<a name="id1"></a>
 El propósito de este proyecto es la visualización y comparación de diversas técnicas de indexación de archivos, mediante la implementación de las estructuras que aprendimos en el curso de Base de Datos II.
 <p align="center">
@@ -158,13 +157,45 @@ Se utiliza los punteros para saltar las tuplas eliminadas, e inmediatamente se r
 ## Optimización de memoria secundaria <a name="id7"></a>
 
 ## Implementación de Parser <a name="id8"></a>
+Para implementar el parser(básico) de SQL, hicimos uso de la librería **regex**, la cual se encarga de procesar expresiones regulares y generamos instrucciones de acuerdo a las consultas disponibles (CREATE, INSERT, DELETE, SELECT)
+- **CREATE TABLE <NOMBRE_TABLA> FROM FILE "ruta_achivo"**: esta instrucción espera recibir el nombre de la tabla y la ruta de un archivo .csv. Lo que hace es generar el dataset en binario (añadiendo el atributo removed a cada record) y, además, se encarga de insertar los elementos a las estructuras implementadas.
+<p align="center">
+  <img src="images/query_create.png" alt="Query CREATE" width="400" height="120">
+</p>
+
+- **SELECT * FROM <NOMBRE_TABLA>**: esta instrucción espera recibir el nombre de la tabla (creada previamente). Solo imprime 20 registros del dataset para no sobrecargar la terminal.
+<p align="center">
+  <img src="images/query_select_all.png" alt="Query SELECT*" width="400" height="200">
+</p>
+En caso de no recibir el mismo nombre que se asignó, imprime un mensaje de error en el que incluye el nombre de la tabla creada, ya que es la única en la que se pueden hacer las consultas. 
+
+<p align="center">
+  <img src="images/select_error_nombre_tabla.png" alt="Query SELECT* error" width="400" height="50">
+</p>
+
+- **SELECT * FROM <NOMBRE_TABLA> WHERE <_CONDICION_>** : esta instrucción espera recibir el nombre de la tabla y una condición (que incluya "=" o "between") evaluada sobre un atributo.
+<p align="center">
+  <img src="images/select_where.png" alt="Query SELECT* + WHERE" width="400" height="120">
+</p>
+Si recibe como atributo uno no válido (que no pertenece al dataset), bota un mensaje error.
+<p align="center">
+  <img src="images/select_atributo_no_valido.png" alt="Query SELECT* con error en nombre de atributo" width="400" height="90">
+</p>
+
+- **INSERT INTO <NOMBRE_TABLA> VALUES (<VALUE_1>, <VALUE_2>,<VALUE_3>, <VALUE_4>, <VALUE_5>)**:
+Esta consulta inserta los valores ingresados a las estructuras correspondientes (por atributo) y al dataset en binario,considerando al record.removed = false
+
+Además, verifica que los tipos de cada *value* sean los correctos.
+
+
+
 
 ## Gráfico comparativo de las técnicas de indexación <a name="id9"></a>
 En este apartado incluiremos los cuadros comparativos de desempeño de las técnicas de indexación de archivos sobre el dominio de datos. Tanto para inserción como para búsqueda.  Usaremos dos métricas: total de accesos a disco duro (read & write) y tiempo de ejecución en milisegundos. 
 
 ### Cuadro comparativo inserción y búsqueda
 <p align="center">
-  <img src="images/hashing.jpeg" alt="Extendible Hashing" width="500" height="330">
+  <img src="images/hashing.jpeg" alt="Extendible Hashing" width="400" height="330">
 </p>
 
   |   Tamaño  | 1000 | 5000  | 10000 | 50000 |100000|
@@ -174,7 +205,6 @@ En este apartado incluiremos los cuadros comparativos de desempeño de las técn
   
 ## Análisis de resultados experimentales <a name="ida"></a>
 
-## Interfaz gráfica <a name="idb"></a>
 
 ## Cómo ejecutar el programa
 g++ parser.cpp dataset_bin/binary_conversor.cpp structs/AVL_File/avl_file.cpp .\structs\Extendible_Hashing_File\extendible_hashing_file.cpp
