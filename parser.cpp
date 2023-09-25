@@ -471,7 +471,13 @@ DeleteQuery parseDeleteQuery(const std::string& sqlQuery) {
                     } else if (resultado.atributo==atributos[3]){ // en sequential
 
                     } else { // en avl
-                        res = columna5->remove(stof(resultado.valor));
+                        if (esFloat(resultado.valor)){
+                            res = columna5->remove(stof(resultado.valor));
+                        }
+                        else {
+                            cout<<"Tipo de atributo no valido"<<endl;
+                        }
+                        
                     }
 
                     if (!res) cout<<"No existe registro que satisfaga igualdad."<<endl;
