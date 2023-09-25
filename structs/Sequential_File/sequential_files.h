@@ -12,23 +12,25 @@ class SeqRecord {
 private:
 
 public:
-    char Nombre[12];
-    char Apellidos[12];
+    //char atr[40];
+    string atr;
     float Puntero;
 
     void setData(){
-        cout<<"Nombre:";
-        cin>>Nombre;
-        cout<<"Apellidos:";
-        cin>>Apellidos;
+        cout<<"atr:";
+        cin >> atr;
+        //cout<<"Atrib2:";
+        //cin >> Atrib2;
     }
     void showData(){
-        cout<<Nombre<<" - "<<Apellidos<<" - "<<Puntero<<endl;
+        //solo un atributo
+        //cout << atr << " - " << Atrib2 << " - " << Puntero << endl;
+        cout << atr << " - " << Puntero << endl;
     }
 
     // Agregar un método para comparar el nombre de dos records
     int compare(const SeqRecord& otro) const { // const para que no se modifique el objeto
-        return strcmp(Nombre, otro.Nombre);//strcmp devuelve 0 si son iguales, 1 si el primero es mayor al segundo, -1 si el primero es menor al segundo
+        return strcmp(atr, otro.atr);//strcmp devuelve 0 si son iguales, 1 si el primero es mayor al segundo, -1 si el primero es menor al segundo
     }
 
 };
@@ -43,9 +45,7 @@ private:
     int aux_size;//cantidad de registros en auxiliar.bin
 
 public:
-
-
-    SequentialFile(string _document,string _atr){
+    SequentialFile(string _document, string _atr){
         document = _document;
         atr = _atr;
         /*
@@ -60,36 +60,7 @@ public:
         this->aux_file = _atr + "auxiliar.bin";
 
         // Verificar si el archivo está vacío antes de escribir el registro predeterminado
-        ifstream checkFile(data_file, ios::binary);
-        if (!checkFile.is_open()) {
-            // El archivo no existe, entonces lo creamos y escribimos el registro predeterminado
-            SeqRecord defaultRecord;
-            strcpy(defaultRecord.Nombre, "\0\0\0\0\0\0\0\0\0\0\0\0");
-            defaultRecord.Puntero = 0.1;
-            writeRecordPOS(defaultRecord, 0, this->data_file);
-        } else {
-            // El archivo existe, no necesitamos escribir el registro predeterminado nuevamente
-            checkFile.close();
-        }
-
-        //Crear aux_file tomando en cuenta que puede tener cosas dentro
-        // Verificar si el archivo auxiliar ya existe y contiene datos
-        ifstream auxCheckFile(this->aux_file, ios::binary);
-        if (!auxCheckFile.is_open())
-        {
-            // El archivo auxiliar no existe o está vacío, entonces lo creamos y escribimos el registro predeterminado
-            ofstream auxFile(this->aux_file, ios::binary);
-            if (!auxFile.is_open())
-            {
-                throw ("No se pudo abrir el archivo auxiliar");
-            }
-            auxFile.close();
-        }
-        else
-        {
-            // El archivo auxiliar ya existe y contiene datos, no necesitamos crearlo nuevamente
-            auxCheckFile.close();
-        }
+        crear_archivo(this->aux_file);
 
         data_size = size(this->data_file);
         aux_size = size(this->aux_file);
@@ -120,47 +91,47 @@ public:
 
     void add(SeqRecord record){
         //Ubicamos el elemento anterior a record
-        int X_pos = binarySearchPosition(record) - 1; //binarySearchPOS me devuelve la pos donde debo insertar el elemento, por eso el -1
-        SeqRecord X = readRecord(X_pos,this->data_file);
+        int insert_pos = binarySearchPosition(record) - 1; //binarySearchPOS me devuelve la pos donde debo insertar el elemento, por eso el -1
+        SeqRecord prevRecord = readRecord(insert_pos, this->data_file);
 
-        //Si X apunta a un elemento de la misma Data
+        //Si prevRecord apunta a un elemento de la misma Data
         /*
             add(Manuel)
             ======================
             Data:
             "     " -> 0.1
-            Asucena -> 0.2  <- X
+            Asucena -> 0.2  <- prevRecord
             Ortega  -> 0
             ======================
             Pedro   -> 0.3
         */
-        if(analyzeFloat(X.Puntero)=="Data"){
-            //Agregamos el record al aux y hacemos el cambiaso de punteros entre X y record
-            record.Puntero = X.Puntero; //record -> X.Puntero
+        if(analyzeFloat(prevRecord.Puntero) == "Data"){
+            //Agregamos el record al aux y hacemos el cambiaso de punteros entre prevRecord y record
+            record.Puntero = prevRecord.Puntero; //record -> prevRecord.Puntero
             writeRecordEND(record, this->aux_file);
-            updatePunteroAtPosition(X_pos, aux_size, this->data_file); // X -> pos(record)
+            updatePunteroAtPosition(insert_pos, aux_size, this->data_file); // prevRecord -> pos(record)
 
             //No olvidarse de aumentar la cantidad de elementos que hay en el auxiliar.bin
             aux_size += 1;
         }
 
-        //Si X apunta a un elemento perteneciente a Auxiliar
+        //Si prevRecord apunta a un elemento perteneciente a Auxiliar
         /*
             add(Manuel)
             ======================
             Data:
             "     " -> 0.1
-            Asucena -> 0   <- X
+            Asucena -> 0   <- prevRecord
             Ortega  -> 0.3
             ======================
             Auxiliar:
             Belen   ->  0.2 <- Y
         */
-        if(analyzeFloat(X.Puntero)=="Auxiliar"){
-            //Si apunta a un auxiliar primero me tengo que ubicar en auxiliarfile[X.Puntero]
+        else if(analyzeFloat(prevRecord.Puntero) == "Auxiliar"){
+            //Si apunta a un auxiliar primero me tengo que ubicar en auxiliarfile[prevRecord.Puntero]
 
-            //Y_pos = X.Puntero;
-            SeqRecord Y = readRecord(X.Puntero,this->aux_file);
+            //Y_pos = prevRecord.Puntero;
+            SeqRecord auxPrevRecord = readRecord(prevRecord.Puntero, this->aux_file);
 
             //Caso particular (Todavia no nos hemos adentrado al 100% en aux_file, estamos en el limbo)
             /*
@@ -168,24 +139,24 @@ public:
                 ======================
                 Data:
                 "     " -> 0.1
-                Asucena -> 0   <- X      (X todavia esta en data file, mientras que Y ya esta exclusivamente en el auxiliar file)
+                Asucena -> 0   <- prevRecord      (prevRecord todavia esta en data file, mientras que auxPrevRecord ya esta exclusivamente en el auxiliar file)
                 Ortega  -> 0.3
                 ======================
                 Auxiliar:
-                Belen   ->  0.2 <- Y    (Baldor va antes que que Belen)
+                Belen   ->  0.2 <- auxPrevRecord    (Baldor va antes que que Belen)
              */
-            int cmp = record.compare(Y);
-            if (cmp <= 0){ //Si record va antes que Y o es igual a Y
-                //Agregamos el record al aux y hacemos el cambiaso de punteros entre X y record
-                record.Puntero = X.Puntero; //record -> X.Puntero
+            int cmp = record.compare(auxPrevRecord);
+            if (cmp <= 0){ //Si record va antes que auxPrevRecord o es igual a auxPrevRecord
+                //Agregamos el record al aux y hacemos el cambiaso de punteros entre prevRecord y record
+                record.Puntero = prevRecord.Puntero; //record -> prevRecord.Puntero
                 writeRecordEND(record, this->aux_file);
-                updatePunteroAtPosition(X_pos, aux_size, this->data_file); // X -> pos(record)
+                updatePunteroAtPosition(insert_pos, aux_size, this->data_file); // prevRecord -> pos(record)
 
                 //No olvidarse de aumentar la cantidad de elementos que hay en el auxiliar.bin
                 aux_size += 1;
             }
 
-            //Si record va despues que Y
+            //Si record va despues que auxPrevRecord
             if (cmp > 0){
 
                 //Caso particular (Todavia no nos hemos adentrado al 100% en aux_file, estamos en el limbo)
@@ -194,42 +165,42 @@ public:
                     ======================
                     Data:
                     "     " -> 0.1
-                    Asucena -> 0   <- X      (X todavia esta en data file, mientras que Y ya esta exclusivamente en el auxiliar file)
+                    Asucena -> 0   <- prevRecord      (prevRecord todavia esta en data file, mientras que auxPrevRecord ya esta exclusivamente en el auxiliar file)
                     Ortega  -> 0.3
                     ======================
                     Auxiliar:
-                    Belen   ->  0.2 <- Y    (Boris va despues que que Belen, pero despues de Belen no hay nada mas)
+                    Belen   ->  0.2 <- auxPrevRecord    (Boris va despues que que Belen, pero despues de Belen no hay nada mas)
                  */
-                if (analyzeFloat(Y.Puntero) == "Data"){
-                    record.Puntero = Y.Puntero;
+                if (analyzeFloat(auxPrevRecord.Puntero) == "Data"){
+                    record.Puntero = auxPrevRecord.Puntero;
                     writeRecordEND(record, this->aux_file);
-                    updatePunteroAtPosition(X.Puntero, aux_size, this->aux_file); // X -> pos(record)
+                    updatePunteroAtPosition(prevRecord.Puntero, aux_size, this->aux_file); // prevRecord -> pos(record)
                     //No olvidarse de aumentar la cantidad de elementos que hay en el auxiliar.bin
                     aux_size += 1;
                 }
 
-                //Ahora si tanto X como Y pertenecen a auxiliar file
+                //Ahora si tanto prevRecord como auxPrevRecord pertenecen a auxiliar file
                 else {
                     bool posicionado = false;
                     int cmp2;
                     while(!posicionado){
 
-                        X_pos = X.Puntero; //X_pos = Y_pos
-                        X = readRecord(X_pos,this->aux_file);
+                        insert_pos = prevRecord.Puntero; //insert_pos = Y_pos
+                        prevRecord = readRecord(insert_pos, this->aux_file);
 
-                        //Y_pos = X.Puntero
-                        Y = readRecord(X.Puntero,this->aux_file);
+                        //Y_pos = prevRecord.Puntero
+                        auxPrevRecord = readRecord(prevRecord.Puntero, this->aux_file);
 
                         /*
                             add(Conchita)
                             ======================
                             Data:
                             "     " -> 0.1
-                            Asucena -> 0   <- X
+                            Asucena -> 0   <- prevRecord
                             Ortega  -> 0.3
                             ======================
                             Auxiliar:
-                            Belen   ->  1   <- Y
+                            Belen   ->  1   <- auxPrevRecord
                             Boris   ->  0.2
 
                             >>>>>>>>>>>>>>>>>>>>>>
@@ -242,18 +213,18 @@ public:
                             Ortega  -> 0.3
                             ======================
                             Auxiliar:
-                            Belen   ->  1   <- X
-                            Boris   ->  0.2 <- Y
+                            Belen   ->  1   <- prevRecord
+                            Boris   ->  0.2 <- auxPrevRecord
 
                          */
-                        cmp2 = record.compare(Y);
+                        cmp2 = record.compare(auxPrevRecord);
 
-                        //Si record va antes que Y
+                        //Si record va antes que auxPrevRecord
                         if (cmp2 <= 0){
-                            //Agregamos el record al aux y hacemos el cambiaso de punteros entre X y record
-                            record.Puntero = X.Puntero; //record -> X.Puntero
+                            //Agregamos el record al aux y hacemos el cambiaso de punteros entre prevRecord y record
+                            record.Puntero = prevRecord.Puntero; //record -> prevRecord.Puntero
                             writeRecordEND(record, this->aux_file);
-                            updatePunteroAtPosition(X_pos, aux_size, this->aux_file); // X -> pos(record)
+                            updatePunteroAtPosition(insert_pos, aux_size, this->aux_file); // prevRecord -> pos(record)
 
                             //No olvidarse de aumentar la cantidad de elementos que hay en el auxiliar.bin
                             aux_size += 1;
@@ -261,12 +232,12 @@ public:
                             posicionado = true;
                         }
 
-                        //Si record va despues que Y, y este Y apunta a un elemento perteneciente a data.file (osea que ya no apunta a ningun otro elemento)
-                        if (cmp2 > 0 && analyzeFloat(Y.Puntero)=="Data"){
+                        //Si record va despues que auxPrevRecord, y este auxPrevRecord apunta a un elemento perteneciente a data.file (osea que ya no apunta a ningun otro elemento)
+                        if (cmp2 > 0 && analyzeFloat(auxPrevRecord.Puntero) == "Data"){
 
-                            record.Puntero = Y.Puntero;
+                            record.Puntero = auxPrevRecord.Puntero;
                             writeRecordEND(record, this->aux_file);
-                            updatePunteroAtPosition(X.Puntero/*Y_pos*/, aux_size, this->aux_file);
+                            updatePunteroAtPosition(prevRecord.Puntero/*Y_pos*/, aux_size, this->aux_file);
 
                             //No olvidarse de aumentar la cantidad de elementos que hay en el auxiliar.bin
                             aux_size += 1;
@@ -276,12 +247,12 @@ public:
 
                         /*
 
-                         En caso record vaya despues que Y pero Y apunta a otro elemento perteneciente a auxixiliar.bin
+                         En caso record vaya despues que auxPrevRecord pero auxPrevRecord apunta a otro elemento perteneciente a auxixiliar.bin
                          (osea no se ha llegao al final)
 
                          Se repite el while y con ello
-                         -  X pasa a ser Y(1)
-                         -  Y pasa a ser el Y(1).Puntero
+                         -  prevRecord pasa a ser auxPrevRecord(1)
+                         -  auxPrevRecord pasa a ser el auxPrevRecord(1).Puntero
                          */
                     }
                 }
@@ -309,7 +280,7 @@ public:
 
         //Busco con busqueda binaria la posicion del elemento
         SeqRecord encontrar;
-        strcpy(encontrar.Nombre, key.c_str());
+        strcpy(encontrar.atr, key.c_str());
 
         // Busco con búsqueda binaria el key_pos
         int key_pos = binarySearchPosition(encontrar);//key_pos es la posicion donde se encuentra el key
@@ -319,7 +290,7 @@ public:
         else{
             key_pos -= 1; //Pos real del key encontrado
             SeqRecord current = readRecord(key_pos, data_file);
-            if (current.Nombre != key){
+            if (current.atr != key){
                 throw runtime_error("No se encontró la key");
             }
 
@@ -371,7 +342,7 @@ public:
 
         //Busco con busqueda binaria la posicion del elemento
         SeqRecord encontrar;
-        strcpy(encontrar.Nombre, key.c_str());
+        strcpy(encontrar.atr, key.c_str());
 
         // Busco con búsqueda binaria el key_pos
         int key_pos = binarySearchPosition(encontrar);
@@ -381,7 +352,7 @@ public:
         else {
             key_pos -= 1; //Pos real del key encontrado
             SeqRecord current = readRecord(key_pos, data_file);
-            if (current.Nombre != key.c_str()){
+            if (current.atr != key.c_str()){
                 throw runtime_error("No se encontró la key");
             }
 
@@ -430,7 +401,7 @@ public:
                 SeqRecord record = readRecord(i, this->aux_file);
 
                 // Comparar el nombre del registro con la clave proporcionada (insensible a mayúsculas y minúsculas)
-                if (strcasecmp(record.Nombre, key.c_str()) == 0 && getPunteroAtPosition(i, this->aux_file) != -1) {
+                if (_stricmp(record.atr, key.c_str()) == 0 && getPunteroAtPosition(i, this->aux_file) != -1) {
                     result.push_back(record);
                 }
             }
@@ -449,7 +420,7 @@ public:
 
         //Busco con busqueda binaria la posicion del begin
         SeqRecord encontrar_begin;
-        strcpy(encontrar_begin.Nombre, begin.c_str());
+        strcpy(encontrar_begin.atr, begin.c_str());
         int limite_inferior = binarySearchPosition(encontrar_begin);
 
         if (limite_inferior == 0){
@@ -458,14 +429,14 @@ public:
         else {
             limite_inferior -= 1;
             SeqRecord inf = readRecord(limite_inferior, this->data_file);
-            if (inf.Nombre != begin){
+            if (inf.atr != begin){
                 throw runtime_error("No se encontró la key inferior");
             }
         }
 
         //Busco con busqueda binaria la posicion del end
         SeqRecord encontrar_end;
-        strcpy(encontrar_end.Nombre, end.c_str());
+        strcpy(encontrar_end.atr, end.c_str());
         int limite_superior = binarySearchPosition(encontrar_end);
         if (limite_superior == 0){
             throw runtime_error("No se encontró el límite superior");
@@ -473,7 +444,7 @@ public:
         else {
             limite_superior -= 1;
             SeqRecord sup = readRecord(limite_superior, this->data_file);
-            if (sup.Nombre != end){
+            if (sup.atr != end){
                 throw runtime_error("No se encontró la key superior");
             }
         }

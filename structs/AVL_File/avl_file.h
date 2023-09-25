@@ -573,25 +573,20 @@ void AVLFile<T>::buildFromFile(string sourceName, int atributo_col){
     source.seekg(0,ios::end);
     int max_bytes = source.tellg();
     //cargamos los datos uno a uno  //cargamos cada registro del file_name como un nodo
-    //cout << "Archivos encontrados: " << source.tellg() << endl;
     source.seekg(0,ios::beg);
     while (bytes < max_bytes){
         Record record;
         source.seekg(bytes,ios::beg);
-        //source.read((char*)&record, record.size()); // leemos record actual
         record.read(source);
 
         NodeAVL<T> nodo;
         if (atributo_col == 2) {nodo.setValue(bytes, record.atrib2);} // creamos el nodo
         else {
-            
             nodo.setValue(bytes, record.atrib4);
         }
 
         this->insert(nodo);
-
-        //cout << record.key << endl;
-        //this->insert(nodo);
+        record.print();
         bytes+= record.size(); // se aumenta contador de bytes
     }
     source.close();

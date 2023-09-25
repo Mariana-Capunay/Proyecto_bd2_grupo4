@@ -162,9 +162,16 @@ Se utiliza los punteros para saltar las tuplas eliminadas, e inmediatamente se r
 ## Gráfico comparativo de las técnicas de indexación <a name="id9"></a>
 En este apartado incluiremos los cuadros comparativos de desempeño de las técnicas de indexación de archivos sobre el dominio de datos. Tanto para inserción como para búsqueda.  Usaremos dos métricas: total de accesos a disco duro (read & write) y tiempo de ejecución en milisegundos. 
 
-### Cuadro comparativo inserción
-### Cuadro comparativo búsqueda
+### Cuadro comparativo inserción y búsqueda
+<p align="center">
+  <img src="images/hashing.jpeg" alt="Extendible Hashing" width="500" height="330">
+</p>
 
+  |   Tamaño  | 1000 | 5000  | 10000 | 50000 |100000|
+  | :---:  | :---: | :---:  | :---:  | :---:  | :---:  |
+  | search Time|0.000213 | 0.000285  |0.000233  | 0.000359  | 0.000302 |
+  | Insert Time| 0.000138 | 0.000124 | 0.000135  | 0.000206 | 0.000159 |
+  
 ## Análisis de resultados experimentales <a name="ida"></a>
 
 ## Interfaz gráfica <a name="idb"></a>
