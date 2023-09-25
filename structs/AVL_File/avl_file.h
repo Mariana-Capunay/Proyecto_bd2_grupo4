@@ -454,7 +454,7 @@ AVLFile<T>::AVLFile(string file_name, string atributo){//, int atributo_col){
     root = -1;
 
 
-    crear_archivo(this->filename);
+    //crear_archivo(this->filename);
     crear_archivo(this->heap_file);
     // crear archivos (si es necesario)
     //buildFromFile(atributo_col); // se genera AVL en base a una columna especifica
@@ -578,11 +578,15 @@ void AVLFile<T>::buildFromFile(string sourceName, int atributo_col){
     while (bytes < max_bytes){
         Record record;
         source.seekg(bytes,ios::beg);
-        source.read((char*)&record, record.size()); // leemos record actual
+        //source.read((char*)&record, record.size()); // leemos record actual
+        record.read(source);
 
         NodeAVL<T> nodo;
-        if (atributo_col == 2) nodo.setValue(bytes, record.atrib2); // creamos el nodo
-        else nodo.setValue(bytes, record.atrib4);
+        if (atributo_col == 2) {nodo.setValue(bytes, record.atrib2);} // creamos el nodo
+        else {
+            
+            nodo.setValue(bytes, record.atrib4);
+        }
 
         this->insert(nodo);
 
