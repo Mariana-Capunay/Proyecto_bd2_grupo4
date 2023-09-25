@@ -143,6 +143,12 @@ Se utiliza los punteros para saltar las tuplas eliminadas, e inmediatamente se r
   | :---: | :---: | :---:  | :---:  |
   | O(log(n)) | O(log(n)) | O(n)  | O(log(n))  |
 
+   En el peor de los casos.
+  
+  | Insert | Search | Search Range | Remove | 
+  | :---: | :---: | :---:  | :---:  |
+  | O(n) | O(n) | O(n)  | O(n)  |
+
 ## Optimización de memoria secundaria <a name="id7"></a>
 
 ## Implementación de Parser <a name="id8"></a>
