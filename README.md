@@ -14,8 +14,7 @@
 
 ### Resultados experimentales
 9. [Gráfico comparativo de las técnicas de indexación](#id9)
-10. [Análisis de resultados experimentales](#ida)
-11. [Nuestro equipo](#idc)
+10. [Nuestro equipo](#idc)
 ## Objetivo del proyecto<a name="id1"></a>
 El propósito de este proyecto es la visualización y comparación de diversas técnicas de indexación de archivos, mediante la implementación de las estructuras que aprendimos en el curso de Base de Datos II.
 <p align="center">
@@ -211,7 +210,6 @@ En este apartado incluiremos los cuadros comparativos de desempeño de las técn
   | Tiempo de búsqueda  |0.000213 | 0.000285  |0.000233  | 0.000359  | 0.000302 |
   | Tiempo de inserción | 0.000138 | 0.000124 | 0.000135  | 0.000206 | 0.000159 |
   
-## Análisis de resultados experimentales <a name="ida"></a>
 
 
 ## Cómo ejecutar el programa
