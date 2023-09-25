@@ -12,7 +12,7 @@ using namespace std;
 
 bool archivo_existe(const string& nombre);
 
-
+void crear_archivo(const string& nombre);
 
 template <typename T>
 class AVLFile{
@@ -129,70 +129,68 @@ class AVLFile{
 
 
     private: //funciones recursivas
-    int remove(long& pos, T key){  //retorna posicion en la que se elimina
+    int remove(long& pos, T key) {  //retorna posicion en la que se elimina
         //recibe posicion y key a eliminar, tambien fstream file tiene heap_file abierto (tenemos info de los nodos)
-        if (pos==-1) return -1; //no se puede eliminar
-        
+        if (pos == -1) return -1; //no se puede eliminar
+
         //se puede eliminar
         file.seekg(pos, ios::beg); //se posiciona para leer el nodo
         NodeAVL<T> nodo;
-        file.read((char*)&nodo, nodo.size()); //se lee info del nodo
+        file.read((char *) &nodo, nodo.size()); //se lee info del nodo
 
         long pos_delete;
 
         //se compara key con el value de los nodos hijos 
-        if (key<nodo.value){
+        if (key < nodo.value) {
             pos_delete = this->remove(nodo.left, key);
-            if (pos_delete==nodo.left){ //si se elimina en posicion del hijo izquierdo
+            if (pos_delete == nodo.left) { //si se elimina en posicion del hijo izquierdo
                 nodo.left = -1; //se descuelga del arbol
 
                 //file.seekp(pos,ios::beg); //se posiciona para escribir
                 //file.write((char*)& nodo, nodo.size()); //escribe
-            } else if (pos_delete==-2){
+            } else if (pos_delete == -2) {
                 //no se debe modifica nodo
-            }else{
+            } else {
                 nodo.left = pos_delete;
             }
-        
-            file.seekp(pos,ios::beg); //se posiciona para escribir
-            file.write((char*)& nodo, nodo.size()); //escribe
+
+            file.seekp(pos, ios::beg); //se posiciona para escribir
+            file.write((char *) &nodo, nodo.size()); //escribe
             return -2; //retorna posicion del padre actual
-        } else if (key>nodo.value){
+        } else if (key > nodo.value) {
             pos_delete = this->remove(nodo.right, key);
-            if (pos_delete==nodo.right){ //si se elimina en posicion del hijo derecho
+            if (pos_delete == nodo.right) { //si se elimina en posicion del hijo derecho
                 nodo.right = -1; //se descuelga del arbol
-            } else if (pos_delete==-2){
+            } else if (pos_delete == -2) {
                 // no se debe modificar nodo
-            } else{ //retorna nueva posicion a la que se debe apuntar
+            } else { //retorna nueva posicion a la que se debe apuntar
                 nodo.right = pos_delete;
             }
 
-            file.seekp(pos,ios::beg); //se posiciona para escribir
-            file.write((char*)& nodo, nodo.size()); //escribe
+            file.seekp(pos, ios::beg); //se posiciona para escribir
+            file.write((char *) &nodo, nodo.size()); //escribe
             return -2; //retorna posicion del padre actual
 
-        } else{ //se llegó al valor del nodo  //se debe eliminar nodo y sus next
-            
+        } else { //se llegó al valor del nodo  //se debe eliminar nodo y sus next
+
             //delete_equals(nodo.pointer_value); //se elimina next's del nodo
 
-            if (nodo.left==-1 && nodo.right==-1){ //caso en el que es hoja
+            if (nodo.left == -1 && nodo.right == -1) { //caso en el que es hoja
                 return pos; //se elimina nodo en la posicion actual y ya no se necesita referencia a ese valor
 
-            } else if (nodo.left==-1){ //caso en el que tiene hijo derecho
+            } else if (nodo.left == -1) { //caso en el que tiene hijo derecho
                 return nodo.right; //retorna "nodo.right" para que no se elimine esta referencia al nodo
 
-            } else if (nodo.right==-1){ //caso en el que tiene hijo izquierdo
+            } else if (nodo.right == -1) { //caso en el que tiene hijo izquierdo
                 return nodo.left; //retorna "nodo.left" para que no se elimine esta referencia al nodo
 
-            } else{ // nodo existe y tiene dos hijo
+            } else { // nodo existe y tiene dos hijo
                 //se debe reemplazar por su sucesor (retornar valor del sucesor - actualizar altura)
                 NodeAVL<T> sucesor = find_sucesor(nodo); //se busca sucesor
                 T value_sucesor = sucesor.value; //se guarda valor del sucesor
                 //long pos_sucesor = sucesor.pointer_value; //se guarda posicion del sucesor
                 //this->remove(nodo.right, value_sucesor); //se elimina sucesor
                 nodo.value = value_sucesor; //se reemplaza valor del nodo por el valor del sucesor
-
-
                 //actualizar altura
                 alturaActualizada(pos, nodo);
                 //balancear
@@ -201,13 +199,6 @@ class AVLFile{
                 return pos;
             }
         }
-
-        //actualizar altura
-        alturaActualizada(pos,nodo); //actualiza la altura del nodo actual
-        //balancear
-        balance(pos, nodo); //se balancea el arbol
-        //retornar
-        return pos;
     }
 
     bool insert(long& pos_node, NodeAVL<T>& node){

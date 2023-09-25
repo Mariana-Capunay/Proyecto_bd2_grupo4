@@ -5,7 +5,7 @@ bool archivo_existe(const string& nombre){
     return archivo.good();
 }
 
-/*
+
 void crear_archivo(const string& nombre) {
     ifstream archivo(nombre.c_str());
     if (archivo.good()) { //si existe
@@ -14,4 +14,4 @@ void crear_archivo(const string& nombre) {
     }
     ofstream file(nombre, ios::binary);
     file.close();
-}*/
+}
