@@ -12,7 +12,7 @@ using namespace std;
 
 bool archivo_existe(const string& nombre);
 
-
+void crear_archivo(const string& nombre);
 
 template <typename T>
 class AVLFile{
