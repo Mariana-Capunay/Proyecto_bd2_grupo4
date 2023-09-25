@@ -395,7 +395,14 @@ InsertQuery parseInsertQuery(const std::string& sqlQuery) {
                 file.seekp(0,ios::end);
                 int adress = file.tellp();
                 flag = 6;
-                file.write((char*)&record,record.size()); //escribe registro al final
+                //file.write((char*)&record,record.size()); //escribe registro al final
+
+                file.write((char*)&record.key,sizeof(record.key));
+                file.write((char*)&record.atrib1,sizeof(record.atrib1));
+                file.write((char*)&record.atrib2,sizeof(record.atrib2));
+                file.write((char*)&record.atrib3,sizeof(record.atrib3));
+                file.write((char*)&record.atrib4,sizeof(record.atrib4));
+                file.write((char*)&record.removed,sizeof(record.removed));
                 file.close();
 
                 /* insertar cada valor en una estructura */
