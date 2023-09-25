@@ -144,6 +144,7 @@ class AVLFile{
         if (key < nodo.value) {
             pos_delete = this->remove(nodo.left, key);
             if (pos_delete == nodo.left) { //si se elimina en posicion del hijo izquierdo
+                balance(pos, nodo);
                 nodo.left = -1; //se descuelga del arbol
 
                 //file.seekp(pos,ios::beg); //se posiciona para escribir
@@ -160,6 +161,7 @@ class AVLFile{
         } else if (key > nodo.value) {
             pos_delete = this->remove(nodo.right, key);
             if (pos_delete == nodo.right) { //si se elimina en posicion del hijo derecho
+                balance(pos, nodo);
                 nodo.right = -1; //se descuelga del arbol
             } else if (pos_delete == -2) {
                 // no se debe modificar nodo
@@ -184,21 +186,32 @@ class AVLFile{
             } else if (nodo.right == -1) { //caso en el que tiene hijo izquierdo
                 return nodo.left; //retorna "nodo.left" para que no se elimine esta referencia al nodo
 
-            } else { // nodo existe y tiene dos hijo
-                //se debe reemplazar por su sucesor (retornar valor del sucesor - actualizar altura)
-                NodeAVL<T> sucesor = find_sucesor(nodo); //se busca sucesor
-                T value_sucesor = sucesor.value; //se guarda valor del sucesor
-                //long pos_sucesor = sucesor.pointer_value; //se guarda posicion del sucesor
-                //this->remove(nodo.right, value_sucesor); //se elimina sucesor
-                nodo.value = value_sucesor; //se reemplaza valor del nodo por el valor del sucesor
-                //actualizar altura
-                alturaActualizada(pos, nodo);
-                //balancear
+            } else { //caso en el que tiene ambos hijos
+                //se busca el sucesor del nodo
+                NodeAVL<T> sucesor = find_sucesor(nodo);
+                //se elimina el sucesor, 
+                this->remove(nodo.right, sucesor.value);
                 balance(pos, nodo);
-                //retornar
-                return pos;
+                //se cambia el valor del nodo por el valor del sucesor
+                nodo.value = sucesor.value;
+                //se cambia el pointer_value del nodo por el pointer_value del sucesor
+                nodo.pointer_value = sucesor.pointer_value;
+                //se cambia el next del nodo por el next del sucesor
+                nodo.next = sucesor.next;
+                //se cambia el next del sucesor por -1
+                sucesor.next = -1;
+                //se escribe el nodo
+                file.seekp(pos, ios::beg); //se posiciona para escribir
+                file.write((char *) &nodo, nodo.size()); //escribe
+                //se escribe el sucesor
+                file.seekp(nodo.right, ios::beg); //se posiciona para escribir
+                file.write((char *) &sucesor, sucesor.size()); //escribe
+                return -2; //retorna posicion del padre actual
+
             }
+
         }
+//ELBALANCE VA EN LA LINEA 200
     }
 
     bool insert(long& pos_node, NodeAVL<T>& node){
