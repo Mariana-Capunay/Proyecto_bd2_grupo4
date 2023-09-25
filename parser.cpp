@@ -247,7 +247,7 @@ SelectQuery parseSelectQuery(const std::string& sqlQuery) {
                             if (contieneSoloDigitos(resultado.valor)){
                                 res.clear();
                                 res= columna3->search(stoi(resultado.valor)); // retornar
-                                if (res.size()>0) for (auto x:res) print_record(file_binary,x);
+                                if (res.size()>0) for (auto x:res) read_record(file_binary,x);
                                 else cout<<"No existe registro con "<<atributos[2]<<" = "<<resultado.valor<<endl;
                                 res.clear();;
 
@@ -414,6 +414,8 @@ InsertQuery parseInsertQuery(const std::string& sqlQuery) {
                 file.write((char*)&record.atrib4,sizeof(record.atrib4));
                 file.write((char*)&record.removed,sizeof(record.removed));
                 file.close();
+
+
 
                 /* insertar cada valor en una estructura */
                 // aqui ya no es necesario cambiar el tipo de atributo (todos ya tienen el suyo)
