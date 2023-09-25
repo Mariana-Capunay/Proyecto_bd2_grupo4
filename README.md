@@ -126,6 +126,10 @@ Se utiliza los punteros para saltar las tuplas eliminadas, e inmediatamente se r
 
 ### Extendible Hashing
 
+<p align="center">
+  <img src="images/Extendible_Hashing" alt="Class AVL" width="500" height="330">
+</p>
+
 - **Funcion hashing**
     Se utilizó una función polinómica si _key_ = $a_n,a_{n-1},...a_2,a_1,a_0$ , entonces _hashing_ = $a_0 + a_1 \cdot p + a_2 \cdot p^2 + ...$ . Donde $p$ es un primo que sirve como base.
 
