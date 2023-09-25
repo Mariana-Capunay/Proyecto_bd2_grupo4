@@ -9,7 +9,7 @@ std::vector<std::string> atributos; //se lee del csv
 std::vector<std::string> tipos_atributo = {"int","char","int","char","float"};
 
 // estructuras de los atributos
-HashingIndex* keys = new HashingIndex(file_binary);
+HashingIndex* columna1 = new HashingIndex(file_binary); // para keys
 //SequentialFile<string>* columna2 = new SequentialFile<string>("dataset/test.bin");
 AVLFile<int>* columna3 = new AVLFile<int>(file_binary, "columna_3");
 //SequentialFile<string>* columna4 = new SequentialFile<string>("test.bin");
@@ -93,8 +93,8 @@ bool parsearExpresionRelacional(const std::string& expresion, ExpresionRelaciona
                  resultado.valor2[0]=='\"' && resultado.valor2[resultado.valor.size()-1]=='\"')){
                 variable1 = variable1.substr(1, variable1.size() - 2);
                 resultado.valor2 = resultado.valor2.substr(1, resultado.valor2.size() - 2);
-                std::cout << "Variable 1: " << variable1 << std::endl;
-                std::cout << "Variable 2: " << resultado.valor2 << std::endl;
+                //std::cout << "Variable 1: " << variable1 << std::endl;
+                //std::cout << "Variable 2: " << resultado.valor2 << std::endl;
             }
             return true;
 
@@ -165,17 +165,19 @@ CreateTableQuery parseCreateTableQuery(const std::string& sqlQuery) {
             //binSource.open(new_file, ios::binary);
             //binSource.seekg(0,ios::end);
 
+            columna1->load_file(); // llaves
+
             //auto avl1 = new AVLFile<int>(new_file, atr_2);
             //cout << "Construyendo avl desde " << new_file << " de tamahnio " << binSource.tellg() << endl;
             columna3->buildFromFile(new_file, 2);
-            cout<<"Imprimiendo data";
-            columna3->printData();
+            //cout<<"Imprimiendo data";
+            //columna3->printData();
 
 
             /// Columna 5
             columna5->buildFromFile(new_file, 4);
-            cout<<"Imprimiendo data";
-            columna5->printData();
+            //cout<<"Imprimiendo data";
+            //columna5->printData();
 
         }  
 
@@ -222,8 +224,12 @@ SelectQuery parseSelectQuery(const std::string& sqlQuery) {
                         //cout<<"atributo: "<<resultado.atributo<<" | value: "<<resultado.valor<<endl;
                         if (resultado.atributo==atributos[0]){
                             if (contieneSoloDigitos(resultado.valor)){
-                                keys->find(stoi(resultado.valor)); //retornar
+                                int ind = columna1->find(stoi(resultado.valor)); //retornar
+                                if (ind!=-1) read_record(file_binary,ind);
+                                else cout<<"No existe registro con "<<atributos[0]<<" = "<<resultado.valor<<endl;
+
                             } else{
+                                cout<<"Tipo de atributo no valido"<<endl;
                                 flag = 5;
                             }
                         } else if (resultado.atributo==atributos[1]){
@@ -383,12 +389,22 @@ InsertQuery parseInsertQuery(const std::string& sqlQuery) {
                 cout<<"No se pudo abrir archivo dataset en binario"<<endl;
             } else{
                 file.seekp(0,ios::end);
+                int adress = file.tellp();
                 flag = 6;
                 file.write((char*)&record,record.size()); //escribe registro al final
                 file.close();
+
+                /* insertar cada valor en una estructura */
+                // aqui ya no es necesario cambiar el tipo de atributo (todos ya tienen el suyo)
+                columna1->insert(record.key,adress); // llave
+
+                NodeAVL<int> nodeInt; nodeInt.setValue(adress, record.atrib2); // 3era columna
+                columna3->insert(nodeInt);
+
+                NodeAVL<float> nodeFloat; nodeFloat.setValue(adress, record.atrib4); // 5ta columna
+                columna5->insert(nodeFloat);
             }
 
-            /* insertar cada valor en una estructura */
 
             //for (auto value:query.values) std::cout<<value<<" - ";
 
@@ -432,7 +448,7 @@ DeleteQuery parseDeleteQuery(const std::string& sqlQuery) {
                     //busca elemento en la estructura asociada
                     if (resultado.atributo==atributos[0]){ //eliminacion en extendible
                         if (contieneSoloDigitos(resultado.valor)){
-                            //res = columna3->remove(stoi(resultado.valor));
+                            res = columna1->remove(stoi(resultado.valor));
 
                         } else{
                             cout<<"Tipo de atributo no valido"<<endl;
