@@ -167,6 +167,11 @@ En este apartado incluiremos los cuadros comparativos de desempeño de las técn
   <img src="images/hashing.jpeg" alt="Extendible Hashing" width="500" height="330">
 </p>
 
+  |        | 1000 | 5000  | 10000 | 50000 |100000|
+  | :---:  | :---: | :---:  | :---:  | :---:  | :---:  |
+  | search Time|0.000213 | 0.000285  |0.000233  | 0.000359  | 0.000302 |
+  | Insert Time| 0.000138 | 0.000124 | 0.000135  | 0.000206 | 0.000159 |
+  
 ## Análisis de resultados experimentales <a name="ida"></a>
 
 ## Interfaz gráfica <a name="idb"></a>
