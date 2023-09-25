@@ -598,7 +598,7 @@ void AVLFile<T>::buildFromFile(string sourceName, int atributo_col){
         }
 
         this->insert(nodo);
-        record.print();
+        //record.print();
         bytes+= record.size(); // se aumenta contador de bytes
     }
     source.close();

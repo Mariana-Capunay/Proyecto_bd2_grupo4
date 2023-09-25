@@ -294,7 +294,7 @@ class HashingIndex{
             file.seekg(pos,ios::beg);
             Record record;
             record.read(file);
-            record.print();
+            //record.print();
             
             
             insert(record.key,pos);
