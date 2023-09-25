@@ -167,20 +167,20 @@ CreateTableQuery parseCreateTableQuery(const std::string& sqlQuery) {
             //binSource.seekg(0,ios::end);
 
             columna1->load_file(); // llaves
-
+            cout<<"Datos en extendible"<<endl;
             //columna2->buildFromFile(new_file,1);
 
             //auto avl1 = new AVLFile<int>(new_file, atr_2);
             //cout << "Construyendo avl desde " << new_file << " de tamahnio " << binSource.tellg() << endl;
             columna3->buildFromFile(new_file, 2);
-            cout<<"Imprimiendo data";
+            cout<<"Datos en primer avl"<<endl;
             //columna3->printData();
             //columna4->buildFromFile(new_file,3);
 
 
             /// Columna 5
             columna5->buildFromFile(new_file, 4);
-            cout<<"Imprimiendo data";
+            cout<<"Datos en segundo avl"<<endl;
             //columna5->printData();
 
         }  
@@ -228,8 +228,8 @@ SelectQuery parseSelectQuery(const std::string& sqlQuery) {
                         //cout<<"atributo: "<<resultado.atributo<<" | value: "<<resultado.valor<<endl;
                         if (resultado.atributo==atributos[0]){
                             if (contieneSoloDigitos(resultado.valor)){
-                                int ind = columna1->find(stoi(resultado.valor)); //retornar
-                                if (ind!=-1) read_record(file_binary,ind);
+                                Record* record = columna1->search(stoi(resultado.valor)); //retornar
+                                if (record) record->print();//read_record(file_binary,ind);
                                 else cout<<"No existe registro con "<<atributos[0]<<" = "<<resultado.valor<<endl;
 
                             } else{
