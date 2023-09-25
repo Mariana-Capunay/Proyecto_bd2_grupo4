@@ -195,7 +195,7 @@ class AVLFile{
         }
 
         //actualizar altura
-        alturaActulizada(pos,nodo); //actualiza la altura del nodo actual
+        alturaActualizada(pos,nodo); //actualiza la altura del nodo actual
         //balancear
         balance(pos, nodo); //se balancea el arbol
         //retornar
