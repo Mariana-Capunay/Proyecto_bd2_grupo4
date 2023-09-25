@@ -155,6 +155,14 @@ Se utiliza los punteros para saltar las tuplas eliminadas, e inmediatamente se r
   | O(n) | O(n) | O(n)  | O(n)  |
 
 ## Optimización de memoria secundaria <a name="id7"></a>
+### Sequential file
+Almacenar un archivo como una secuencia contigua de bytes tiene el problema obvio de que si el archivo crece, probablemente tendrá que moverse en el disco. Por ello, se puede optar por dividir los archivos en bloques de tamaño fijo que no necesitan ser adyacentes, sino apuntados uno tras otro por punteros.
+
+### AVL File
+La capacidad de autobalanceo de un árbol AVL hace eficiente uso de la memoria secundaria debido a que practicamente todas sus operaciones son logarítmicas con respecto al tamaño del archivo.
+
+### Extendible Hashing
+El indexado por Hashing es útil para acelerar la búsqueda y recuperación de datos mediante el uso de una función Hash. Debido a que un bucket puede contener varios registros, la inserción de datos resultó teniendo complejidad logarítmica.
 
 ## Implementación de Parser <a name="id8"></a>
 Para implementar el parser(básico) de SQL, hicimos uso de la librería **regex**, la cual se encarga de procesar expresiones regulares y generamos instrucciones de acuerdo a las consultas disponibles (CREATE, INSERT, DELETE, SELECT)
