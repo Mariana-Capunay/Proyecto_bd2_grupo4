@@ -3,9 +3,57 @@
 #include <fstream>
 #include <iostream>
 #include <utility>
-#include "../../dataset_bin/binary_conversor.h"
 
 using namespace std;
+
+struct Record {
+    int key= {};                 // int (dni o codigo)
+    char atrib1[40] = {};        // char de 40 (nombre completo o nombre producto)
+    int atrib2 = {};             // int (edad o stock)
+    char atrib3[25] = {};        // char de 25 (ciudad o categoria)
+    float atrib4 = {};           // float (sueldo, precio)
+    bool removed   ;            // bool (removed)
+
+    //friend ofstream& operator<<(ofstream& salida, Record r);
+    void print(){
+        //std::cout<<key;
+        //std::cout<<", ";
+        //std::cout<<atrib1;
+        //std::cout<<", ";
+        //std::cout<<atrib2<<", ";
+        //std::cout<<atrib3<<", ";
+        //std::cout<<atrib4<<"\n";
+    }
+    int size(){
+        return sizeof(int)*2 + 40 + 25 + 4 + sizeof(bool);
+    }
+};
+
+Record read_record(std::string file_name, int pos){
+    std::ifstream file(file_name, std::ios::binary);
+    if (!file.is_open()) {throw std::runtime_error("No se pudo abrir archivo ");}
+    Record record;
+    file.seekg(0, std::ios::end);
+    int dif = file.tellg();
+    if ( dif <=pos) {throw std::runtime_error("No existe registro en esta posicion");}
+    file.seekg(0,std::ios::beg);
+    file.seekg(pos); // los punteros tienen posicion exacta del registro
+
+
+    file.read((char*)&record.key,sizeof(record.key));
+    file.read((char*)&record.atrib1,sizeof(record.atrib1));
+    file.read((char*)&record.atrib2,sizeof(record.atrib2));
+    file.read((char*)&record.atrib3,sizeof(record.atrib3));
+    file.read((char*)&record.atrib4,sizeof(record.atrib4));
+    file.read((char*)&record.removed,sizeof(record.removed));
+
+    if (!record.removed){
+        record.print();
+    }
+
+    file.close();
+    return record;
+}
 
 struct BinaryNode{
     int left = -1;
@@ -290,15 +338,35 @@ class HashingIndex{
         for(int i = 0; i < limit; i++) insert(i+1,i+1);
     }
 };
+#include <stdlib.h> 
+#include <ctime> 
 
-/*
 int main(){
-    HashingIndex hashing_index("asd");
-    hashing_index.insert(1,4);
-    hashing_index.insert(4,5);
-    hashing_index.insert(10,3);
-    cout << hashing_index.find(4) << endl;
-    cout << hashing_index.find(4) << endl;
+    unsigned t0, t1;
+ 
+    double time;
+    HashingIndex hashing_index("test.bin");
+    int n = 1000;
+    int sizes[] = {1000,5000,10000,50000,100000} ;
+    for(int i = 0; i < 5; i++){
+        n = sizes[i];
+        cout << "TAMAÑO " << n << endl;
+        hashing_index.generate(n);
+        t0=clock();
+        hashing_index.find( rand() % n );
+        t1 = clock();
+        time = (double(t1-t0)/CLOCKS_PER_SEC);
+        cout << "Search Time : " << time << endl;
+        
+        t0=clock();
+        hashing_index.insert(n + rand() % n,8174287);
+        
+        t1 = clock();
+        time = (double(t1-t0)/CLOCKS_PER_SEC);
+        cout << "Insert Time : " << time << endl;
+    }
+    
+  
+   
     return 0;
 }
-*/
