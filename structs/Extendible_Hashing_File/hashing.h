@@ -118,7 +118,6 @@ class HashingIndex{
     }
     void split_leaf_node(int position, BinaryNode node,int depth){
         if(node.posBucket == -1) return;
-
         int position_bucket = node.posBucket;
         Bucket current_bucket = read_bucket(position_bucket);
         Bucket left_bucket(max_size_bucket); 
@@ -126,12 +125,13 @@ class HashingIndex{
         int pos_left = 0, pos_right = 0;
         for(int i = 0; i < max_size_bucket; i++){
             if(current_bucket.keys[i] & (1<<depth)){
-               
+                  
                 right_bucket.keys[pos_right] = current_bucket.keys[i];
                 right_bucket.addresses[pos_right] = current_bucket.addresses[i];
                 pos_right++;
             }
             else{
+              
                 left_bucket.keys[pos_left] = current_bucket.keys[i];
                 left_bucket.addresses[pos_left] = current_bucket.addresses[i];
                 pos_left++;
@@ -149,6 +149,8 @@ class HashingIndex{
 
         node.posBucket = -1;
         create_node(position,node);
+        BinaryNode x = read_node(position);
+  
     }
 
     int f_hash(int key){
@@ -164,8 +166,7 @@ class HashingIndex{
         return result;
     }
     void insert(int key,int address,BinaryNode current_node,int position, int depth){
-        int hash_key = f_hash(key);
-        
+        int hash_key = f_hash( key);
         if(current_node.posBucket == -1){
             if(hash_key & (1<<depth)) 
                 position = current_node.right,current_node = read_node(current_node.right);
@@ -190,9 +191,8 @@ class HashingIndex{
                
             } 
             else if(depth < max_depth){
-                
                 split_leaf_node(position,current_node, depth);
-               
+                current_node = read_node(position);
                 insert(key,address,current_node, position, depth);
             }
             else{
@@ -204,7 +204,7 @@ class HashingIndex{
     public:
     int find(int key){
         BinaryNode current_node = root;
-        int hash_key = f_hash(key),depth  = 0;
+        int hash_key = f_hash( key),depth  = 0;
         while(current_node.posBucket == -1){
             if(hash_key & (1<<depth)) current_node = read_node(current_node.right);
             else current_node = read_node(current_node.left);
@@ -226,7 +226,8 @@ class HashingIndex{
         }
         return -1;
     }
-    HashingIndex(string datafile, int max_size_bucket = 5, int max_depth = 20){
+    HashingIndex(string _datafile, int max_size_bucket = 5, int max_depth = 20){
+        datafile = _datafile;
         root.left = last_position;
         create_node(last_position,{-1,-1,last_bucket});
         create_bucket(last_bucket,Bucket(max_size_bucket));
@@ -246,11 +247,11 @@ class HashingIndex{
         if(record->removed) return nullptr;
         return record;
     }
-    void erase(int key){
+    bool erase(int key){
         int address = find(key);
-        if(address == -1) return;
+        if(address == -1) return false;
         Record record = read_record(datafile,address);
-        if(record.removed) return;
+        if(record.removed) return true;
         record.removed = true;
         ofstream file;
         file.open(datafile,ios_base::binary);
@@ -261,8 +262,9 @@ class HashingIndex{
 
     void load_file(){
         ifstream file;
-        file.open(datafile,ios::binary);
-        file.seekg(0,ios::end);
+        file.open(datafile,ios::binary | ios::in);
+
+        file.seekg(0,ios_base::end);
         int last_pos = file.tellg();
         file.close();
         int pos = 0;

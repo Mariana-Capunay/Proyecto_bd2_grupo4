@@ -11,6 +11,7 @@ int main(){
     string atr_5;
     string new_file = conversor("dataset/10k/dataset_1.csv", atr_1, atr_2, atr_3, atr_4, atr_5);
     HashingIndex test(new_file);
+    test.load_file();
     test.insert(40,123);
     /*
     cout << new_file << endl;
