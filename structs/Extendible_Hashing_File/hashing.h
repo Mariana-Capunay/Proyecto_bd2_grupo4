@@ -1,13 +1,27 @@
+#ifndef HASHING_H
+#define HASHING_H
+
 #include <string>
 #include <vector>
 #include <fstream>
 #include <iostream>
 #include <utility>
 #include "../../dataset_bin/binary_conversor.h"
-
+//#include "../../dataset_bin/record.h"
 using namespace std;
 
 
+/*
+void crear_archivo(const string& nombre) {
+    ifstream archivo(nombre.c_str());
+    if (archivo.good()) { //si existe
+        archivo.close(); //cerrarlo
+        return; //ya no es necesario crear
+    }
+    ofstream file(nombre, ios::binary);
+    file.close();
+}
+*/
 struct BinaryNode{
     int left = -1;
     int right = -1;
@@ -278,15 +292,19 @@ class HashingIndex{
 
         file.seekg(0,ios_base::end);
         int last_pos = file.tellg();
-        file.close();
+
         int pos = 0;
         int cont = 0;
         while(pos < last_pos){
             if(limit != -1 && cont == limit) break;
             file.seekg(pos,ios::beg);
-            Record record = read_record(datafile,pos);
+            Record record;
+            record.read(file);
+            cout<<"a";
             insert(record.key,pos);
+            cout<<"a";
             pos += record.size();
+            cout<<"a";
         }
     }
 
@@ -309,3 +327,4 @@ int main(){
     return 0;
 }
 */
+#endif
