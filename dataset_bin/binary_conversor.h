@@ -9,6 +9,8 @@
 
 std::string conversor(std::string file_route, std::string& atr_1, std::string& atr_2, std::string& atr_3, std::string& atr_4, std::string& atr_5);
 
+void crear_archivo(const string& nombre) ;
+
 Record read_record(std::string file_name, int pos);
 
 bool print_record(std::string file_name, int pos);

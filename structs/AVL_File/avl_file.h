@@ -4,14 +4,15 @@
 #include "node.h"
 #include <vector>
 #include <fstream>
-#include "../../dataset_bin/record.h" //importando record
+#include "../../dataset_bin/binary_conversor.h" //importando record
+//#include "../../dataset_bin/record.h" //importando record
 //#include <windows.h>
 
 using namespace std;
 
 bool archivo_existe(const string& nombre);
 
-void crear_archivo(const string& nombre);
+
 
 template <typename T>
 class AVLFile{

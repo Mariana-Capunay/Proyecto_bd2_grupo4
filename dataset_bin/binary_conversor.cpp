@@ -1,5 +1,15 @@
 #include "binary_conversor.h"
 
+void crear_archivo(const string& nombre) {
+    ifstream archivo(nombre.c_str());
+    if (archivo.good()) { //si existe
+        archivo.close(); //cerrarlo
+        return; //ya no es necesario crear
+    }
+    ofstream file(nombre, ios::binary);
+    file.close();
+}
+
 std::string conversor(std::string file_route, std::string& atr_1, std::string& atr_2, std::string& atr_3, std::string& atr_4, std::string& atr_5){ //retorna nombre del archivo creado
     std::ifstream file(file_route);
     std::string bin_file = "test.bin";

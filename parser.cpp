@@ -1,5 +1,5 @@
 #include "parser.h"
-#include "structs/AVL_File/avl_file.h"
+//#include "structs/AVL_File/avl_file.h"
 //#include "structs/Sequential_File/sequential_file.cpp"
 //#include "structs/Extendible_Hashing_File/hashing.h"
 using namespace std;
@@ -172,14 +172,14 @@ CreateTableQuery parseCreateTableQuery(const std::string& sqlQuery) {
 
             //auto avl1 = new AVLFile<int>(new_file, atr_2);
             //cout << "Construyendo avl desde " << new_file << " de tamahnio " << binSource.tellg() << endl;
-            //columna3->buildFromFile(new_file, 2);
+            columna3->buildFromFile(new_file, 2);
             cout<<"Imprimiendo data";
             //columna3->printData();
             //columna4->buildFromFile(new_file,3);
 
 
             /// Columna 5
-            //columna5->buildFromFile(new_file, 4);
+            columna5->buildFromFile(new_file, 4);
             cout<<"Imprimiendo data";
             //columna5->printData();
 
@@ -228,9 +228,7 @@ SelectQuery parseSelectQuery(const std::string& sqlQuery) {
                         //cout<<"atributo: "<<resultado.atributo<<" | value: "<<resultado.valor<<endl;
                         if (resultado.atributo==atributos[0]){
                             if (contieneSoloDigitos(resultado.valor)){
-                                cout<<"here";
                                 int ind = columna1->find(stoi(resultado.valor)); //retornar
-                                cout<<"here";
                                 if (ind!=-1) read_record(file_binary,ind);
                                 else cout<<"No existe registro con "<<atributos[0]<<" = "<<resultado.valor<<endl;
 

@@ -3,6 +3,8 @@
 #include <iostream>
 #include <fstream>
 using namespace std;
+
+
 struct Record {
     int key= {};                 // int (dni o codigo)
     char atrib1[40] = {};        // char de 40 (nombre completo o nombre producto)
