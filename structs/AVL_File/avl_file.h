@@ -188,10 +188,17 @@ class AVLFile{
                 //se debe reemplazar por su sucesor (retornar valor del sucesor - actualizar altura)
                 NodeAVL<T> sucesor = find_sucesor(nodo); //se busca sucesor
                 T value_sucesor = sucesor.value; //se guarda valor del sucesor
-                long pos_sucesor = sucesor.pointer_value; //se guarda posicion del sucesor
-                this->remove(nodo.right, value_sucesor); //se elimina sucesor
+                //long pos_sucesor = sucesor.pointer_value; //se guarda posicion del sucesor
+                //this->remove(nodo.right, value_sucesor); //se elimina sucesor
                 nodo.value = value_sucesor; //se reemplaza valor del nodo por el valor del sucesor
-                return pos; //se retorna posicion del nodo
+
+
+                //actualizar altura
+                alturaActualizada(pos, nodo);
+                //balancear
+                balance(pos, nodo);
+                //retornar
+                return pos;
             }
         }
 

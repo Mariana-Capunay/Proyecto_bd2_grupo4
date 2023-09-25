@@ -24,7 +24,8 @@ private:
 public:
     char atr[40];
     //string atr;
-    float Puntero;
+    float local_pointer;
+    long pointer_value;
 
     void setData(){
         cout<<"atr:";
@@ -48,6 +49,7 @@ public:
 class SequentialFile{
 private:
     string document,atr;
+
     string data_file;//guara los registros
     string aux_file;//guarda los punteros
 
@@ -531,7 +533,7 @@ private:
         int cantidad_eliminados = 0;
 
         // Iterar a través de los registros en el archivo de datos
-        while (dataFileStream.read(reinterpret_cast<char*>(&X), sizeof(SeqRecord))) {
+        while (dataFileStream.read(reinterpret_cast<char*>(&X), X.size())) {
 
             if (X.Puntero == -1){
                 cantidad_eliminados += 1;
@@ -656,7 +658,8 @@ private:
         file.seekg(0, ios::end);//ubicar cursos al final del archivo
         long total_bytes = file.tellg();//cantidad de bytes del archivo
         file.close();
-        return total_bytes / sizeof(SeqRecord);
+        SeqRecord X;
+        return total_bytes / X.size();
     }
 
     //Metodo para determinar si un registro punta otro perteneciente a data file o a aux_file
@@ -673,8 +676,8 @@ private:
         ofstream file(_file, ios::app | ios::binary);
         if(!file.is_open()) throw ("No se pudo abrir el archivo");
 
-        file.seekp(pos * sizeof(SeqRecord), ios::beg);//fixed length record
-        file.write((char*) &record, sizeof(SeqRecord));
+        file.seekp(pos * record.size(), ios::beg);//fixed length record
+        file.write((char*) &record, record.size());
         file.close();
     }
 
@@ -787,7 +790,7 @@ private:
 
             add(record);
             record.showData();
-            bytes +=  sizeof(SeqRecord);
+            bytes +=  record.size();
         }
         source.close();
     }

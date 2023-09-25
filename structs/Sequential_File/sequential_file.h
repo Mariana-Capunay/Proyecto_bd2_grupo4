@@ -1,3 +1,4 @@
+/**
 #include <iostream>
 #include <fstream>
 #include <vector>
@@ -11,18 +12,14 @@ class Record {
 private:
 
 public:
-    char Nombre[12];
-    char Apellidos[12];
-    float Puntero;
+    char data[40];
+    long puntero;
 
     void setData(){
-        cout<<"Nombre:";
-        cin>>Nombre;
-        cout<<"Apellidos:";
-        cin>>Apellidos;
+        cout<<"data: "; cin>>data;
     }
     void showData(){
-        cout<<Nombre<<" - "<<Apellidos<<" - "<<Puntero<<endl;
+        cout<<"data: "; cout<<data;
     }
 
     // Agregar un método para comparar el nombre de dos records

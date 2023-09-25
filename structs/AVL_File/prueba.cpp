@@ -15,7 +15,7 @@ void test_search(){
     for (auto x:r) cout<<x<<" ";
     cout<<endl;
     //avl->deleteFiles();
-    
+
     cout<<"elemento 2: (posiciones) ";
     r = avl->search(2);
     for (auto x:r) cout<<x<<" ";
@@ -38,16 +38,16 @@ void test_search_range(){
 
 int main(){
 
-    
+
 
     //prueba remove
     //avl->remove(4);
     //avl->remove(3);
-   
+
 
 
     // prueba de search
-   
+
    //for (auto x:r) cout<<x<<" ";
 
     /*
@@ -58,11 +58,11 @@ int main(){
     avl->insert(42);
     avl->insert(176);
     */
-    
+
     test_insert();
     avl->printData();
     test_search();
     test_search_range();
-        
+
     return 0;
 }
