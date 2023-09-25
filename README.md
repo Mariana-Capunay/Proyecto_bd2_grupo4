@@ -81,9 +81,11 @@ Este análisis se realizará en base a los accesos a memoria secundaria.
 
 - **Complejidad**
   
-  | Insert | Search | Search Range | Remove | 
-  | :---: | :---: | :---:  | :---:  |       
-  | :---: | :---: | :---:  | :---:  |       
+  |  Insert   |  Search   | Search Range  |  Remove   | 
+  |:---------:|:---------:|:-------------:|:---------:|       
+  | O(log(n)) | O(log(n)) | O(log(n) + k) | O(log(n)) |       
+    - n: Número de elementos almacenados.
+    - k: Número de nodos dentro del rango objetivo.
 
 
 ### Sequential File
@@ -91,7 +93,7 @@ El objetivo es poder aplicar la busqueda binaria para conseguir una complejidad 
 Para ello, el archivo debe mantener los registros ordenados fisicamente en base al valor del campo de busqueda (key).
 Principalmente se ordena en base a la llave primaria de la tabla. 
 <p align="center">
-  <img src="images/sequential_estructura.jpeg" alt="Class AVL" width="500" height="330">
+  <img src="images/sequential_estructura.png" alt="Class AVL" width="500" height="330">
 </p>
 
 - **El algoritmo de búsqueda binaria:**
@@ -126,6 +128,10 @@ Se utiliza los punteros para saltar las tuplas eliminadas, e inmediatamente se r
 
 ### Extendible Hashing
 
+<p align="center">
+  <img src="images/Extendible_Hashing.jpg" alt="Class AVL" width="600" height="400">
+</p>
+
 - **Funcion hashing**
     Se utilizó una función polinómica si _key_ = $a_n,a_{n-1},...a_2,a_1,a_0$ , entonces _hashing_ = $a_0 + a_1 \cdot p + a_2 \cdot p^2 + ...$ . Donde $p$ es un primo que sirve como base.
 
@@ -143,6 +149,12 @@ Se utiliza los punteros para saltar las tuplas eliminadas, e inmediatamente se r
   | :---: | :---: | :---:  | :---:  |
   | O(log(n)) | O(log(n)) | O(n)  | O(log(n))  |
 
+   En el peor de los casos.
+  
+  | Insert | Search | Search Range | Remove | 
+  | :---: | :---: | :---:  | :---:  |
+  | O(n) | O(n) | O(n)  | O(n)  |
+
 ## Optimización de memoria secundaria <a name="id7"></a>
 
 ## Implementación de Parser <a name="id8"></a>
@@ -156,6 +168,9 @@ En este apartado incluiremos los cuadros comparativos de desempeño de las técn
 ## Análisis de resultados experimentales <a name="ida"></a>
 
 ## Interfaz gráfica <a name="idb"></a>
+
+## Cómo ejecutar el programa
+g++ parser.cpp dataset_bin/binary_conversor.cpp structs/AVL_File/avl_file.cpp .\structs\Extendible_Hashing_File\extendible_hashing_file.cpp
 ## 👩‍💻 Nuestro Genial Equipo <a name="idc"></a>
 
 ¡Estos cracks están detrás de todo el caos (código) aquí!

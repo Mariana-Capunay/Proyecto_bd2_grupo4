@@ -260,6 +260,20 @@ class HashingIndex{
         file.close();
     }
 
+    bool remove(int key){
+        int address = find(key);
+        if(address == -1) return false;
+        Record record = read_record(datafile,address);
+        if(record.removed) return false;
+        record.removed = true;
+        ofstream file;
+        file.open(datafile,ios_base::binary);
+        file.seekp(address);
+        file.write((char*)&record, record.size());
+        file.close();
+        return true;
+    }
+
     void load_file(){
         ifstream file;
         file.open(datafile,ios::binary | ios::in);
@@ -277,6 +291,7 @@ class HashingIndex{
         
     }
 };
+
 /*
 int main(){
     HashingIndex hashing_index("asd");
@@ -286,4 +301,5 @@ int main(){
     cout << hashing_index.find(4) << endl;
     cout << hashing_index.find(4) << endl;
     return 0;
-}*/
+}
+*/

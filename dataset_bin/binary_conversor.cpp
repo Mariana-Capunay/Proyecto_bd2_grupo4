@@ -99,7 +99,7 @@ std::string conversor(std::string file_route, std::string& atr_1, std::string& a
         metadata.write((char*)&record.atrib4,sizeof(record.atrib4));
         metadata.write((char*)&record.removed,sizeof(record.removed));
         //metadata.write((char*)&record, sizeof(Record));
-        record.print();
+        //record.print();
         //cout<<record.key<<" - "<<record.atrib1<<" - "<<record.atrib2<<endl;
 
     }

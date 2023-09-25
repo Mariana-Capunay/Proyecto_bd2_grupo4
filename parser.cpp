@@ -1,5 +1,6 @@
 #include "parser.h"
 #include "structs/AVL_File/avl_file.h"
+#include "structs/Sequential_File/sequential_files.h"
 
 using namespace std;
 
@@ -9,10 +10,10 @@ std::vector<std::string> atributos; //se lee del csv
 std::vector<std::string> tipos_atributo = {"int","char","int","char","float"};
 
 // estructuras de los atributos
-HashingIndex* keys = new HashingIndex(file_binary);
-//SequentialFile<string>* columna2 = new SequentialFile<string>("dataset/test.bin");
+HashingIndex* columna1 = new HashingIndex(file_binary); // para keys
+SequentialFile* columna2 = new SequentialFile(file_binary,"columna_2");
 AVLFile<int>* columna3 = new AVLFile<int>(file_binary, "columna_3");
-//SequentialFile<string>* columna4 = new SequentialFile<string>("test.bin");
+SequentialFile* columna4 = new SequentialFile(file_binary,"columna_4");
 AVLFile<float>* columna5 = new AVLFile<float>(file_binary, "columna_5");
 
 // *"test.bin" es la ruta que se asigna en funcion conversor
@@ -93,8 +94,8 @@ bool parsearExpresionRelacional(const std::string& expresion, ExpresionRelaciona
                  resultado.valor2[0]=='\"' && resultado.valor2[resultado.valor.size()-1]=='\"')){
                 variable1 = variable1.substr(1, variable1.size() - 2);
                 resultado.valor2 = resultado.valor2.substr(1, resultado.valor2.size() - 2);
-                std::cout << "Variable 1: " << variable1 << std::endl;
-                std::cout << "Variable 2: " << resultado.valor2 << std::endl;
+                //std::cout << "Variable 1: " << variable1 << std::endl;
+                //std::cout << "Variable 2: " << resultado.valor2 << std::endl;
             }
             return true;
 
@@ -164,14 +165,24 @@ CreateTableQuery parseCreateTableQuery(const std::string& sqlQuery) {
             /*agregar valores a todas las estructuras*/
             //binSource.open(new_file, ios::binary);
             //binSource.seekg(0,ios::end);
-            string avl_filename_1 = "AVL_file";
-            avl_filename_1 += atr_2;
 
-            auto avl1 = new AVLFile<int>(new_file, atr_2);
+            //columna1->load_file(); // llaves
+
+            //columna2->buildFromFile(new_file,1);
+
+            //auto avl1 = new AVLFile<int>(new_file, atr_2);
             //cout << "Construyendo avl desde " << new_file << " de tamahnio " << binSource.tellg() << endl;
-            avl1->buildFromFile(new_file, 2);
-            cout<<"Imprimiendo data";
-            avl1->printData();
+            //columna3->buildFromFile(new_file, 2);
+            //cout<<"Imprimiendo data";
+            //columna3->printData();
+            columna4->buildFromFile(new_file,3);
+
+
+            /// Columna 5
+            columna5->buildFromFile(new_file, 4);
+            //cout<<"Imprimiendo data";
+            columna5->printData();
+
         }  
 
     } else {
@@ -203,50 +214,86 @@ SelectQuery parseSelectQuery(const std::string& sqlQuery) {
                 //std::cout<<"select con WHERE"<<std::endl;
 
                 /*
-                    evaluar where ( <, >, =, between x and y)
+                    evaluar where (  =, between x and y)
                 */
                 ExpresionRelacional resultado;
                 bool parseo = parsearExpresionRelacional(query.whereClause, resultado);
                 //std::cout<<"query-operator: "<<resultado.operador;
                 // evaluar que estructuras llamar para cada atributo
                 if (parseo){ // se completó el parseo
+                    vector<long> res;
                     if (resultado.operador=="="){   // selecciona busqueda puntual en cada estructura
                         flag = 4;
-                        cout<<"operador = ";
-                        cout<<"atributo: "<<resultado.atributo<<" | value: "<<resultado.valor<<endl;
-                        vector<long> res;
+                        //cout<<"operador = ";
+                        //cout<<"atributo: "<<resultado.atributo<<" | value: "<<resultado.valor<<endl;
                         if (resultado.atributo==atributos[0]){
                             if (contieneSoloDigitos(resultado.valor)){
-                                keys->find(stoi(resultado.valor)); //retornar
+                                int ind = columna1->find(stoi(resultado.valor)); //retornar
+                                if (ind!=-1) read_record(file_binary,ind);
+                                else cout<<"No existe registro con "<<atributos[0]<<" = "<<resultado.valor<<endl;
+
                             } else{
+                                cout<<"Tipo de atributo no valido"<<endl;
                                 flag = 5;
                             }
                         } else if (resultado.atributo==atributos[1]){
 
+                                if (res.size()>0) for (auto x:res) read_record(file_binary,x);
+                                else cout<<"No existe registro con "<<atributos[1]<<" = "<<resultado.valor<<endl;
+                
                         } else if (resultado.atributo==atributos[2]){
                             if (contieneSoloDigitos(resultado.valor)){
                                 res= columna3->search(stoi(resultado.valor)); // retornar
-                                for (auto x:res) read_record(file_binary,x);
+                                if (res.size()>0) for (auto x:res) read_record(file_binary,x);
+                                else cout<<"No existe registro con "<<atributos[2]<<" = "<<resultado.valor<<endl;
+
                             } else {
                                 flag = 5;
+                                cout<<"Tipo de atributo no valido"<<endl;
                             }
 
                         } else if (resultado.atributo==atributos[3]){
-
+                            
                         } else{
                             if (esFloat(resultado.valor)){
                                 res = columna5->search(stof(resultado.valor)); // retornar
-                                for (auto x:res) read_record(file_binary,x);
+                                if (res.size()>0) for (auto x:res) read_record(file_binary,x);
+                                else cout<<"No existe registro con "<<atributos[4]<<" = "<<resultado.valor<<endl;
+
+                            } else {
+                                flag = 5;
+                                cout<<"Tipo de atributo no valido"<<endl;
                             }
                         }
 
                     } else if (resultado.operador=="between"){ // selecciona busqueda por rango en cada estructura
                         flag = 4;
                         if (resultado.atributo==atributos[0]){ flag =5; cout<<"Key no soporta busqueda por rango"<<endl; }
-                        else if (resultado.atributo==atributos[1]);
-                        else if (resultado.atributo==atributos[2]);
-                        else if (resultado.atributo==atributos[3]);
-                        else;
+                        else if (resultado.atributo==atributos[1]){
+
+                        } else if (resultado.atributo==atributos[2]){
+
+                            // verificacion para enteros
+                            if (contieneSoloDigitos(resultado.valor) && contieneSoloDigitos(resultado.valor2)){
+                                res = columna5->rangeSearch(stoi(resultado.valor),stoi(resultado.valor2)); // retornar
+                                if (res.size()>0) for (auto x:res) read_record(file_binary,x);
+                                else cout<<"No existen registro con "<<atributos[2]<<" entre  ["<<resultado.valor<<"- "<<resultado.valor2<<"]"<<endl;
+
+                            } else cout<<"Tipo de atributo no valido"<<endl;
+
+                        } else if (resultado.atributo==atributos[3]){
+
+                        } else {
+
+                            // verificacion para float's
+                            if (esFloat(resultado.valor) && esFloat(resultado.valor2)){
+                                res = columna5->rangeSearch(stof(resultado.valor),stof(resultado.valor2)); // retornar
+                                if (res.size()>0) for (auto x:res) read_record(file_binary,x);
+                                else cout<<"No existen registro con "<<atributos[4]<<" entre  ["<<resultado.valor<<"- "<<resultado.valor2<<"]"<<endl;
+
+                            } else cout<<"Tipo de atributo no valido"<<endl;
+
+                        }
 
                     } else {
                         flag = 5;
@@ -337,7 +384,7 @@ InsertQuery parseInsertQuery(const std::string& sqlQuery) {
             strncpy(record.atrib3, char25Value.c_str(), sizeof(record.atrib3) - 1); // -1 para dejar espacio para el carácter nulo
             record.atrib3[sizeof(record.atrib3) - 1] = '\0'; // Asegura que el último carácter sea nulo
             strncpy(record.atrib3, char25Value.c_str(), sizeof(record.atrib3) - 1); // -1 para dejar espacio para el carácter nulo
-            record.atrib4 = stoi(floatValue);
+            record.atrib4 = stof(floatValue);
             record.removed = false;
 
             ofstream file(file_binary, ios::binary);
@@ -346,12 +393,22 @@ InsertQuery parseInsertQuery(const std::string& sqlQuery) {
                 cout<<"No se pudo abrir archivo dataset en binario"<<endl;
             } else{
                 file.seekp(0,ios::end);
+                int adress = file.tellp();
                 flag = 6;
                 file.write((char*)&record,record.size()); //escribe registro al final
                 file.close();
+
+                /* insertar cada valor en una estructura */
+                // aqui ya no es necesario cambiar el tipo de atributo (todos ya tienen el suyo)
+                columna1->insert(record.key,adress); // llave
+
+                NodeAVL<int> nodeInt; nodeInt.setValue(adress, record.atrib2); // 3era columna
+                columna3->insert(nodeInt);
+
+                NodeAVL<float> nodeFloat; nodeFloat.setValue(adress, record.atrib4); // 5ta columna
+                columna5->insert(nodeFloat);
             }
 
-            /* insertar cada valor en una estructura */
 
             //for (auto value:query.values) std::cout<<value<<" - ";
 
@@ -390,10 +447,35 @@ DeleteQuery parseDeleteQuery(const std::string& sqlQuery) {
                 //parsearExpresionRelacional(query.whereClause, resultado);
 
                 // evaluar que estructuras llamar para cada atributo
-                if (resultado.operador=="="){
-
+                if (resultado.operador=="="){ // si no lo encuentra, flag = 10. Si lo encuentra, lo elimina, flag=8
+                    bool res;
                     //busca elemento en la estructura asociada
-                    // si no lo encuentra, flag = 10. Si lo encuentra, lo elimina, flag=8
+                    if (resultado.atributo==atributos[0]){ //eliminacion en extendible
+                        if (contieneSoloDigitos(resultado.valor)){
+                            res = columna1->remove(stoi(resultado.valor));
+
+                        } else{
+                            cout<<"Tipo de atributo no valido"<<endl;
+                        }
+
+                    } else if (resultado.atributo==atributos[1]){ // en sequential
+
+                    } else if (resultado.atributo==atributos[2]){ // en avl
+                        if (contieneSoloDigitos(resultado.valor)){
+                            res = columna3->remove(stoi(resultado.valor));
+
+                        } else{
+                            cout<<"Tipo de atributo no valido"<<endl;
+                        }
+
+                    } else if (resultado.atributo==atributos[3]){ // en sequential
+
+                    } else { // en avl
+                        res = columna5->remove(stof(resultado.valor));
+                    }
+
+                    if (!res) cout<<"No existe registro que satisfaga igualdad."<<endl;
+                    
                 } else if (resultado.operador=="between"){
                     std::cout<<"Eliminación por rango no implementada"<<std::endl;
                     flag = 9;

@@ -5,9 +5,10 @@
 #include <string>
 #include <cmath>
 #include "../../dataset_bin/binary_conversor.h"
+
 using namespace std;
 
-class Record {
+class SeqRecord {
 private:
 
 public:
@@ -26,14 +27,13 @@ public:
     }
 
     // Agregar un método para comparar el nombre de dos records
-    int compare(const Record& otro) const { // const para que no se modifique el objeto
+    int compare(const SeqRecord& otro) const { // const para que no se modifique el objeto
         return strcmp(Nombre, otro.Nombre);//strcmp devuelve 0 si son iguales, 1 si el primero es mayor al segundo, -1 si el primero es menor al segundo
     }
 
 };
 
-class SequentialFile
-{
+class SequentialFile{
 private:
     string document,atr;
     string data_file;//guara los registros
@@ -63,7 +63,7 @@ public:
         ifstream checkFile(data_file, ios::binary);
         if (!checkFile.is_open()) {
             // El archivo no existe, entonces lo creamos y escribimos el registro predeterminado
-            Record defaultRecord;
+            SeqRecord defaultRecord;
             strcpy(defaultRecord.Nombre, "\0\0\0\0\0\0\0\0\0\0\0\0");
             defaultRecord.Puntero = 0.1;
             writeRecordPOS(defaultRecord, 0, this->data_file);
@@ -102,8 +102,8 @@ public:
         cout << "size data y aux :" << data_size <<" "<<aux_size<<endl;
 
         SequentialFile file2(document,atr);
-        vector<Record> records = file2.scanAll("data.bin");
-        for(Record r : records){
+        vector<SeqRecord> records = file2.scanAll("data.bin");
+        for(SeqRecord r : records){
             r.showData();
         }
 
@@ -111,17 +111,17 @@ public:
 
         //Lectura
         SequentialFile file5(document,atr);
-        vector<Record> records2 = file5.scanAll("auxiliar.bin");
-        for(Record r : records2){
+        vector<SeqRecord> records2 = file5.scanAll("auxiliar.bin");
+        for(SeqRecord r : records2){
             r.showData();
         }
 
     }
 
-    void add(Record record){
+    void add(SeqRecord record){
         //Ubicamos el elemento anterior a record
         int X_pos = binarySearchPosition(record) - 1; //binarySearchPOS me devuelve la pos donde debo insertar el elemento, por eso el -1
-        Record X = readRecord(X_pos,this->data_file);
+        SeqRecord X = readRecord(X_pos,this->data_file);
 
         //Si X apunta a un elemento de la misma Data
         /*
@@ -160,7 +160,7 @@ public:
             //Si apunta a un auxiliar primero me tengo que ubicar en auxiliarfile[X.Puntero]
 
             //Y_pos = X.Puntero;
-            Record Y = readRecord(X.Puntero,this->aux_file);
+            SeqRecord Y = readRecord(X.Puntero,this->aux_file);
 
             //Caso particular (Todavia no nos hemos adentrado al 100% en aux_file, estamos en el limbo)
             /*
@@ -308,7 +308,7 @@ public:
         bool modified = false;
 
         //Busco con busqueda binaria la posicion del elemento
-        Record encontrar;
+        SeqRecord encontrar;
         strcpy(encontrar.Nombre, key.c_str());
 
         // Busco con búsqueda binaria el key_pos
@@ -318,7 +318,7 @@ public:
         }
         else{
             key_pos -= 1; //Pos real del key encontrado
-            Record current = readRecord(key_pos, data_file);
+            SeqRecord current = readRecord(key_pos, data_file);
             if (current.Nombre != key){
                 throw runtime_error("No se encontró la key");
             }
@@ -329,7 +329,7 @@ public:
             // Recorrer los elementos antes del key_pos para ver si se repiten y agregarlos
             for (int i = key_pos - 1; i >= 0; i--) {
                 current = readRecord(i, data_file);
-                Record prev = readRecord(i + 1, data_file);
+                SeqRecord prev = readRecord(i + 1, data_file);
                 if (current.compare(prev) == 0) {
                     if (getPunteroAtPosition(i, data_file) != -1) {
                         updatePunteroAtPosition(i, -1, this->data_file);
@@ -342,7 +342,7 @@ public:
             // Recorrer los elementos después del key_pos para ver si se repiten y agregarlos
             for (int i = key_pos + 1; i < size(data_file); i++) {
                 current = readRecord(i, data_file);
-                Record next = readRecord(i - 1, data_file);
+                SeqRecord next = readRecord(i - 1, data_file);
                 if (current.compare(next) == 0) {
                     if (getPunteroAtPosition(i, data_file) != -1) {
                         updatePunteroAtPosition(i, -1, this->data_file);
@@ -365,12 +365,12 @@ public:
          */
     };
 
-    vector<Record> search(const string& key){
+    vector<SeqRecord> search(const string& key){
 
         //DATAFILE
 
         //Busco con busqueda binaria la posicion del elemento
-        Record encontrar;
+        SeqRecord encontrar;
         strcpy(encontrar.Nombre, key.c_str());
 
         // Busco con búsqueda binaria el key_pos
@@ -380,12 +380,12 @@ public:
         }
         else {
             key_pos -= 1; //Pos real del key encontrado
-            Record current = readRecord(key_pos, data_file);
+            SeqRecord current = readRecord(key_pos, data_file);
             if (current.Nombre != key.c_str()){
                 throw runtime_error("No se encontró la key");
             }
 
-            vector<Record> result;
+            vector<SeqRecord> result;
 
             //Agregamos el key_pos encontrado
 
@@ -394,7 +394,7 @@ public:
             // Recorrer los elementos antes del key_pos para ver si se repiten y agregarlos
             for (int i = key_pos - 1; i >= 0; i--) {
                 current = readRecord(i, data_file);
-                Record prev = readRecord(i + 1, data_file);
+                SeqRecord prev = readRecord(i + 1, data_file);
                 if (current.compare(prev) == 0) {
                     if (getPunteroAtPosition(i, data_file) != -1) {
                         result.push_back(current);
@@ -407,7 +407,7 @@ public:
             // Recorrer los elementos después del key_pos para ver si se repiten y agregarlos
             for (int i = key_pos + 1; i < size(data_file); i++) {
                 current = readRecord(i, data_file);
-                Record next = readRecord(i - 1, data_file);
+                SeqRecord next = readRecord(i - 1, data_file);
                 if (current.compare(next) == 0) {
                     if (getPunteroAtPosition(i, data_file) != -1) {
                         result.push_back(current);
@@ -427,7 +427,7 @@ public:
             int totalRecords = size(this->aux_file);
 
             for (int i = 0; i < totalRecords; i++) {
-                Record record = readRecord(i, this->aux_file);
+                SeqRecord record = readRecord(i, this->aux_file);
 
                 // Comparar el nombre del registro con la clave proporcionada (insensible a mayúsculas y minúsculas)
                 if (strcasecmp(record.Nombre, key.c_str()) == 0 && getPunteroAtPosition(i, this->aux_file) != -1) {
@@ -444,11 +444,11 @@ public:
 
     }
 
-    vector<Record> rangeSearch(const string& begin, const string& end) {
+    vector<SeqRecord> rangeSearch(const string& begin, const string& end) {
         rebuild();
 
         //Busco con busqueda binaria la posicion del begin
-        Record encontrar_begin;
+        SeqRecord encontrar_begin;
         strcpy(encontrar_begin.Nombre, begin.c_str());
         int limite_inferior = binarySearchPosition(encontrar_begin);
 
@@ -457,14 +457,14 @@ public:
         }
         else {
             limite_inferior -= 1;
-            Record inf = readRecord(limite_inferior, this->data_file);
+            SeqRecord inf = readRecord(limite_inferior, this->data_file);
             if (inf.Nombre != begin){
                 throw runtime_error("No se encontró la key inferior");
             }
         }
 
         //Busco con busqueda binaria la posicion del end
-        Record encontrar_end;
+        SeqRecord encontrar_end;
         strcpy(encontrar_end.Nombre, end.c_str());
         int limite_superior = binarySearchPosition(encontrar_end);
         if (limite_superior == 0){
@@ -472,18 +472,18 @@ public:
         }
         else {
             limite_superior -= 1;
-            Record sup = readRecord(limite_superior, this->data_file);
+            SeqRecord sup = readRecord(limite_superior, this->data_file);
             if (sup.Nombre != end){
                 throw runtime_error("No se encontró la key superior");
             }
         }
 
 
-        vector<Record> result;
+        vector<SeqRecord> result;
 
         /*// Agregar los elementos que están entre el límite inferior y el superior (Si apuntan a -1 no se agregan)
         for (int i = limite_inferior; i <= limite_superior; i++) {
-            Record record = readRecord(i, data_file);
+            SeqRecord record = readRecord(i, data_file);
             if (getPunteroAtPosition(i, data_file) != -1) {
                 result.push_back(record);
             }
@@ -495,7 +495,7 @@ public:
         else swap(limite_inferior, limite_superior);// En caso de que begin sea mayor que end, intercambiamos los límites
 
         for (int i = limite_inferior; i <= limite_superior; i++) {
-            Record record = readRecord(i, data_file);
+            SeqRecord record = readRecord(i, data_file);
             if (getPunteroAtPosition(i, data_file) != -1) {
                 result.push_back(record);
             }
@@ -504,8 +504,8 @@ public:
 
         // Recorrer los elementos antes del límite inferior para ver si se repiten y agregarlos (si apuntan a -1 no se agregan)
         for (int i = limite_inferior - 1; i >= 0; i--) {
-            Record current = readRecord(i, data_file);
-            Record prev = readRecord(i + 1, data_file);
+            SeqRecord current = readRecord(i, data_file);
+            SeqRecord prev = readRecord(i + 1, data_file);
             if (current.compare(prev) == 0 && getPunteroAtPosition(i, data_file) != -1) {
                 result.push_back(current);
             } else if (current.compare(prev) != 0){
@@ -515,8 +515,8 @@ public:
 
         // Recorrer los elementos después del límite superior para ver si se repiten y agregarlos (si apuntan a -1 no se agregan)
         for (int i = limite_superior + 1; i < size(data_file); i++) {
-            Record current = readRecord(i, data_file);
-            Record next = readRecord(i - 1, data_file);
+            SeqRecord current = readRecord(i, data_file);
+            SeqRecord next = readRecord(i - 1, data_file);
             if (current.compare(next) == 0 && getPunteroAtPosition(i, data_file) != -1) {
                 result.push_back(current);
             } else if (current.compare(next) != 0){
@@ -544,14 +544,14 @@ private:
             return;
         }
 
-        Record X;
+        SeqRecord X;
         float puntero = -0.9;
         float puntero_temporal;
 
         int cantidad_eliminados = 0;
 
         // Iterar a través de los registros en el archivo de datos
-        while (dataFileStream.read(reinterpret_cast<char*>(&X), sizeof(Record))) {
+        while (dataFileStream.read(reinterpret_cast<char*>(&X), sizeof(SeqRecord))) {
 
             if (X.Puntero == -1){
                 cantidad_eliminados += 1;
@@ -569,7 +569,7 @@ private:
                 if (analyzeFloat(puntero_temporal ) == "Auxiliar"){
                     //Sabemos que X apunta a Y
                     //Nos ubicamos en Y
-                    Record Y;
+                    SeqRecord Y;
                     while (analyzeFloat(puntero_temporal) != "Data" ){
                         puntero += 1;
                         Y = readRecord(puntero_temporal,this->aux_file);
@@ -612,7 +612,7 @@ private:
 
     //Binary Search Position me devuelve la posicion donde tiene que ser insertado cierto registro
     //Si en data_file existe A (ubicado en pos 0), y quiero insertar B, entonces binary me devuelve pos 1 (pos 0 + 1), ya que A esta despues que B.
-    int binarySearchPosition(const Record& nuevoRecord) {
+    int binarySearchPosition(const SeqRecord& nuevoRecord) {
 
         /*
         En este código, el método binarySearchPosition utiliza la búsqueda binaria para encontrar
@@ -628,7 +628,7 @@ private:
 
         while (left <= right) {
             int middle = left + (right - left) / 2;
-            Record record = readRecord(middle, this->data_file);//Obtener el registro en la mitad
+            SeqRecord record = readRecord(middle, this->data_file);//Obtener el registro en la mitad
 
             // Comparar el nombre del registro con el nombre del nuevo record
             int cmp = record.compare(nuevoRecord);
@@ -676,7 +676,7 @@ private:
         file.seekg(0, ios::end);//ubicar cursos al final del archivo
         long total_bytes = file.tellg();//cantidad de bytes del archivo
         file.close();
-        return total_bytes / sizeof(Record);
+        return total_bytes / sizeof(SeqRecord);
     }
 
     //Metodo para determinar si un registro punta otro perteneciente a data file o a aux_file
@@ -689,32 +689,32 @@ private:
     }
 
     //Metodo para escribir un registro en una pos determinada
-    void writeRecordPOS(Record record, int pos, string _file){
+    void writeRecordPOS(SeqRecord record, int pos, string _file){
         ofstream file(_file, ios::app | ios::binary);
         if(!file.is_open()) throw ("No se pudo abrir el archivo");
 
-        file.seekp(pos * sizeof(Record), ios::beg);//fixed length record
-        file.write((char*) &record, sizeof(Record));
+        file.seekp(pos * sizeof(SeqRecord), ios::beg);//fixed length record
+        file.write((char*) &record, sizeof(SeqRecord));
         file.close();
     }
 
     //Metodo para escribir un registro a final de un archivo
-    void writeRecordEND(Record record, string _file){
+    void writeRecordEND(SeqRecord record, string _file){
         ofstream file(_file, ios::app | ios::binary);
         if(!file.is_open()) throw ("No se pudo abrir el archivo");
 
-        file.write((char*) &record, sizeof(Record));
+        file.write((char*) &record, sizeof(SeqRecord));
         file.close();
     }
 
     //Metodo para leer un registro en una pos especifica
-    Record readRecord(int pos, string _file){
+    SeqRecord readRecord(int pos, string _file){
         ifstream file(_file, ios::binary);
         if(!file.is_open()) throw ("No se pudo abrir el archivo");
 
-        Record record;
-        file.seekg(pos * sizeof(Record), ios::beg);//fixed length record
-        file.read((char*) &record, sizeof(Record));//leer el registro en la posicion
+        SeqRecord record;
+        file.seekg(pos * sizeof(SeqRecord), ios::beg);//fixed length record
+        file.read((char*) &record, sizeof(SeqRecord));//leer el registro en la posicion
         file.close();
         return record;
     }
@@ -724,9 +724,9 @@ private:
         ifstream file(_file, ios::binary);
         if (!file.is_open()) throw ("No se pudo abrir el archivo auxiliar");
 
-        Record record;
-        file.seekg(pos * sizeof(Record), ios::beg); // Ir a la posición especificada
-        file.read((char*)&record, sizeof(Record)); // Leer el registro en la posición
+        SeqRecord record;
+        file.seekg(pos * sizeof(SeqRecord), ios::beg); // Ir a la posición especificada
+        file.read((char*)&record, sizeof(SeqRecord)); // Leer el registro en la posición
         file.close();
 
         return record.Puntero; // Devolver el valor del puntero del registro
@@ -739,36 +739,36 @@ private:
         if (!file.is_open()) throw ("No se pudo abrir el archivo de datos");
 
         // Seek to the position specified
-        file.seekg(pos * sizeof(Record), ios::beg);
+        file.seekg(pos * sizeof(SeqRecord), ios::beg);
 
         // Read the record at that position
-        Record record;
-        file.read((char*)&record, sizeof(Record));
+        SeqRecord record;
+        file.read((char*)&record, sizeof(SeqRecord));
 
         // Update the Puntero field
         record.Puntero = newPunteroValue;
 
         // Seek back to the same position
-        file.seekp(pos * sizeof(Record), ios::beg);
+        file.seekp(pos * sizeof(SeqRecord), ios::beg);
 
         // Write the updated record back to the data file
-        file.write((char*)&record, sizeof(Record));
+        file.write((char*)&record, sizeof(SeqRecord));
 
         // Close the file
         file.close();
     }
 
     //Metodo que retorna todos los elementos de un archivo
-    vector<Record> scanAll(string _file){
+    vector<SeqRecord> scanAll(string _file){
         ifstream file(_file, ios::binary);
         if(!file.is_open()) throw ("No se pudo abrir el archivo");
 
-        vector<Record> records;
-        Record record;
+        vector<SeqRecord> records;
+        SeqRecord record;
 
         while(file.peek() != EOF){
-            record = Record();
-            file.read((char*) &record, sizeof(Record));
+            record = SeqRecord();
+            file.read((char*) &record, sizeof(SeqRecord));
             records.push_back(record);
         }
         file.close();
@@ -783,11 +783,34 @@ private:
         fileaux.close();
         int x = fileaux.tellg(), pos = 0;
         while(pos < x){
-            Record record = readRecord(pos,document);
+            SeqRecord record = readRecord(pos,document);
             add(record);
-            pos +=  sizeof(Record);
+            pos +=  sizeof(SeqRecord);
         }
-    
+    }
+
+    public:
+    void buildFromFile(string sourceName, int atributo_col){
+        ifstream source(sourceName,ios::binary | ios::in);
+        string msg = "No existe archivo";
+        if (!source.is_open()) throw runtime_error(msg);
+
+        long bytes = 0;
+        source.seekg(0, ios::end);
+        int max_bytes = source.tellg();
+        source.seekg(0, ios::beg);
+        while(bytes < max_bytes){
+
+            //SeqRecord record = readRecord(bytes,document);
+            //creamos un registro tipo SeqRecord
+            SeqRecord record;
+            
+
+            add(record);
+            record.showData();
+            bytes +=  sizeof(SeqRecord);
+        }
+        source.close();
     }
 
 };
