@@ -93,7 +93,7 @@ El objetivo es poder aplicar la busqueda binaria para conseguir una complejidad 
 Para ello, el archivo debe mantener los registros ordenados fisicamente en base al valor del campo de busqueda (key).
 Principalmente se ordena en base a la llave primaria de la tabla. 
 <p align="center">
-  <img src="images/sequential_estructura.jpeg" alt="Class AVL" width="500" height="330">
+  <img src="images/sequential_estructura.png" alt="Class AVL" width="500" height="330">
 </p>
 
 - **El algoritmo de búsqueda binaria:**
@@ -128,6 +128,10 @@ Se utiliza los punteros para saltar las tuplas eliminadas, e inmediatamente se r
 
 ### Extendible Hashing
 
+<p align="center">
+  <img src="images/Extendible_Hashing.jpg" alt="Class AVL" width="500" height="330">
+</p>
+
 - **Funcion hashing**
     Se utilizó una función polinómica si _key_ = $a_n,a_{n-1},...a_2,a_1,a_0$ , entonces _hashing_ = $a_0 + a_1 \cdot p + a_2 \cdot p^2 + ...$ . Donde $p$ es un primo que sirve como base.
 
@@ -144,6 +148,12 @@ Se utiliza los punteros para saltar las tuplas eliminadas, e inmediatamente se r
   | Insert | Search | Search Range | Remove | 
   | :---: | :---: | :---:  | :---:  |
   | O(log(n)) | O(log(n)) | O(n)  | O(log(n))  |
+
+   En el peor de los casos.
+  
+  | Insert | Search | Search Range | Remove | 
+  | :---: | :---: | :---:  | :---:  |
+  | O(n) | O(n) | O(n)  | O(n)  |
 
 ## Optimización de memoria secundaria <a name="id7"></a>
 

@@ -208,18 +208,18 @@ SelectQuery parseSelectQuery(const std::string& sqlQuery) {
                 //std::cout<<"select con WHERE"<<std::endl;
 
                 /*
-                    evaluar where ( <, >, =, between x and y)
+                    evaluar where (  =, between x and y)
                 */
                 ExpresionRelacional resultado;
                 bool parseo = parsearExpresionRelacional(query.whereClause, resultado);
                 //std::cout<<"query-operator: "<<resultado.operador;
                 // evaluar que estructuras llamar para cada atributo
                 if (parseo){ // se completó el parseo
+                    vector<long> res;
                     if (resultado.operador=="="){   // selecciona busqueda puntual en cada estructura
                         flag = 4;
-                        cout<<"operador = ";
-                        cout<<"atributo: "<<resultado.atributo<<" | value: "<<resultado.valor<<endl;
-                        vector<long> res;
+                        //cout<<"operador = ";
+                        //cout<<"atributo: "<<resultado.atributo<<" | value: "<<resultado.valor<<endl;
                         if (resultado.atributo==atributos[0]){
                             if (contieneSoloDigitos(resultado.valor)){
                                 keys->find(stoi(resultado.valor)); //retornar
@@ -228,30 +228,62 @@ SelectQuery parseSelectQuery(const std::string& sqlQuery) {
                             }
                         } else if (resultado.atributo==atributos[1]){
 
+                                if (res.size()>0) for (auto x:res) read_record(file_binary,x);
+                                else cout<<"No existe registro con "<<atributos[1]<<" = "<<resultado.valor<<endl;
+                
                         } else if (resultado.atributo==atributos[2]){
                             if (contieneSoloDigitos(resultado.valor)){
                                 res= columna3->search(stoi(resultado.valor)); // retornar
-                                for (auto x:res) read_record(file_binary,x);
+                                if (res.size()>0) for (auto x:res) read_record(file_binary,x);
+                                else cout<<"No existe registro con "<<atributos[2]<<" = "<<resultado.valor<<endl;
+
                             } else {
                                 flag = 5;
+                                cout<<"Tipo de atributo no valido"<<endl;
                             }
 
                         } else if (resultado.atributo==atributos[3]){
-
+                            
                         } else{
                             if (esFloat(resultado.valor)){
                                 res = columna5->search(stof(resultado.valor)); // retornar
-                                for (auto x:res) read_record(file_binary,x);
+                                if (res.size()>0) for (auto x:res) read_record(file_binary,x);
+                                else cout<<"No existe registro con "<<atributos[4]<<" = "<<resultado.valor<<endl;
+
+                            } else {
+                                flag = 5;
+                                cout<<"Tipo de atributo no valido"<<endl;
                             }
                         }
 
                     } else if (resultado.operador=="between"){ // selecciona busqueda por rango en cada estructura
                         flag = 4;
                         if (resultado.atributo==atributos[0]){ flag =5; cout<<"Key no soporta busqueda por rango"<<endl; }
-                        else if (resultado.atributo==atributos[1]);
-                        else if (resultado.atributo==atributos[2]);
-                        else if (resultado.atributo==atributos[3]);
-                        else;
+                        else if (resultado.atributo==atributos[1]){
+
+                        } else if (resultado.atributo==atributos[2]){
+
+                            // verificacion para enteros
+                            if (contieneSoloDigitos(resultado.valor) && contieneSoloDigitos(resultado.valor2)){
+                                res = columna5->rangeSearch(stoi(resultado.valor),stoi(resultado.valor2)); // retornar
+                                if (res.size()>0) for (auto x:res) read_record(file_binary,x);
+                                else cout<<"No existen registro con "<<atributos[2]<<" entre  ["<<resultado.valor<<"- "<<resultado.valor2<<"]"<<endl;
+
+                            } else cout<<"Tipo de atributo no valido"<<endl;
+
+                        } else if (resultado.atributo==atributos[3]){
+
+                        } else {
+
+                            // verificacion para float's
+                            if (esFloat(resultado.valor) && esFloat(resultado.valor2)){
+                                res = columna5->rangeSearch(stof(resultado.valor),stof(resultado.valor2)); // retornar
+                                if (res.size()>0) for (auto x:res) read_record(file_binary,x);
+                                else cout<<"No existen registro con "<<atributos[4]<<" entre  ["<<resultado.valor<<"- "<<resultado.valor2<<"]"<<endl;
+
+                            } else cout<<"Tipo de atributo no valido"<<endl;
+
+                        }
 
                     } else {
                         flag = 5;
