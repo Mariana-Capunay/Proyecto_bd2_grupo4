@@ -789,7 +789,8 @@ private:
         }
     }
 
-    void buildFromFile(string sourceName){
+    public:
+    void buildFromFile(string sourceName, int atributo_col){
         ifstream source(sourceName,ios::binary | ios::in);
         string msg = "No existe archivo";
         if (!source.is_open()) throw runtime_error(msg);
@@ -799,7 +800,12 @@ private:
         int max_bytes = source.tellg();
         source.seekg(0, ios::beg);
         while(bytes < max_bytes){
-            SeqRecord record = readRecord(bytes,document);
+
+            //SeqRecord record = readRecord(bytes,document);
+            //creamos un registro tipo SeqRecord
+            SeqRecord record;
+            
+
             add(record);
             record.showData();
             bytes +=  sizeof(SeqRecord);
