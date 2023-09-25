@@ -129,7 +129,7 @@ Se utiliza los punteros para saltar las tuplas eliminadas, e inmediatamente se r
 ### Extendible Hashing
 
 <p align="center">
-  <img src="images/Extendible_Hashing.jpg" alt="Class AVL" width="500" height="330">
+  <img src="images/Extendible_Hashing.jpg" alt="Class AVL" width="600" height="400">
 </p>
 
 - **Funcion hashing**
