@@ -1,7 +1,7 @@
 #include "parser.h"
 #include "structs/AVL_File/avl_file.h"
-#include "structs/Sequential_File/sequential_files.h"
-
+//#include "structs/Sequential_File/sequential_file.cpp"
+//#include "structs/Extendible_Hashing_File/hashing.h"
 using namespace std;
 
 std::string table_name = "";
@@ -11,9 +11,9 @@ std::vector<std::string> tipos_atributo = {"int","char","int","char","float"};
 
 // estructuras de los atributos
 HashingIndex* columna1 = new HashingIndex(file_binary); // para keys
-SequentialFile* columna2 = new SequentialFile(file_binary,"columna_2");
+//SequentialFile* columna2 = new SequentialFile(file_binary,"columna_2");
 AVLFile<int>* columna3 = new AVLFile<int>(file_binary, "columna_3");
-SequentialFile* columna4 = new SequentialFile(file_binary,"columna_4");
+//SequentialFile* columna4 = new SequentialFile(file_binary,"columna_4");
 AVLFile<float>* columna5 = new AVLFile<float>(file_binary, "columna_5");
 
 // *"test.bin" es la ruta que se asigna en funcion conversor
@@ -166,22 +166,22 @@ CreateTableQuery parseCreateTableQuery(const std::string& sqlQuery) {
             //binSource.open(new_file, ios::binary);
             //binSource.seekg(0,ios::end);
 
-            //columna1->load_file(); // llaves
+            columna1->load_file(); // llaves
 
             //columna2->buildFromFile(new_file,1);
 
             //auto avl1 = new AVLFile<int>(new_file, atr_2);
             //cout << "Construyendo avl desde " << new_file << " de tamahnio " << binSource.tellg() << endl;
             //columna3->buildFromFile(new_file, 2);
-            //cout<<"Imprimiendo data";
+            cout<<"Imprimiendo data";
             //columna3->printData();
-            columna4->buildFromFile(new_file,3);
+            //columna4->buildFromFile(new_file,3);
 
 
             /// Columna 5
-            columna5->buildFromFile(new_file, 4);
-            //cout<<"Imprimiendo data";
-            columna5->printData();
+            //columna5->buildFromFile(new_file, 4);
+            cout<<"Imprimiendo data";
+            //columna5->printData();
 
         }  
 
@@ -228,7 +228,9 @@ SelectQuery parseSelectQuery(const std::string& sqlQuery) {
                         //cout<<"atributo: "<<resultado.atributo<<" | value: "<<resultado.valor<<endl;
                         if (resultado.atributo==atributos[0]){
                             if (contieneSoloDigitos(resultado.valor)){
+                                cout<<"here";
                                 int ind = columna1->find(stoi(resultado.valor)); //retornar
+                                cout<<"here";
                                 if (ind!=-1) read_record(file_binary,ind);
                                 else cout<<"No existe registro con "<<atributos[0]<<" = "<<resultado.valor<<endl;
 
@@ -452,7 +454,7 @@ DeleteQuery parseDeleteQuery(const std::string& sqlQuery) {
                     //busca elemento en la estructura asociada
                     if (resultado.atributo==atributos[0]){ //eliminacion en extendible
                         if (contieneSoloDigitos(resultado.valor)){
-                            res = columna1->remove(stoi(resultado.valor));
+                            columna1->erase(stoi(resultado.valor));
 
                         } else{
                             cout<<"Tipo de atributo no valido"<<endl;

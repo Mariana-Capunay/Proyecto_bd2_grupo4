@@ -10,8 +10,9 @@
 #include <cctype>
 #include "dataset_bin/binary_conversor.h"
 #include "structs/AVL_File/avl_file.h"
-#include "parser.h"
 #include "structs/Extendible_Hashing_File/hashing.h"
+#include "parser.h"
+
 //#include "structs/Extendible_Hashing_File/extendible_hashing_file.h"
 bool contieneSoloDigitos(const std::string& cadena);
 

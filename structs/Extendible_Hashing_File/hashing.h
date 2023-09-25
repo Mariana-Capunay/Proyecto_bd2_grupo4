@@ -268,18 +268,23 @@ class HashingIndex{
         ifstream file;
         file.open(datafile,ios::binary | ios::in);
 
-        file.seekg(0,ios_base::end);
+        file.seekg(0,ios::end);
         int last_pos = file.tellg();
-        file.close();
+
         int pos = 0;
         int cont = 0;
         while(pos < last_pos){
-            if(limit != -1 && cont == limit) break;
+            //if(limit != -1 && cont == limit) break;
             file.seekg(pos,ios::beg);
-            Record record = read_record(datafile,pos);
+            Record record;
+            record.read(file);
+            cout<<"a";
             insert(record.key,pos);
+            cout<<"a";
             pos += record.size();
+            cout<<"a";
         }
+        file.close();
     }
 
     void generate(int limit){
