@@ -377,7 +377,7 @@ InsertQuery parseInsertQuery(const std::string& sqlQuery) {
             }
 
             // Si los tipos de datos son válidos, agrega los valores a la estructura InsertQuery
-            query.values.push_back(intValue);
+            query.values.push_back(char8Value);
             query.values.push_back(char40Value);
             query.values.push_back(intValue);
             query.values.push_back(char25Value);
@@ -387,7 +387,7 @@ InsertQuery parseInsertQuery(const std::string& sqlQuery) {
                 TODO insert values (en archivo bin, dataset y en todas las estructuras)
             */
             Record record;
-            record.key = stoi(intValue);
+            record.key = stoi(char8Value);
             strncpy(record.atrib1, char40Value.c_str(), sizeof(record.atrib1) - 1); // -1 para dejar espacio para el carácter nulo
             record.atrib1[sizeof(record.atrib1) - 1] = '\0'; // Asegura que el último carácter sea nulo
             record.atrib2 = stoi(intValue);
