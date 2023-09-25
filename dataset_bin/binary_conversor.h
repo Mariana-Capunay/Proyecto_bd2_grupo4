@@ -15,4 +15,6 @@ Record read_record(std::string file_name, int pos);
 
 bool print_record(std::string file_name, int pos);
 
+void marcar_eliminado(string filename, long pos);
+
 #endif //PROYECTO_1_BINARY_CONVERSOR_H

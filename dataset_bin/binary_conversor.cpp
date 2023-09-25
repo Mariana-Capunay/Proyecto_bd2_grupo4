@@ -139,7 +139,7 @@ Record read_record(std::string file_name, int pos){
 
     if (!record.removed){
         record.print();
-    }
+    } else {}
 
     file.close();
     return record;
@@ -171,4 +171,30 @@ bool print_record(std::string file_name, int pos){
 
     file.close();
     return false;
+}
+
+void marcar_eliminado(string filename, long pos){
+    std::ifstream file(filename, std::ios::binary);
+    if (!file.is_open()) {throw std::runtime_error("No se pudo abrir archivo ");}
+    
+    file.seekg(pos, ios::beg);
+    
+    Record record;
+    record.read(file);
+    record.removed = true;
+    
+    file.close();
+
+
+    std::ofstream filewrite(filename, std::ios::binary);
+
+    filewrite.seekp(pos,ios::beg);
+    //cout<<"eliminando: ";record.print();
+    filewrite.write((char*)&record.key,sizeof(record.key));
+    filewrite.write((char*)&record.atrib1,sizeof(record.atrib1));
+    filewrite.write((char*)&record.atrib2,sizeof(record.atrib2));
+    filewrite.write((char*)&record.atrib3,sizeof(record.atrib3));
+    filewrite.write((char*)&record.atrib4,sizeof(record.atrib4));
+    filewrite.write((char*)&record.removed,sizeof(record.removed));
+    filewrite.close();
 }

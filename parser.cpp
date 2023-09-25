@@ -238,14 +238,18 @@ SelectQuery parseSelectQuery(const std::string& sqlQuery) {
                             }
                         } else if (resultado.atributo==atributos[1]){
 
-                                if (res.size()>0) for (auto x:res) read_record(file_binary,x);
+                                if (res.size()>0) {
+                                    for (auto x:res) {print_record(file_binary,x);};
+                                }
                                 else cout<<"No existe registro con "<<atributos[1]<<" = "<<resultado.valor<<endl;
                 
                         } else if (resultado.atributo==atributos[2]){
                             if (contieneSoloDigitos(resultado.valor)){
+                                res.clear();
                                 res= columna3->search(stoi(resultado.valor)); // retornar
-                                if (res.size()>0) for (auto x:res) read_record(file_binary,x);
+                                if (res.size()>0) for (auto x:res) print_record(file_binary,x);
                                 else cout<<"No existe registro con "<<atributos[2]<<" = "<<resultado.valor<<endl;
+                                res.clear();;
 
                             } else {
                                 flag = 5;
@@ -256,9 +260,11 @@ SelectQuery parseSelectQuery(const std::string& sqlQuery) {
                             
                         } else{
                             if (esFloat(resultado.valor)){
+                                res.clear();
                                 res = columna5->search(stof(resultado.valor)); // retornar
                                 if (res.size()>0) for (auto x:res) read_record(file_binary,x);
                                 else cout<<"No existe registro con "<<atributos[4]<<" = "<<resultado.valor<<endl;
+                                res.clear();
 
                             } else {
                                 flag = 5;
@@ -270,26 +276,30 @@ SelectQuery parseSelectQuery(const std::string& sqlQuery) {
                         flag = 4;
                         if (resultado.atributo==atributos[0]){ flag =5; cout<<"Key no soporta busqueda por rango"<<endl; }
                         else if (resultado.atributo==atributos[1]){
-
+                            cout<<"Sequential File no implementado en parser"<<endl;
                         } else if (resultado.atributo==atributos[2]){
 
                             // verificacion para enteros
                             if (contieneSoloDigitos(resultado.valor) && contieneSoloDigitos(resultado.valor2)){
+                                res.clear();
                                 res = columna5->rangeSearch(stoi(resultado.valor),stoi(resultado.valor2)); // retornar
                                 if (res.size()>0) for (auto x:res) read_record(file_binary,x);
                                 else cout<<"No existen registro con "<<atributos[2]<<" entre  ["<<resultado.valor<<"- "<<resultado.valor2<<"]"<<endl;
+                                res.clear();
 
                             } else cout<<"Tipo de atributo no valido"<<endl;
 
                         } else if (resultado.atributo==atributos[3]){
-
+                            cout<<"Sequential File no implementado en parser"<<endl;    
                         } else {
 
                             // verificacion para float's
                             if (esFloat(resultado.valor) && esFloat(resultado.valor2)){
+                                res.clear();
                                 res = columna5->rangeSearch(stof(resultado.valor),stof(resultado.valor2)); // retornar
                                 if (res.size()>0) for (auto x:res) read_record(file_binary,x);
                                 else cout<<"No existen registro con "<<atributos[4]<<" entre  ["<<resultado.valor<<"- "<<resultado.valor2<<"]"<<endl;
+                                res.clear();
 
                             } else cout<<"Tipo de atributo no valido"<<endl;
 
@@ -452,7 +462,9 @@ DeleteQuery parseDeleteQuery(const std::string& sqlQuery) {
 
                 ExpresionRelacional resultado;
                 //parsearExpresionRelacional(query.whereClause, resultado);
-
+                bool parseo = parsearExpresionRelacional(query.whereClause, resultado);
+                vector<long> eliminados;
+                if (parseo){
                 // evaluar que estructuras llamar para cada atributo
                 if (resultado.operador=="="){ // si no lo encuentra, flag = 10. Si lo encuentra, lo elimina, flag=8
                     bool res;
@@ -466,20 +478,31 @@ DeleteQuery parseDeleteQuery(const std::string& sqlQuery) {
                         }
 
                     } else if (resultado.atributo==atributos[1]){ // en sequential
-
+                        cout<<"Sequential File no implementado en parser"<<endl;
                     } else if (resultado.atributo==atributos[2]){ // en avl
                         if (contieneSoloDigitos(resultado.valor)){
+
+                            // encuentra todos los elementos que coinciden
+                            eliminados = columna3->search(stoi(resultado.valor));
+                            //cout<<"here";
+                            for (auto x:eliminados) marcar_eliminado(file_binary, x);
+
                             res = columna3->remove(stoi(resultado.valor));
+                            
 
                         } else{
                             cout<<"Tipo de atributo no valido"<<endl;
                         }
 
                     } else if (resultado.atributo==atributos[3]){ // en sequential
-
+                        cout<<"Sequential File no implementado en parser"<<endl;
                     } else { // en avl
                         if (esFloat(resultado.valor)){
+                            // encuentra todos los elementos que coinciden
+                            eliminados = columna5->search(stof(resultado.valor));
+                            for (auto x:eliminados) marcar_eliminado(file_binary, x);
                             res = columna5->remove(stof(resultado.valor));
+                        
                         }
                         else {
                             cout<<"Tipo de atributo no valido"<<endl;
@@ -494,6 +517,9 @@ DeleteQuery parseDeleteQuery(const std::string& sqlQuery) {
                     flag = 9;
                 } else {
                     flag = 11;
+                }
+                } else {
+                    cout<<"Condicion no valida";
                 }
 
             } else { // sin where
