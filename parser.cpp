@@ -427,10 +427,35 @@ DeleteQuery parseDeleteQuery(const std::string& sqlQuery) {
                 //parsearExpresionRelacional(query.whereClause, resultado);
 
                 // evaluar que estructuras llamar para cada atributo
-                if (resultado.operador=="="){
-
+                if (resultado.operador=="="){ // si no lo encuentra, flag = 10. Si lo encuentra, lo elimina, flag=8
+                    bool res;
                     //busca elemento en la estructura asociada
-                    // si no lo encuentra, flag = 10. Si lo encuentra, lo elimina, flag=8
+                    if (resultado.atributo==atributos[0]){ //eliminacion en extendible
+                        if (contieneSoloDigitos(resultado.valor)){
+                            //res = columna3->remove(stoi(resultado.valor));
+
+                        } else{
+                            cout<<"Tipo de atributo no valido"<<endl;
+                        }
+
+                    } else if (resultado.atributo==atributos[1]){ // en sequential
+
+                    } else if (resultado.atributo==atributos[2]){ // en avl
+                        if (contieneSoloDigitos(resultado.valor)){
+                            res = columna3->remove(stoi(resultado.valor));
+
+                        } else{
+                            cout<<"Tipo de atributo no valido"<<endl;
+                        }
+
+                    } else if (resultado.atributo==atributos[3]){ // en sequential
+
+                    } else { // en avl
+                        res = columna5->remove(stof(resultado.valor));
+                    }
+
+                    if (!res) cout<<"No existe registro que satisfaga igualdad."<<endl;
+                    
                 } else if (resultado.operador=="between"){
                     std::cout<<"Eliminación por rango no implementada"<<std::endl;
                     flag = 9;
