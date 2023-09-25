@@ -91,7 +91,7 @@ El objetivo es poder aplicar la busqueda binaria para conseguir una complejidad 
 Para ello, el archivo debe mantener los registros ordenados fisicamente en base al valor del campo de busqueda (key).
 Principalmente se ordena en base a la llave primaria de la tabla. 
 <p align="center">
-  <img src="images/sequential_estructura.jpeg" alt="Class AVL" width="500" height="330">
+  <img src="images/sequential_estructura.png" alt="Class AVL" width="500" height="330">
 </p>
 
 - **El algoritmo de búsqueda binaria:**
