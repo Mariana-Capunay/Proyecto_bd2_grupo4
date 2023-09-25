@@ -93,6 +93,10 @@ class HashingIndex{
     }
     HashingIndex(string _datafile, int max_size_bucket = 5, int max_depth = 20){
         datafile = _datafile;
+                crear_archivo(indexfile);
+        crear_archivo(datafile);
+        crear_archivo(overflow_indexfile);
+        crear_archivo(directoryfile);
         root.left = last_position;
         create_node(last_position,{-1,-1,last_bucket});
         create_bucket(last_bucket,Bucket(max_size_bucket));
@@ -100,6 +104,7 @@ class HashingIndex{
         create_node(last_position,{-1,-1,last_bucket});
         create_bucket(last_bucket,Bucket(max_size_bucket));
         
+    
         root.posBucket = -1;
     };
     pair<int,int> read_data_overflow(int position){
@@ -300,11 +305,11 @@ class HashingIndex{
             file.seekg(pos,ios::beg);
             Record record;
             record.read(file);
-            cout<<"a";
+            
             insert(record.key,pos);
-            cout<<"a";
+            
             pos += record.size();
-            cout<<"a";
+            
         }
     }
 

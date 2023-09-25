@@ -229,7 +229,7 @@ SelectQuery parseSelectQuery(const std::string& sqlQuery) {
                         if (resultado.atributo==atributos[0]){
                             if (contieneSoloDigitos(resultado.valor)){
                                 Record* record = columna1->search(stoi(resultado.valor)); //retornar
-                                if (record) record->print();//read_record(file_binary,ind);
+                                if (record) {}//record->print();//read_record(file_binary,ind);
                                 else cout<<"No existe registro con "<<atributos[0]<<" = "<<resultado.valor<<endl;
 
                             } else{
