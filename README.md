@@ -212,8 +212,21 @@ En este apartado incluiremos los cuadros comparativos de desempeño de las técn
   
 
 
+
 ## Cómo ejecutar el programa
 g++ parser.cpp dataset_bin/binary_conversor.cpp structs/AVL_File/avl_file.cpp .\structs\Extendible_Hashing_File\extendible_hashing_file.cpp
+
+
+## Comentarios finales
+Dado un conjunto de n elementos se puede aplicar la técnica de square root descomposition. Usando como número esperado de secuencias decrecientes que tiene un conjunto aleatorio de números, una variación del sequential file puede ser utilizar un cojunto de listas de números crecientes, con el objetivo de tener siempre un número total de listas =  riaz de n.
+
+Esto permitiría que la inserción y eliminación ocurra en O(raiz(n)) ) ya que solo bastaria recorrer la lista con menor tamaño e ir viendo la posicion del nuevo valor en la lista enlazada
+Adicionalmente se puede mantener un directory file donde se guarde el número de la lista a la cual a sido ingresada. Lo que permitiría que que la búsqueda solo consista en recorrer la lista enlazada guardada en memoria secundaria. 
+Como esta tiene un tamaño en raiz de n, la búsqueda se hace en O(raiz(n)).
+
+Es de una rápida implementación y si se mantiene en memoria primaria un conjunto de raiz(n), algunas operaciones puedan ocurrir en tiempo constante.
+
+
 ## 👩‍💻 Nuestro Genial Equipo <a name="idc"></a>
 
 ¡Estos cracks están detrás de todo el caos (código) aquí!
