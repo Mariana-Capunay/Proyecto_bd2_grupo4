@@ -7,6 +7,7 @@
 
 using namespace std;
 
+
 struct BinaryNode{
     int left = -1;
     int right = -1;
@@ -55,8 +56,10 @@ class HashingIndex{
         file.seekp(position,ios::beg);
         file.write((char*)&node, sizeof(BinaryNode));
         file.close();
-        if(last_position == position)
-            last_position += sizeof(BinaryNode);
+        if(last_position == position){
+
+            last_position += 12;
+        }
         
     }
     void create_bucket(int position, Bucket bucket){
@@ -74,7 +77,17 @@ class HashingIndex{
         if(last_bucket == position)
             last_bucket += max_size_bucket*4*2;
     }
-    
+    HashingIndex(string _datafile, int max_size_bucket = 5, int max_depth = 20){
+        datafile = _datafile;
+        root.left = last_position;
+        create_node(last_position,{-1,-1,last_bucket});
+        create_bucket(last_bucket,Bucket(max_size_bucket));
+        root.right = last_position;
+        create_node(last_position,{-1,-1,last_bucket});
+        create_bucket(last_bucket,Bucket(max_size_bucket));
+        
+        root.posBucket = -1;
+    };
     pair<int,int> read_data_overflow(int position){
         ifstream file;
         file.open(overflow_indexfile,ios::binary | ios::in);
@@ -118,14 +131,18 @@ class HashingIndex{
     }
     void split_leaf_node(int position, BinaryNode node,int depth){
         if(node.posBucket == -1) return;
+        
+        
         int position_bucket = node.posBucket;
         Bucket current_bucket = read_bucket(position_bucket);
+       
         Bucket left_bucket(max_size_bucket); 
         Bucket right_bucket(max_size_bucket);
         int pos_left = 0, pos_right = 0;
         for(int i = 0; i < max_size_bucket; i++){
-            if(current_bucket.keys[i] & (1<<depth)){
-                  
+        
+            if(f_hash(current_bucket.keys[i]) & (1<<depth)){
+               
                 right_bucket.keys[pos_right] = current_bucket.keys[i];
                 right_bucket.addresses[pos_right] = current_bucket.addresses[i];
                 pos_right++;
@@ -137,8 +154,7 @@ class HashingIndex{
                 pos_left++;
             }
         }   
-
-       
+        
         node.left = last_position;
         create_node(last_position,{-1,-1,position_bucket});
         create_bucket(position_bucket,left_bucket);
@@ -147,10 +163,13 @@ class HashingIndex{
         create_node(last_position,{-1,-1,last_bucket});
         create_bucket(last_bucket,right_bucket);
 
+        Bucket bucket = read_bucket(last_bucket-40);
+     
+
         node.posBucket = -1;
         create_node(position,node);
-        BinaryNode x = read_node(position);
-  
+        
+        
     }
 
     int f_hash(int key){
@@ -166,8 +185,10 @@ class HashingIndex{
         return result;
     }
     void insert(int key,int address,BinaryNode current_node,int position, int depth){
+    
         int hash_key = f_hash( key);
         if(current_node.posBucket == -1){
+        
             if(hash_key & (1<<depth)) 
                 position = current_node.right,current_node = read_node(current_node.right);
             else 
@@ -176,7 +197,7 @@ class HashingIndex{
             insert(key,address, current_node,position, depth + 1);
         }
         else{
-           
+            
             Bucket current_bucket = read_bucket(current_node.posBucket);
             int empty_pos = 0;
             while(empty_pos < max_size_bucket && current_bucket.keys[empty_pos] != -1) empty_pos++;
@@ -184,8 +205,7 @@ class HashingIndex{
         
                 current_bucket.keys[empty_pos] = key;
                 current_bucket.addresses[empty_pos] = address;
-              
-             
+                
                 create_bucket(current_node.posBucket,current_bucket);
 
                
@@ -196,7 +216,6 @@ class HashingIndex{
                 insert(key,address,current_node, position, depth);
             }
             else{
-                return ;
                 create_data_overflow(key,address);
             }
         }
@@ -210,7 +229,9 @@ class HashingIndex{
             else current_node = read_node(current_node.left);
             depth++;
         }
+        
         Bucket bucket = read_bucket(current_node.posBucket);
+        
         for(int i = 0; i < max_size_bucket; i++){
             if(bucket.keys[i] == key)
                 return bucket.addresses[i];
@@ -226,16 +247,7 @@ class HashingIndex{
         }
         return -1;
     }
-    HashingIndex(string _datafile, int max_size_bucket = 5, int max_depth = 20){
-        datafile = _datafile;
-        root.left = last_position;
-        create_node(last_position,{-1,-1,last_bucket});
-        create_bucket(last_bucket,Bucket(max_size_bucket));
-        root.right = last_position;
-        create_node(last_position,{-1,-1,last_bucket});
-        create_bucket(last_bucket,Bucket(max_size_bucket));
-        root.posBucket = -1;
-    };
+
     void insert(int key,int address){
         insert(key,address,root,0,0);
     }
@@ -261,30 +273,21 @@ class HashingIndex{
     }
 
     void load_file(int limit = -1){
-        last_position = 0;
-        last_bucket = 0;
-        last_position_overflow_register = 0;
-        n_data_overflow = 0;
         ifstream file;
         file.open(datafile,ios::binary | ios::in);
 
-        file.seekg(0,ios::end);
+        file.seekg(0,ios_base::end);
         int last_pos = file.tellg();
-
+        file.close();
         int pos = 0;
         int cont = 0;
         while(pos < last_pos){
-            //if(limit != -1 && cont == limit) break;
+            if(limit != -1 && cont == limit) break;
             file.seekg(pos,ios::beg);
-            Record record;
-            record.read(file);
-            cout<<"a";
+            Record record = read_record(datafile,pos);
             insert(record.key,pos);
-            cout<<"a";
             pos += record.size();
-            cout<<"a";
         }
-        file.close();
     }
 
     void generate(int limit){
@@ -295,7 +298,6 @@ class HashingIndex{
         for(int i = 0; i < limit; i++) insert(i+1,i+1);
     }
 };
-
 /*
 int main(){
     HashingIndex hashing_index("asd");
