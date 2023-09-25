@@ -81,9 +81,11 @@ Este análisis se realizará en base a los accesos a memoria secundaria.
 
 - **Complejidad**
   
-  | Insert | Search | Search Range | Remove | 
-  | :---: | :---: | :---:  | :---:  |       
-  | :---: | :---: | :---:  | :---:  |       
+  |  Insert   |  Search   | Search Range  |  Remove   | 
+  |:---------:|:---------:|:-------------:|:---------:|       
+  | O(log(n)) | O(log(n)) | O(log(n) + k) | O(log(n)) |       
+    - n: Número de elementos almacenados.
+    - k: Número de nodos dentro del rango objetivo.
 
 
 ### Sequential File
