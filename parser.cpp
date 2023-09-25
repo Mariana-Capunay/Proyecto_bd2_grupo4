@@ -166,13 +166,13 @@ CreateTableQuery parseCreateTableQuery(const std::string& sqlQuery) {
             //binSource.open(new_file, ios::binary);
             //binSource.seekg(0,ios::end);
 
-            columna1->load_file(); // llaves
+            //columna1->load_file(); // llaves
 
-            columna2->buildFromFile(new_file,1);
+            //columna2->buildFromFile(new_file,1);
 
             //auto avl1 = new AVLFile<int>(new_file, atr_2);
             //cout << "Construyendo avl desde " << new_file << " de tamahnio " << binSource.tellg() << endl;
-            columna3->buildFromFile(new_file, 2);
+            //columna3->buildFromFile(new_file, 2);
             //cout<<"Imprimiendo data";
             //columna3->printData();
             columna4->buildFromFile(new_file,3);
@@ -181,7 +181,7 @@ CreateTableQuery parseCreateTableQuery(const std::string& sqlQuery) {
             /// Columna 5
             columna5->buildFromFile(new_file, 4);
             //cout<<"Imprimiendo data";
-            //columna5->printData();
+            columna5->printData();
 
         }  
 
