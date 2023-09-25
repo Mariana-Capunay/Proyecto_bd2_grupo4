@@ -27,16 +27,19 @@ public:
     float local_pointer;
     long pointer_value;
 
-    void setData(){
-        cout<<"atr:";
-        cin >> atr;
-        //cout<<"Atrib2:";
-        //cin >> Atrib2;
+    int size(){
+        return 40+4+sizeof(long);
+    }
+    void setData(string atributo, float _local_pointer, long _pointer_value){
+        local_pointer = _local_pointer;
+        pointer_value = _pointer_value;
+        atributo.copy(atr, sizeof(atr)-1);
+        atr[atributo.length()-1] = '\0';
     }
     void showData(){
         //solo un atributo
-        //cout << atr << " - " << Atrib2 << " - " << Puntero << endl;
-        cout << atr << " - " << Puntero << endl;
+        //cout << atr << " - " << Atrib2 << " - " << local_pointer << endl;
+        cout << atr << " - " << local_pointer << endl;
     }
 
     // Agregar un método para comparar el nombre de dos records
@@ -72,6 +75,7 @@ public:
 
         // Verificar si el archivo está vacío antes de escribir el registro predeterminado
         crear_archivo(this->aux_file);
+        crear_archivo(this->data_file);
 
         data_size = size(this->data_file);
         aux_size = size(this->aux_file);
@@ -81,10 +85,10 @@ public:
     //Metodo que imprime todos los archivos de data y auxiliar
     void print(){
 
-        cout << "size data y aux :" << data_size <<" "<<aux_size<<endl;
+        cout << "size data y aux: " << data_size << " " << aux_size <<endl;
 
         SequentialFile file2(document,atr);
-        vector<SeqRecord> records = file2.scanAll("data.bin");
+        vector<SeqRecord> records = file2.scanAll(atr+"data.bin");
         for(SeqRecord r : records){
             r.showData();
         }
@@ -93,11 +97,21 @@ public:
 
         //Lectura
         SequentialFile file5(document,atr);
-        vector<SeqRecord> records2 = file5.scanAll("auxiliar.bin");
+        vector<SeqRecord> records2 = file5.scanAll(atr+"auxiliar.bin");
         for(SeqRecord r : records2){
             r.showData();
         }
 
+    }
+
+    void insert(string atrib, long pointer){
+        SeqRecord record;
+        //record.atr = atrib.c_str();
+        atrib.copy(record.atr, record.size()-1);
+        record.atr[atrib.length()-1] = '\0';
+        record.pointer_value = pointer;
+        record.local_pointer = 1.0;
+        add(record);
     }
 
     void add(SeqRecord record){
@@ -116,9 +130,9 @@ public:
             ======================
             Pedro   -> 0.3
         */
-        if(analyzeFloat(prevRecord.Puntero) == "Data"){
+        if(analyzeFloat(prevRecord.local_pointer) == "Data"){
             //Agregamos el record al aux y hacemos el cambiaso de punteros entre prevRecord y record
-            record.Puntero = prevRecord.Puntero; //record -> prevRecord.Puntero
+            record.local_pointer = prevRecord.local_pointer; //record -> prevRecord.local_pointer
             writeRecordEND(record, this->aux_file);
             updatePunteroAtPosition(insert_pos, aux_size, this->data_file); // prevRecord -> pos(record)
 
@@ -138,11 +152,11 @@ public:
             Auxiliar:
             Belen   ->  0.2 <- Y
         */
-        else if(analyzeFloat(prevRecord.Puntero) == "Auxiliar"){
-            //Si apunta a un auxiliar primero me tengo que ubicar en auxiliarfile[prevRecord.Puntero]
+        else if(analyzeFloat(prevRecord.local_pointer) == "Auxiliar"){
+            //Si apunta a un auxiliar primero me tengo que ubicar en auxiliarfile[prevRecord.local_pointer]
 
-            //Y_pos = prevRecord.Puntero;
-            SeqRecord auxPrevRecord = readRecord(prevRecord.Puntero, this->aux_file);
+            //Y_pos = prevRecord.local_pointer;
+            SeqRecord auxPrevRecord = readRecord(prevRecord.local_pointer, this->aux_file);
 
             //Caso particular (Todavia no nos hemos adentrado al 100% en aux_file, estamos en el limbo)
             /*
@@ -159,7 +173,7 @@ public:
             int cmp = record.compare(auxPrevRecord);
             if (cmp <= 0){ //Si record va antes que auxPrevRecord o es igual a auxPrevRecord
                 //Agregamos el record al aux y hacemos el cambiaso de punteros entre prevRecord y record
-                record.Puntero = prevRecord.Puntero; //record -> prevRecord.Puntero
+                record.local_pointer = prevRecord.local_pointer; //record -> prevRecord.local_pointer
                 writeRecordEND(record, this->aux_file);
                 updatePunteroAtPosition(insert_pos, aux_size, this->data_file); // prevRecord -> pos(record)
 
@@ -182,10 +196,10 @@ public:
                     Auxiliar:
                     Belen   ->  0.2 <- auxPrevRecord    (Boris va despues que que Belen, pero despues de Belen no hay nada mas)
                  */
-                if (analyzeFloat(auxPrevRecord.Puntero) == "Data"){
-                    record.Puntero = auxPrevRecord.Puntero;
+                if (analyzeFloat(auxPrevRecord.local_pointer) == "Data"){
+                    record.local_pointer = auxPrevRecord.local_pointer;
                     writeRecordEND(record, this->aux_file);
-                    updatePunteroAtPosition(prevRecord.Puntero, aux_size, this->aux_file); // prevRecord -> pos(record)
+                    updatePunteroAtPosition(prevRecord.local_pointer, aux_size, this->aux_file); // prevRecord -> pos(record)
                     //No olvidarse de aumentar la cantidad de elementos que hay en el auxiliar.bin
                     aux_size += 1;
                 }
@@ -196,11 +210,11 @@ public:
                     int cmp2;
                     while(!posicionado){
 
-                        insert_pos = prevRecord.Puntero; //insert_pos = Y_pos
+                        insert_pos = prevRecord.local_pointer; //insert_pos = Y_pos
                         prevRecord = readRecord(insert_pos, this->aux_file);
 
-                        //Y_pos = prevRecord.Puntero
-                        auxPrevRecord = readRecord(prevRecord.Puntero, this->aux_file);
+                        //Y_pos = prevRecord.local_pointer
+                        auxPrevRecord = readRecord(prevRecord.local_pointer, this->aux_file);
 
                         /*
                             add(Conchita)
@@ -233,7 +247,7 @@ public:
                         //Si record va antes que auxPrevRecord
                         if (cmp2 <= 0){
                             //Agregamos el record al aux y hacemos el cambiaso de punteros entre prevRecord y record
-                            record.Puntero = prevRecord.Puntero; //record -> prevRecord.Puntero
+                            record.local_pointer = prevRecord.local_pointer; //record -> prevRecord.local_pointer
                             writeRecordEND(record, this->aux_file);
                             updatePunteroAtPosition(insert_pos, aux_size, this->aux_file); // prevRecord -> pos(record)
 
@@ -244,11 +258,11 @@ public:
                         }
 
                         //Si record va despues que auxPrevRecord, y este auxPrevRecord apunta a un elemento perteneciente a data.file (osea que ya no apunta a ningun otro elemento)
-                        if (cmp2 > 0 && analyzeFloat(auxPrevRecord.Puntero) == "Data"){
+                        if (cmp2 > 0 && analyzeFloat(auxPrevRecord.local_pointer) == "Data"){
 
-                            record.Puntero = auxPrevRecord.Puntero;
+                            record.local_pointer = auxPrevRecord.local_pointer;
                             writeRecordEND(record, this->aux_file);
-                            updatePunteroAtPosition(prevRecord.Puntero/*Y_pos*/, aux_size, this->aux_file);
+                            updatePunteroAtPosition(prevRecord.local_pointer/*Y_pos*/, aux_size, this->aux_file);
 
                             //No olvidarse de aumentar la cantidad de elementos que hay en el auxiliar.bin
                             aux_size += 1;
@@ -263,7 +277,7 @@ public:
 
                          Se repite el while y con ello
                          -  prevRecord pasa a ser auxPrevRecord(1)
-                         -  auxPrevRecord pasa a ser el auxPrevRecord(1).Puntero
+                         -  auxPrevRecord pasa a ser el auxPrevRecord(1).local_pointer
                          */
                     }
                 }
@@ -535,16 +549,16 @@ private:
         // Iterar a través de los registros en el archivo de datos
         while (dataFileStream.read(reinterpret_cast<char*>(&X), X.size())) {
 
-            if (X.Puntero == -1){
+            if (X.local_pointer == -1){
                 cantidad_eliminados += 1;
             }
 
             //Nos saltamos los records que apunten a -1, ya que estos estan eliminados
-            if (X.Puntero != -1){
+            if (X.local_pointer != -1){
                 //Agregamos X al nuevo data_file
                 puntero += 1;
-                puntero_temporal = X.Puntero;
-                X.Puntero = puntero;
+                puntero_temporal = X.local_pointer;
+                X.local_pointer = puntero;
                 writeRecordEND(X,"nuevo_data_file.bin");
 
                 //En caso X apunte a un registro perteneciente al espacio auxiliar
@@ -555,8 +569,8 @@ private:
                     while (analyzeFloat(puntero_temporal) != "Data" ){
                         puntero += 1;
                         Y = readRecord(puntero_temporal,this->aux_file);
-                        puntero_temporal = Y.Puntero;
-                        Y.Puntero = puntero;
+                        puntero_temporal = Y.local_pointer;
+                        Y.local_pointer = puntero;
                         writeRecordEND(Y,"nuevo_data_file.bin");
                     };
                 }
@@ -712,7 +726,7 @@ private:
         file.read((char*)&record, sizeof(SeqRecord)); // Leer el registro en la posición
         file.close();
 
-        return record.Puntero; // Devolver el valor del puntero del registro
+        return record.local_pointer; // Devolver el valor del puntero del registro
     }
 
     //Metodo que te modifica el puntero de un registro en una pos especifica
@@ -728,8 +742,8 @@ private:
         SeqRecord record;
         file.read((char*)&record, sizeof(SeqRecord));
 
-        // Update the Puntero field
-        record.Puntero = newPunteroValue;
+        // Update the local_pointer field
+        record.local_pointer = newPunteroValue;
 
         // Seek back to the same position
         file.seekp(pos * sizeof(SeqRecord), ios::beg);
