@@ -2,9 +2,12 @@
 #include <vector>
 
 
-auto seq = SequentialFile();
+auto seq = SequentialFile("input", "atributo");
 
 void test_insert(){
+    SeqRecord record;
+    record.setData();
+
 
 }
 

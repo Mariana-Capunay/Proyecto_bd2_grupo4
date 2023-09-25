@@ -8,12 +8,22 @@
 
 using namespace std;
 
+void crear_archivo(const string& nombre) {
+    ifstream archivo(nombre.c_str());
+    if (archivo.good()) { //si existe
+        archivo.close(); //cerrarlo
+        return; //ya no es necesario crear
+    }
+    ofstream file(nombre, ios::binary);
+    file.close();
+}
+
 class SeqRecord {
 private:
 
 public:
-    //char atr[40];
-    string atr;
+    char atr[40];
+    //string atr;
     float Puntero;
 
     void setData(){
@@ -54,7 +64,6 @@ public:
         -   Insertamos "la cabecera" que siempre va a ir antes alfabeticamente que cualquier otro elemento.
         -   Almacenamos el data_size y el aux_size, asi ahorramos accesos a la memoria
         */
-
 
         this->data_file = _atr + "data.bin";
         this->aux_file = _atr + "auxiliar.bin";
@@ -775,7 +784,6 @@ private:
             //SeqRecord record = readRecord(bytes,document);
             //creamos un registro tipo SeqRecord
             SeqRecord record;
-            
 
             add(record);
             record.showData();
