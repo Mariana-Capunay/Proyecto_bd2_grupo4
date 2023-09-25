@@ -5,7 +5,7 @@ AVLFile<int>* avl = new AVLFile<int>("filename.bin", "atributo");
 vector<int> a = {1,2,4,4,4,1,1,2,3,7,3};
 
 void test_insert(){
-    for (auto x:a) avl->insert(x);
+    for (auto x:a) avl->insert(x,x);
 }
 
 void test_search(){
